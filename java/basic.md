@@ -12,8 +12,10 @@
     > _底层实现方式：_
     
     > todo..
+	
   1. equels()
     > return (this == obj)。
+	
   1. clone()
     > **native**方法，如果类未继承**Cloneable**接口抛出**CloneNotSupportedException**。
     
