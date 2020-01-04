@@ -2,7 +2,7 @@
 > _From 2020.01.01_
 
 ### Java
-* [basic]()
+* [basic](https://kingkh1995.github.io/blog/java/basic)
 * [util]()
 * [concurrent]()
 * [io]()
