@@ -7,5 +7,9 @@
   - registerNatives()
     > native方法，在静态代码块中被调用。
   - getClass()
-    > native方法，返回一个运行时Class对象，返回的对象是被static synchronized方法锁住的对象(todo...)
+    > native方法，返回一个运行时Class对象，返回的类对象是被该类static synchronized方法锁住的对象。
+  - hashCode()
+    > native方法，返回对象的哈希码值，**哈希码值和对象地址有一定关联，但并不一定如此，具体取决于运行时库和JVM的具体实现。**
+   - equals()
+    > 默认是对象引用对比的结果，通常需要在重写此方法时覆盖hashCode方法，是**为了维护hashCode方法的常规协定（散列集合是基于这些协定设计的）**，equals方法对比相等的对象必须具有相等的哈希码值（必须的），哈希码值不相等的对象使用equals方法对比必然不相等（可推算出）。
     
