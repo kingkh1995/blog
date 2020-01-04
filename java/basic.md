@@ -2,24 +2,24 @@
 
 > version: **jdk11**
 
-### lang
+### **lang**
 
-* #### Object
+* #### **Object**
 
-* getClass()
-
-  **native**方法，返回Class对象。
+  * getClass()
+    
+    **native**方法，返回Class对象。
   
-* hashCode()
+  * hashCode()
 
- 	**native**方法，返回hash值。
-  底层实现：
+ 	  **native**方法，返回hash值。
+    底层实现：
   
-* equels()
+  * equels()
 
-  return (this == obj)。
+    return (this == obj)。
   
-* clone()
+  * clone()
 
-  **native**方法，如果类未继承**Cloneable**接口抛出**CloneNotSupportedException**。
+    **native**方法，如果类未继承**Cloneable**接口抛出**CloneNotSupportedException**。
     
