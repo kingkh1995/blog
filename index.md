@@ -2,7 +2,7 @@
 > _From 2020.01.01_
 
 ### Jvm
-* [内存划分](https://kingkh1995.github.io/blog/java/basic)
+* [index](https://kingkh1995.github.io/blog/jvm)
 
 ### Jdk源码
 * [basic](https://kingkh1995.github.io/blog/java/basic)
