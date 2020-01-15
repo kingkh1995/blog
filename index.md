@@ -2,7 +2,7 @@
 > _From 2020.01.01_
 
 ### 面试相关
-* [index](https://kingkh1995.github.io/blog/interview)
+* [剑指offer](https://kingkh1995.github.io/blog/interview)
 
 ### Jvm
 * [index](https://kingkh1995.github.io/blog/jvm)
