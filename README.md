@@ -12,7 +12,7 @@
 - Rocketmq 
 - Kafka 
 - ES
-- Memchaed
+- Memcached
 - Activiti
 - Linux 
 - Tomcat 
