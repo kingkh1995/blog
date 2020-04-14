@@ -1,6 +1,6 @@
 # 技术栈
 - Java
-- Spring5 
+- Spring 
 - Spring Boot 
 - Spring Cloud 
 - Spring Cloud Alibaba 
