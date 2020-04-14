@@ -19,7 +19,7 @@
 - ZipKin 
 - Spark
 - Hadoop
-- Hbase
+- HBase
 - Nginx 
 - Zookeeper
 - PostgreSQL 
