@@ -1,5 +1,5 @@
 # 技术栈
-- Java 
+- Java
 - Spring5 
 - Spring Boot 
 - Spring Cloud 
@@ -13,6 +13,7 @@
 - Kafka 
 - ES
 - Memchaed
+- Activiti
 - Linux 
 - Tomcat 
 - ZipKin 
@@ -22,7 +23,7 @@
 - Nginx 
 - Zookeeper
 - PostgreSQL 
-- *Golang*
-- *Docker*
-- *Kubernetes* 
-- *Istio* 
+- **Golang**
+- **Docker**
+- **Kubernetes**
+- **Istio**
