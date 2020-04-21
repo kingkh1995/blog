@@ -15,4 +15,4 @@
 * [sql](https://kingkh1995.github.io/blog/java/sql)
 * [net](https://kingkh1995.github.io/blog/java/net)
 
-### [RESTful API](https://kingkh1995.github.io/blog/java/rest)
+### [RESTful API](https://kingkh1995.github.io/blog/rest)
