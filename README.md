@@ -1,5 +1,4 @@
 # 技术栈
-
 - Java
 - Spring
 - Spring Boot
@@ -17,9 +16,10 @@
 - Activiti
 - ZipKin
 - MonggoDB
-- Spark
 - Hadoop
 - HBase
+- Spark
+- Hive
 - Nginx 
 - Zookeeper
 - PostgreSQL 
