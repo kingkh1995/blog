@@ -10,6 +10,7 @@
             docker-compose -f example/standalone-derby.yaml up
         控制台：（端口：8848 路径：/nacos/）
             访问地址：http://127.0.0.1:8848/nacos/
+            
 #### 2.nacos config   
     > 使用方法：
         添加依赖：
