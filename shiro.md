@@ -20,11 +20,10 @@
             AuthenticatingRealm：仅提供认证数据，使用的token类型为UsernamePasswordToken。
             AuthorizingRealm：继承自AuthenticatingRealm，提供认证和授权数据。
     
-            
     > SessionManager：会话管理器的顶级接口
             ServletContainerSessionManager：DefaultWebSecurityManager默认使用，直接使用servlet容器的会话管理。
             DefaultWebSessionManager：web系统使用，使用servlet容器的方式管理shiro自定义的session（即将sessionId保存在cookie内）。
-            AbstractValidatingSessionManager：默认开启了session清理定时任务，使用newSingleThreadScheduledExecutor实现，在初次使用session时加载定时任务。
+            AbstractValidatingSessionManager：默认开启了session清理定时任务，使用newSingleThreadScheduledExecutor实现，在初次使用session时加 载定时任务。
         
     > SessionDAO：session的crud功能实现
             MemorySessionDAO：DefaultWebSessionManager的默认实现，session类型为SimpleSession，不对外暴露，暴露的是其代理DelegatingSession。
