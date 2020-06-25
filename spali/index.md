@@ -47,7 +47,7 @@
         服务发现；
             NacosServerList实现了ServerList接口，并在@ConditionOnMissingBean的条件下进行自动注入，默认集成了Ribbon。
           
-### 4.Sentinel
+### Sentinel
     > 使用方法：
         添加依赖：
             <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
@@ -69,7 +69,7 @@
         RestTemplate支持实现原理：
             添加拦截器SentinelProtectInterceptor
             
-### 5.RocketMQ
+### RocketMQ
     > docker部署：
         docker pull rocketmqinc/rocketmq
         docker run -d -p 9876:9876 -v /rmq/namesrv/logs:/root/logs -v /rmq/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq sh mqnamesrv
@@ -83,3 +83,12 @@
         添加依赖，配置rocketmq服务地址，开启@EnableBinding注解，可以使用stream框架提供的Source、Sink和Processor接口或者自定义Binding接口，之后配置binding即可。
     原理：
         基于Spring Cloud Stream架构
+        
+### Dubbo
+    > 使用方法：
+        结合Nacos使用：
+            添加dubbo starter依赖和nacos discovery依赖即可。
+        配置：
+            配置协议，默认使用dubbo协议，生产者需要配置包扫描和指定dubbo协议端口，消费者需要配置订阅的服务名称。
+        使用：
+            生产者使用@Service注解（dubbo包的），消费者使用@Refrence注解。
