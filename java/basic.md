@@ -22,5 +22,22 @@
     >> **wait() == wait(0L)，并不是只放弃锁之后立刻进入对象锁等待池，而是一直等待直到被notify方法唤醒**。
     
 ##### String
-  - private final byte[] value
+ - （private final byte[] value） & （private final byte coder） & （static final boolean COMPACT_STRINGS）
+    > jdk9开始使用byte数组存储字符，存储时字符编码方式有两种，Latin1（iso-8859-1）和Utf-16，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这么一个字符只会占用一个字节，否则会占用两个字节。
     
+    > unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），第一个平面称为基本多语言平面（BMP），其他平面称为辅助平面，字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
+    
+    > utf-16：unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
+    
+    > utf-8：可变长字符编码，使用1到4个字节表示一个字符，对于ASCII字符utf-8编码的表示与其相同，中文字符却需要三个字节，**java字节码文件是使用utf-8编码的**。
+    
+  - getBytes(String charsetName)
+    > 获取该字符串使用指定编码方式的表示，对于unicode字符集BMP外的字符（如emoji表情），每一个code point（字符）需要四个字节。
+    >> 如果是utf-16会比预计多出两个字节，原因是其以两个字节为编码单元，要考虑字节序，所以返回的字节数组需要使用额外的两个字节表示来标志字节序（FEFF|FFFE），指定UTF-16BE或者UTF-16LE就会是正确的字节表示。
+    
+  - length()
+    > value.length >> coder()，这也是为什么coder值为0和1的原因，**但需要知道对于BMP外的字符是占用四个字节的，所以该返回值可以说并不是完全正确**。
+  - char charAt(int index) & int codePointAt(int index)
+    > 同样BMP外的字符是无法使用char表示的，因为char只占两个字节，codePointAt的返回值则是int。
+  - equals()
+    > 
