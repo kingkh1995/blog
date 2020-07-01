@@ -31,10 +31,11 @@
     
     > utf-8：可变长字符编码，使用1到4个字节表示一个字符，对于ASCII字符utf-8编码的表示与其相同，中文字符却需要三个字节，**java字节码文件是使用utf-8编码的**。
     
+  - String(String original)
+    > 该构造函数会创建一个新的String对象，相当于浅拷贝，即会共用value数组。
   - getBytes(String charsetName)
     > 获取该字符串使用指定编码方式的表示，对于unicode字符集BMP外的字符（如emoji表情），每一个code point需要四个字节。
     >> 如果是utf-16会比预计多出两个字节，原因是其以两个字节为编码单元，要考虑字节序，所以返回的字节数组需要使用额外的两个字节表示来标志字节序（FEFF或FFFE），指定UTF-16BE或者UTF-16LE就会是正确的字节表示。
-    
   - length()
     > value.length >> coder()，这也是为什么coder值为0和1的原因，**但需要知道对于BMP外的字符是占用四个字节的，所以该返回值可以说并不是完全正确**。
   - char charAt(int index) & int codePointAt(int index)
