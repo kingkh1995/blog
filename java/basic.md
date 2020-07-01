@@ -41,4 +41,4 @@
   - char charAt(int index) & int codePointAt(int index)
     > 同样BMP外的字符是无法使用char表示的，因为char只占两个字节，codePointAt的返回值则是int。
   - equals()
-    > 
+    > 重写了equals方法，与字符串常量比较时可以使用==，但是**两个变量比较时要使用equals方法**，value值会被复用，但String对象是可以存在多个的，虽然它们都指向内存中同一个value。
