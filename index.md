@@ -15,8 +15,13 @@
 * [sql](https://kingkh1995.github.io/blog/java/sql)
 * [net](https://kingkh1995.github.io/blog/java/net)
 
-### [RESTful API](https://kingkh1995.github.io/blog/rest)
+### 框架
+* [Spring Cloud Alibaba](https://kingkh1995.github.io/blog/spali)
+* [Shiro](https://kingkh1995.github.io/blog/shiro)
 
-### [Spring Cloud Alibaba](https://kingkh1995.github.io/blog/spali)
+### 组件
+* [Shiro](https://kingkh1995.github.io/blog/shiro)
 
-### [Shiro](https://kingkh1995.github.io/blog/shiro)
+### 项目开发
+* [RESTful API](https://kingkh1995.github.io/blog/rest)
+* [Domain-Driven Design](https://kingkh1995.github.io/blog/ddd)
