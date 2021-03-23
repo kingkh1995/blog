@@ -42,7 +42,7 @@
     > 同样BMP外的字符是无法使用char表示的，因为char只占两个字节，codePointAt的返回值则是int。
   - equals()
     > 重写了equals方法，与字符串常量比较时可以使用==，但是**两个变量比较时要使用equals方法**，value值会被复用，但String对象是可以存在多个的，虽然它们都指向内存中同一个value。
-  - strip()（jdk11） & trim() （**不推荐再使用**）
+  - strip()（jdk11） & trim() （**不推荐继续使用**）
     > 移除字符串两侧的空白字符，trim()方法移除空格、tab键、换行符，而strip()方法移除所有Unicode空白字符。
     >> strip()和isBlank()都是使用Character.isWhitespace()实现，能识别所有Unicode空白字符。
   - split(String regex)
@@ -50,14 +50,13 @@
  
 ##### StringBuffer & StringBuilder
   - 相同点
-    > 均继承自AbstractStringBuilder
-    > 实现方式基本一致，均是可变字符串
+    > 均继承自AbstractStringBuilder，均是可变字符串。
   - 不同点
     > StringBuffer的方法均使用了synchronized修饰，所以它是线程安全的。
     
     > StringBuffer包含一个toString方法的字串缓冲区（private transient String toStringCache）。
   - AbstractStringBuilder
-    > 设计与String基本一致，因为是可变字符串，有一个count参数标识可变字符串的实际长度，与Arraylist一样，默认容量为16，扩容时变为原容量的两倍加2（why?）。
+    > 设计与String基本一致，因为是可变字符串，拥有一个count字段来标识可变字符串的实际长度，与Arraylist一样，默认容量为16，扩容时变为原容量的两倍加2（why?）。
 
 ##### Enum（所有枚举的父类）
   - clone()：会抛出CloneNotSupportedException，因为是绝对的单例模式所以无法被克隆。
