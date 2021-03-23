@@ -23,7 +23,7 @@
 * [Shiro](https://kingkh1995.github.io/blog/shiro)
 
 ### 组件
-* [Shiro](https://kingkh1995.github.io/blog/shiro)
+* [Mysql](https://kingkh1995.github.io/blog/mysql)
 
 ### 项目开发
 * [RESTful API](https://kingkh1995.github.io/blog/rest)
