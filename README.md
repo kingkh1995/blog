@@ -1,4 +1,3 @@
-# 技术栈
 - Java
 - Spring
 - Spring Boot
@@ -13,17 +12,13 @@
 - Memcached
 - Tomcat
 - Netty
-- Activiti
-- ZipKin
 - MonggoDB
+- Zookeeper
 - Hadoop
 - HBase
 - Spark
 - Hive
-- Nginx 
-- Zookeeper
-- PostgreSQL 
-- Spring WebfLux
+- Nginx
 - **Golang**
 - **Docker**
 - **Kubernetes**
