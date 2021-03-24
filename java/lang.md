@@ -1,9 +1,7 @@
 ## [首页](https://kingkh1995.github.io/blog/)
 > version: **jdk11**
 
-### lang
-
-##### Object
+#### Object
   - registerNatives()
     > native方法，在静态代码块中被调用。
   - getClass()
@@ -21,7 +19,7 @@
     > **final** native方法，调用的均是wait(long timeoutMillis)方法，使当前线程放弃对该对象的监视器锁，等待被唤醒或者时间达到超时时间，之后与其他等待中的线程公平竞争该对象的锁。
     >> **wait() == wait(0L)，并不是只放弃锁之后立刻进入对象锁等待池，而是一直等待直到被notify方法唤醒**。
     
-##### String
+#### String
   - （private final byte[] value） & （private final byte coder） & （static final boolean COMPACT_STRINGS）
     > jdk9开始使用byte数组存储字符，存储时字符编码方式有两种，Latin1（iso-8859-1）和Utf-16，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这么一个字符只会占用一个字节，否则会占用两个字节。
 
@@ -48,7 +46,7 @@
   - split(String regex)
     > 参数包含正则表达式的转义符则需要使用\\\\转义，否则将作为正则表达式去匹配字符串。
  
-##### StringBuffer & StringBuilder
+#### StringBuffer & StringBuilder
   - 相同点
     > 均继承自AbstractStringBuilder，均是可变字符串。
   - 不同点
@@ -58,14 +56,14 @@
   - AbstractStringBuilder
     > 设计与String基本一致，因为是可变字符串，拥有一个count字段来标识可变字符串的实际长度，与Arraylist一样，默认容量为16，扩容时变为原容量的两倍加2（why?）。
 
-##### Enum（所有枚举的父类）
+#### Enum（所有枚举的父类）
   - clone()：会抛出CloneNotSupportedException，因为是绝对的单例模式所以无法被克隆。
   - valueOf()：如果枚举常量不存在会抛出IllegalArgumentException，而不会返回null。
 
-##### ClassLoader
+#### ClassLoader
 
-##### Thread
+#### Thread
 
-##### ThreadGroup
+#### ThreadGroup
 
-##### ThreadLocal
+#### ThreadLocal
