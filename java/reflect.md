@@ -9,11 +9,13 @@
 
 ### GenericArrayType
 > 范型数组，组成数组的元素是 ParameterizedType 或 TypeVariable。
+
 - Type getGenericComponentType()：返回组成泛型数组的实际参数化类型
 
 ### ParameterizedType
 > 参数化类型，例如Map.Entry<String, ,Person>entry。
 >> 含有<>则为参数化类型，比如 List<? extends String> 为 ParameterizedType 非 WildcardType。
+
 - Type[] getActualTypeArguments(); // String，Person
 - Type getRawType(); // Entry
 - Type getOwnerType(); // Map
@@ -21,12 +23,14 @@
 ### TypeVariable
 > 类型变量，在编译时会被转换为一个特定的类型，用来反映在JVM编译该泛型前的信息。
 >> 比如 TypeVariableBean<K extends InputStream & Serializable, V> 中的K ，V 都是属于类型变量。
+
 - Type[] getBounds()：得到上边界的 Type数组。// K ：InputStream、 Serializable、 V：Object
 - D getGenericDeclaration(); 返回的是声明这个 TypeVariable 所在的类的 Type // TypeVariableBean
 - String getName(); 返回的是这个 TypeVariable 的名称 // K、V
 
 ### java.lang.Class
-- 没有公共构造函数，当类加载器调用defineClass方法之一时JVM会自动构造类对象。
+> 没有公共构造函数，当类加载器调用defineClass方法之一时JVM会自动构造类对象。
+
 - Class<?> forName(String className)：native实现，使用该方法，虚拟机会初始化该类，不能用于获取表示基本类型或void的任何类对象。
 - T newInstance()：jdk9新增方法，等同于getDeclaredConstructor().newInstance()。
 - TypeVariable<Class<T>>[] getTypeParameters()：按声明的顺序返回当前类的泛型声明。
@@ -70,6 +74,7 @@ System.out.println(int.class.getCanonicalName()); // int
 
 ### AccessibleObject
 > 是字段 ， 方法 ，和构造器（反射对象）的基础类。
+
 - protected AccessibleObject()：构造函数仅供虚拟机使用。
 - final boolean trySetAccessible()：jdk9新增，设置失败返回 false 而 setAccessible(true) 失败时抛出InaccessibleObjectException。
 
