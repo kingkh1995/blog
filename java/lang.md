@@ -60,7 +60,28 @@
   - clone()：会抛出CloneNotSupportedException，因为是绝对的单例模式所以无法被克隆。
   - valueOf()：如果枚举常量不存在会抛出IllegalArgumentException，而不会返回null。
 
-#### ClassLoader
+### annotation
+
+#### ElementType枚举
+> 配合Target注解指定注解能出现在Java程序中的语法位置。
+
+#### Target元注解
+> 如果注解声明中不存在Target元注解，则该注解可以java程序的任意位置使用。
+
+#### RetentionPolicy枚举
+> 配合Retention元注解，指定注解的保留时间。
+- CALSS：编译器将把注解记录在类文件中，但在运行时JVM不需要保留注解。
+- RUNTIME:：编译器将把注解记录在类文件中，同时在运行时JVM将保留注解，所以可以通过反射机制读取到注解信息。
+- SOURCE：编译器要丢弃的注解。
+
+#### Retention元注解
+> 如果注解中不存在Retention注解，则保留策略默认为RetentionPolicy.CLASS。
+
+#### Inherited元注解
+> 指示注解会被自动继承，如果某个类声明中没有此类型的注解，则将在该类的超类中自动查询该类型注解，会一直向上追溯，直到找到该类型的注解或到达该类层次的顶层为止。
+
+#### Repeatable元注解
+> 如果声明了Reteatable元注解，代表该注解可以重复使用，需要一个容器注解配合实现。
 
 #### Thread
 

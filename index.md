@@ -10,8 +10,8 @@
 ### Jdk源码
 * [lang](https://kingkh1995.github.io/blog/java/lang)
 * [time](https://kingkh1995.github.io/blog/java/time)
-* [util](https://kingkh1995.github.io/blog/java/util)
 * [reflect](https://kingkh1995.github.io/blog/java/reflect)
+* [util](https://kingkh1995.github.io/blog/java/util)
 * [concurrent](https://kingkh1995.github.io/blog/java/concurrent)
 * [stream](https://kingkh1995.github.io/blog/java/stream)
 * [net](https://kingkh1995.github.io/blog/java/net)
