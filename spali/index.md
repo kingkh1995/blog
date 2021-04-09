@@ -82,7 +82,6 @@
       使用方法：
         添加依赖，配置rocketmq服务地址，开启@EnableBinding注解，可以使用stream框架提供的Source、Sink和Processor接口或者自定义Binding接口，之后配置binding即可。
     原理：
-        基于Spring Cloud Stream架构
         
 ### Dubbo
     > 使用方法：
@@ -92,3 +91,6 @@
             配置协议，默认使用dubbo协议，生产者需要配置包扫描和指定dubbo协议端口，消费者需要配置订阅的服务名称。
         使用：
             生产者使用@Service注解（dubbo包的），消费者使用@Refrence注解。
+        调试：
+            关闭服务注册：dubbo.registry.register=false
+            直连提供者：@Reference(url = "dubbo://{ip}:{port}")
