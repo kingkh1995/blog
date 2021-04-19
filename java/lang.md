@@ -86,6 +86,8 @@
 
 #### Thread
 
-#### ThreadGroup
-
 #### ThreadLocal
+
+#### InheritableThreadLocal
+
+#### ThreadGroup

@@ -95,10 +95,10 @@ System.out.println(int.class.getCanonicalName()); // int
 
 ### 动态代理两种方式
 
-##### Proxy
+#### Proxy
 > Proxy.newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)
 >> 基于接口实现，生成一个实现代理接口的匿名类，方法执行时使用反射机制实现（jdk1.8版本后效率与cglib不再有差距）。
 
-### Cglib
+#### Cglib
 > Enhancer.create(Class type, MethodInterceptor callback)
 >> 基于子类继承，使用字节码技术，动态生成被代理类的子类（所以类和方法不能声明为final）。
