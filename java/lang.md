@@ -56,6 +56,10 @@
   - AbstractStringBuilder
     > 设计与String基本一致，因为是可变字符串，拥有一个count字段来标识可变字符串的实际长度，与Arraylist一样，默认容量为16，扩容时变为原容量的两倍加2（why?）。
 
+#### Byte、Integer、Long
+- valueOf()方法会返回包装类，在-128到127之间会使用缓存。
+- parseXXX(String s)方法返回基本数据类型。
+
 #### Enum（所有枚举的父类）
   - clone()：会抛出CloneNotSupportedException，因为是绝对的单例模式所以无法被克隆。
   - valueOf()：如果枚举常量不存在会抛出IllegalArgumentException，而不会返回null。

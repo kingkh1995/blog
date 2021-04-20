@@ -30,7 +30,7 @@
                 使用ConcurrentHashMap在jvm中持久化session，并没有判断session是否过期的操作。
 
     > CacheManager：缓存管理器
-            MemoryConstrainedCacheManager：完全使用JVM的方式管理缓存，继承自AbstractCacheManager，使用ConcurrentMap<String, Cache>管理所有缓存，缓存实现则是使用SoftHashMap。
+            MemoryConstrainedCacheManager：完全使用JVM的方式管理缓存，继承自AbstractCacheManager，使用ConcurrentMap<String, Cache>管理所有缓存，缓存实现则是使用Shiro自己实现的SoftHashMap。
      
     > ShiroWebFilterConfiguration：过滤器自动配置，注入了ShiroFilterFactoryBean，以及使用了spring boot的FilterRegistrationBean，将shiro过滤器order设为最高。
             OncePerRequestFilter：保证每个请求只被处理一次的过滤器，所以Url配置拦截的时候使用LinkedHashMap，定义了preHandle方法执行拦截器逻辑。
