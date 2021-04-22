@@ -26,5 +26,5 @@
 * [Mysql](https://kingkh1995.github.io/blog/mysql)
 
 ### 项目开发
-* [RESTful API](https://kingkh1995.github.io/blog/rest)
+* [RESTful API](https://kingkh1995.github.io/blog/restful)
 * [Domain-Driven Design](https://kingkh1995.github.io/blog/ddd)
