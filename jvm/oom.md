@@ -5,8 +5,8 @@
 1. java.lang.StackOverflowError
    > 线程栈空间耗尽
 
-1.java.lang.OutOfMemoryError: Java heap space
-> 堆内存空间不足
+1. java.lang.OutOfMemoryError: Java heap space
+   > 堆内存空间不足
 
 1. java.lang.OutOfMemoryError: GC overhead limit exceeded
    > 垃圾回收上头，进程花费98%以上的时间执行GC，但只恢复了不到2%的内存，且该动作连续重复了5次。
