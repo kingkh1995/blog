@@ -6,6 +6,7 @@
 
 ### Jvm
 * [index](https://kingkh1995.github.io/blog/jvm)
+* [oom](https://kingkh1995.github.io/blog/jvm/oom)
 
 ### Jdk源码
 * [lang](https://kingkh1995.github.io/blog/java/lang)
