@@ -12,13 +12,13 @@
    > 垃圾回收上头，进程花费98%以上的时间执行GC，但只恢复了不到2%的内存，且该动作连续重复了5次。
    >> 可能会先触发Java heap space
 
-1. java.lang.OutOfMemoryError-->Metaspace
+1. java.lang.OutOfMemoryError: Metaspace
    > 元空间内存不足，加载的类或方法等太多，元空间位于本地内存，不是虚拟机内存
 
 1. java.lang.OutOfMemoryError: Direct buffer memory
    > 本地内存不足，使用 Direct ByteBuffer 可以直接访问堆外内存，IO操作时就不用在Java堆和本地内存之间来回复制数据
 
-1. java.lang.OutOfMemoryError: unable to create new native thread
+1. java.lang.OutOfMemoryError: Unable to create new native thread
    > JVM向操作系统请求创建本地线程失败
 
 1. java.lang.OutOfMemoryError: Requested array size exceeds VM limit
