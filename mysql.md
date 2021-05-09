@@ -113,14 +113,14 @@ idx(a,b)
 
 ##### 字段某些特殊值占据了绝大部分的比例
 
-``` sql
-status字段中值为0的数据比例超过90%，则status=0时强制不走索引idx_staus
+``` text
+status字段中值为0的数据比例超过90%，则status=0时强制不走索引idx_staus，因为加载该索引消耗更大。
 select * from t ignore index (idx_stauts) where status = 0 limit 10;
 ```
 
 ##### 取出每个科目分数排名前2的数据
 
-``` sql
+``` text
 使用子查询
 select * from 
 table t0 
