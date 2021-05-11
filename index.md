@@ -30,3 +30,4 @@
 ### 项目开发
 * [RESTful API](https://kingkh1995.github.io/blog/restful)
 * [Domain-Driven Design](https://kingkh1995.github.io/blog/ddd)
+* [Effective Coding](https://kingkh1995.github.io/blog/coding)
