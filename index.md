@@ -1,5 +1,5 @@
 ## 学习笔记
-> _From 2020.01.01_
+> GOAL ==>> ThoughtWorks
 
 ### 面试相关
 * [剑指offer](https://kingkh1995.github.io/blog/interview)
