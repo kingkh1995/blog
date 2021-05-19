@@ -5,19 +5,14 @@
 - Spring Cloud Alibaba
 - MySQL
 - Mybatis
+- Sharding-JDBC
 - Redis
-- Maven
 - ES
 - Kafka
-- Memcached
-- Tomcat
-- Netty
-- MonggoDB
 - Zookeeper
-- Hadoop
-- HBase
-- Spark
-- Hive
+- Netty
+- Maven
+- Tomcat
 - Nginx
 - **Golang**
 - **Docker**
