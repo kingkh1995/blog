@@ -1,6 +1,8 @@
 ## 学习笔记
 
-> GOAL ==>> ThoughtWorks
+> 好好学习！天天向上！早日当上咸鱼！
+
+* [Markdown语法](https://kingkh1995.github.io/blog/Markdown)
 
 ### 面试相关
 
