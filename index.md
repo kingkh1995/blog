@@ -1,8 +1,7 @@
 ## 学习笔记
 > GOAL ==>> ThoughtWorks
 
-### 面试相关
-* [剑指offer](https://kingkh1995.github.io/blog/interview)
+### [面试相关](https://kingkh1995.github.io/blog/interview)
 
 ### Jvm
 * [index](https://kingkh1995.github.io/blog/jvm)
