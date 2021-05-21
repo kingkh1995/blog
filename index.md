@@ -5,7 +5,7 @@
 ### 面试相关
 
 * [剑指offer](https://kingkh1995.github.io/blog/interview)
-* [个人简历](https://kingkh1995.github.io/blog/interview/Resume)
+* [个人简历](/interview/Resume)
 
 ### Jvm
 
