@@ -34,7 +34,7 @@
 ```text
 网页链接 （网页地址或者项目路径）
 
-[百度](https://www.badu.com)
+[百度](https://www.baidu.com)
 
 图片链接 （网络图片地址或者项目文件）
 
@@ -86,11 +86,11 @@
 :--: 代表居中对齐
 ---: 代表右对齐
 
-Tables|Are|Cool
-:---|:--:|--:
-col 3 is|right-aligned|$1600
-col 2 is|centered|$12
-zebra stripes|are neat|$1
+|Tables|Are|Cool|
+|:---|:--:|--:|
+|col 3 is|right-aligned|$1600|
+|col 2 is|centered|$12|
+|zebra stripes|are neat|$1|
 ```
 |Tables|Are|Cool|
 |:---|:--:|--:|
