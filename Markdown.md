@@ -41,7 +41,7 @@
 ![](/interview/phone-solid.svg)
 ```
 
-[百度](https://www.badu.com)
+[百度](https://www.baidu.com)
 
 ![](/interview/phone-solid.svg)
 
