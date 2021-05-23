@@ -1,5 +1,5 @@
 <div style="text-align:center">
-     <h1>姓名</h1>
+     <h1>邬凯航</h1>
      <div>
          <span>
              <img src="phone-solid.svg" width="18px">
@@ -26,13 +26,13 @@
 ## <img src="info-circle-solid.svg" width="30px"> 个人信息
 
 - 男，1995 年出生
-- 求职意向：Java 开发工程师 / 架构师
-- 工作经验：5 年
-- 期望薪资：30k
+- 求职意向：Java 开发工程师
+- 工作经验：4 年
+- 期望薪资：25k~35k
 
 ## <img src="graduation-cap-solid.svg" width="30px"> 教育经历
 
-- 学士，XXXX大学，软件工程专业，2012.9~2016.7
+- 学士，华中科技大学，生物技术专业，2013.9~2017.6
 
 ## <img src="briefcase-solid.svg" width="30px"> 工作经历
 

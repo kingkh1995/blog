@@ -40,7 +40,7 @@
 - 《图解HTTP》
 - 《深入理解 Java 虚拟机（第 3 版）》
 - 《Java并发编程实战》
-- [《深入浅出Java多线程》] (https://redspider.gitbook.io/concurrent/)
+- [《深入浅出Java多线程》](https://redspider.gitbook.io/concurrent/)
 - 《Java 8 实战》
 - 《Effective Java（第 3 版）》
 - 《码出高效 Java 开发手册》

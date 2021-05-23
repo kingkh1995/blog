@@ -3,12 +3,12 @@
 > 好好学习！天天向上！早日当上咸鱼！
 
 * [Markdown语法](https://kingkh1995.github.io/blog/Markdown)
-* [突击计划](https://kingkh1995.github.io/blog/Plan)
 
 ### 面试相关
 
 * [剑指offer](https://kingkh1995.github.io/blog/interview)
-* [个人简历](/interview/Resume)
+* [十月突击计划](https://kingkh1995.github.io/blog/Plan)
+* [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/Resume.md)
 
 ### Jvm
 
