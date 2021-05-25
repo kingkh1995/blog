@@ -1,8 +1,8 @@
-## [首页](https://kingkh1995.github.io/blog/)
+# [首页](https://kingkh1995.github.io/blog/)
 
 ![](学习计划.png)
 
-### 学习清单
+## 学习清单
 
 - ★★★ Java
 - ★★★ Spring
@@ -34,7 +34,7 @@
 - ☆☆☆ Canal
 - ☆☆☆ Nginx
 
-### 书籍清单
+## 书籍清单
 
 - 《算法（第 4 版）》
 - 《图解HTTP》
