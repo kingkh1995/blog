@@ -4,18 +4,14 @@
 
 ## 文档
 
-* [Markdown语法](https://kingkh1995.github.io/blog/Markdown)
+* [Markdown语法](https://kingkh1995.github.io/blog/markdown)
+* [UML图绘制](https://kingkh1995.github.io/blog/uml)
 
 ## 面试
 
 * [剑指offer](https://kingkh1995.github.io/blog/interview)
-* [十月突击计划](https://kingkh1995.github.io/blog/Plan)
-* [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/Resume.md)
-
-## Jvm
-
-* [index](https://kingkh1995.github.io/blog/jvm)
-* [oom](https://kingkh1995.github.io/blog/jvm/oom)
+* [十月突击计划](https://kingkh1995.github.io/blog/plan)
+* [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
 
 ## Jdk
 
@@ -29,6 +25,11 @@
 * [io](https://kingkh1995.github.io/blog/java/io)
 * [nio](https://kingkh1995.github.io/blog/java/sql)
 
+## Jvm
+
+* [index](https://kingkh1995.github.io/blog/jvm)
+* [oom](https://kingkh1995.github.io/blog/jvm/oom)
+
 ## 框架
 
 * [Spring Cloud Alibaba](https://kingkh1995.github.io/blog/spali)
@@ -36,20 +37,27 @@
 
 ## 组件
 
-* [Maven](https://kingkh1995.github.io/blog/maven)
 * [Mysql](https://kingkh1995.github.io/blog/mysql)
+* [Redis](https://kingkh1995.github.io/blog/redis)
 
 ## 工具
 
-* [Lombok](https://kingkh1995.github.io/blog/Lombok)
-* [Mapstruct](https://kingkh1995.github.io/blog/Mapstruct)
-* [Guava](https://kingkh1995.github.io/blog/Guava)
-* [Easyexcel](https://kingkh1995.github.io/blog/Easyexcel)
-* [Okhttp](https://kingkh1995.github.io/blog/Okhttp)
+* [Maven](https://kingkh1995.github.io/blog/maven)
+
+## 第三方库
+
+* [mybatis-plus](https://kingkh1995.github.io/blog/mybatis-plus)
+* [lombok](https://kingkh1995.github.io/blog/lombok)
+* [mapstruct](https://kingkh1995.github.io/blog/mapstruct)
+* [guava](https://kingkh1995.github.io/blog/guava)
+* [jackson](https://kingkh1995.github.io/blog/jackson)
+* [easyexcel](https://kingkh1995.github.io/blog/easyexcel)
+* [xxl-job](https://kingkh1995.github.io/blog/xxl-job)
+* [okhttp](https://kingkh1995.github.io/blog/okhttp)
 
 ## 业务
 
-* [缓存常见问题](https://kingkh1995.github.io/blog/Caching)
+* [缓存常见问题](https://kingkh1995.github.io/blog/caching)
 
 ## 其他
 
