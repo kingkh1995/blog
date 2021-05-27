@@ -1,4 +1,4 @@
-# [首页](https://kingkh1995.github.io/blog/)
+# [首页](/blog/)
 
 [官方中文文档](https://markdown-zh.readthedocs.io/en/latest/)
 
@@ -101,7 +101,7 @@ ___
 
 [baidu]: https://www.baidu.com/ '这是百度的标题'
 ```
-这是一个[内部资源链接](/index)
+这是一个[内部资源链接](index)
 
 这是一个 [内联链接](https://www.baidu.com/ '可选的内联链接标题') 
 

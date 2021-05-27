@@ -1,4 +1,4 @@
-# [首页](https://kingkh1995.github.io/blog/)
+# [首页](/blog/)
 
 > Effective Coding
 
