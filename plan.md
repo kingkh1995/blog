@@ -1,4 +1,4 @@
-# [首页](/index)
+# [首页](https://kingkh1995.github.io/blog/)
 
 ![](学习计划.png)
 

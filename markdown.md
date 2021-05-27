@@ -1,4 +1,4 @@
-# [首页](/)
+# [首页](https://kingkh1995.github.io/blog/)
 
 [官方中文文档](https://markdown-zh.readthedocs.io/en/latest/)
 
