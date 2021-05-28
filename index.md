@@ -48,6 +48,7 @@
 
 * [mybatis-plus](https://kingkh1995.github.io/blog/mybatis-plus)
 * [lombok](https://kingkh1995.github.io/blog/lombok)
+* [validation](https://kingkh1995.github.io/blog/validation)
 * [mapstruct](https://kingkh1995.github.io/blog/mapstruct)
 * [guava](https://kingkh1995.github.io/blog/guava)
 * [jackson](https://kingkh1995.github.io/blog/jackson)

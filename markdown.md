@@ -91,7 +91,7 @@ ___
 ```
 // 相同服务器下的资源使用相对路径或绝对路径，可选的链接标题使用引号包围
 
-这是一个[内部资源链接](/index)
+这是一个[内部资源链接](index)
 
 这是一个 [内联链接](https://www.baidu.com/ '可选的内联链接标题') 
 
@@ -190,6 +190,7 @@ public static void main(String[] args) {
 
 语法中特殊的字符使用反斜杠 '\\' 转义为字面量
 
+***
 
 ## 表格（部分不支持）
 
@@ -211,3 +212,5 @@ public static void main(String[] args) {
 |col 3 is|right-aligned|$1600|
 |col 2 is|centered|$12|
 |zebra stripes|are neat|$1|
+
+***
