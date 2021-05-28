@@ -63,5 +63,5 @@
 ## 其他
 
 * [RESTful API](https://kingkh1995.github.io/blog/restful)
-* [Domain-Driven Design](https://kingkh1995.github.io/blog/ddd)
-* [Effective Coding](https://kingkh1995.github.io/blog/coding)
+* [DDD架构](https://kingkh1995.github.io/blog/ddd)
+* [高效编码技巧](https://kingkh1995.github.io/blog/coding)
