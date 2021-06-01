@@ -1,4 +1,4 @@
-# [首页](/blog/)
+# [首页](index)
 
 [官方中文文档](https://markdown-zh.readthedocs.io/en/latest/)
 

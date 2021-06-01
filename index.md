@@ -13,6 +13,11 @@
 * [十月突击计划](https://kingkh1995.github.io/blog/plan)
 * [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
 
+## 算法
+
+* [算法基础](algs/)
+* [数组](algs/array)
+
 ## Jdk
 
 * [lang](https://kingkh1995.github.io/blog/java/lang)
