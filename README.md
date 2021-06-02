@@ -33,4 +33,5 @@
 - ☆☆☆ **Kubernetes**
 - ☆☆☆ **Istio**
 
-- ☆☆☆☆☆ **libgdx**
+- ☆☆☆☆☆ **Corda**
+- ☆☆☆☆☆ **libGDX**

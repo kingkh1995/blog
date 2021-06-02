@@ -10,7 +10,7 @@
     使用数组保存每一个触点所属连通分量的id。
 
     - find操作：只需要访问数组一次。
-    - union操作：需要遍历数组，修改连通分量下的所有。触点
+    - union操作：需要遍历数组，修改连通分量下的所有触点。
 
     ```java
     public int find(int p) {
@@ -36,8 +36,8 @@
 
     使用数组保存每个触点所属连通分量的根触点。
 
-    - union操作：只需要修改当前触点即可。
-    - find操作：需要向上迭代以找到根触点，最坏情况下触点组成的树可能退化成了链表。
+    - union操作：只需要修改当前触点。
+    - find操作：需要向上迭代以找到根触点，最坏情况下树退化成了链表。
 
     ```java
     public int find(int p) {
@@ -82,11 +82,12 @@
 		count--;
 	}
     ```
+
 - ****拓展***：根据高度加权的quick-union算法*
 
     ```java
-    // 只有两个高度相同的树连接在一起，树的高度才会加1
-    // 利用归纳法可知，组成高度H的树，需要至少2^(n-1)个点
+    // 只有两个高度相同的树连接在一起，树的高度才会加1;
+    // 利用归纳法可知，组成高度h的树，需要至少2^(h-1)个触点;
     // 故N个触点的树高度不会超过logN。
     public void union(int p, int q) {
 		int i = find(p);
@@ -105,7 +106,7 @@
 	}
     ```
 
-- 路径压缩的加权quick-union算法算法
+- 路径压缩的加权quick-union算法
 
     在find操作向上迭代过程中，将遇到的所有触点都直接连接到根触点上，理论上可以得到几乎完全扁平化的树，是最优的解法。
 
@@ -126,3 +127,68 @@
     ```
 
 ***
+
+## 排序算法
+
+### 一、选择排序
+
+最简单的算法，需要~(N^2)/2次比较和N次交换。
+
+- *运行时间与输入无关*
+- *数据移动是所有算法中最少的*
+
+### 二、插入排序
+
+每次都将当前元素插入到左侧已排序完成的数组并保证插入之后左侧数组依然有序。
+
+- *交换的次数等于逆序数量*
+- *适合部分有序的数组*
+
+```java
+public static void sort(int[] arr) {
+    for (int i = 1; i < arr.length; i++) {
+        for (int j = i; j > 0 && arr[j] < arr[j - 1]; j--) {
+            // 出现逆序则交换相邻元素
+            ArrayUtils.swap(arr, j, j - 1);
+        }
+    }
+}
+```
+
+```java
+// 优化解法：循环找到应该所处的位置，并将所有大于当前元素的元素后移一格
+public static void sort(int[] arr) {
+    for (int i = 1; i < arr.length; i++) {
+        int temp = arr[i];
+        for (int j = i; j > 0 && temp < arr[j - 1]; j--) {
+            arr[j] = arr[j-1];
+        }
+    }
+}
+```
+
+### 三、希尔排序
+
+使用插入排序对间隔为h的子序列进行排序，不断减少h直到h为1。
+
+- *对比初级排序算法,数组越大优势越大*
+
+```java
+public static void sort(int[] arr) {
+    int length = arr.length;
+    int h = 1;
+    while (h < length / 3) {
+        h = 3 * h + 1;
+    }
+    for (; h >= 1; h /= 3) {
+        // 将数组变为h有序
+        for (int i = h; i < length; i++) {
+            for (int j = i; j >= h && arr[j] < arr[j - h]; j -= h) {
+                ArrayUtils.swap(arr, j, j - h);
+            }
+        }
+    }
+}
+```
+
+### 四、冒泡排序

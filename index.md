@@ -16,7 +16,7 @@
 ## 算法
 
 * [算法基础](algs/)
-* [数组](algs/array)
+* [数组与矩阵](algs/array)
 
 ## Jdk
 
