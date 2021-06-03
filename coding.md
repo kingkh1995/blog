@@ -26,10 +26,10 @@
 ## MYSQL
 
 - 被索引的字段**要设置为非空**。 
-  > NULL值处理比较复杂，但IS NULL 和 IS NOT NULL是有几率走索引的。
+  > NULL值处理比较复杂，但 IS NULL 和 IS NOT NULL 是有几率走索引的。
 
 - IN & NOT IN 要慎用，都可能导致索引失效。
-  > IN & NOT IN都可能走索引。
+  > IN & NOT IN 都可能走索引。
 
 - COUNT(*) & COUNT(1) 效率是完全一样的。
   
