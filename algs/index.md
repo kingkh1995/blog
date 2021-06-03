@@ -128,7 +128,7 @@
 
 ***
 
-## 排序算法
+## 基础排序算法
 
 ### 一、选择排序
 
@@ -139,10 +139,10 @@
 
 ### 二、插入排序
 
-每次都将当前元素插入到左侧已排序完成的数组并保证插入之后左侧数组依然有序。
+每次都将当前元素插入到左侧已排序完成的数组并保证插入之后左侧数组依然有序，最坏情况下（逆序数组）比较次数和交换次数都是~(N^2)/2次。
 
 - *交换的次数等于逆序数量*
-- *适合部分有序的数组*
+- *适合部分有序的数组排序*
 
 ```java
 public static void sort(int[] arr) {
@@ -172,6 +172,7 @@ public static void sort(int[] arr) {
 使用插入排序对间隔为h的子序列进行排序，不断减少h直到h为1。
 
 - *对比初级排序算法,数组越大优势越大*
+- *使用序列 1、4、13、40、121...平均性能更好*
 
 ```java
 public static void sort(int[] arr) {
@@ -192,3 +193,33 @@ public static void sort(int[] arr) {
 ```
 
 ### 四、冒泡排序
+
+从左至右不断交换相邻的逆序元素，每一轮循环都将最大值上浮到右侧，并且如果某一轮循环未发生交换，即代表数组已经有序。
+
+```java
+public static void sort(int[] arr) {
+    int length = arr.length;
+    boolean isSorted = false;
+    for (int i = length - 1; !isSorted && i > 0; i--) {
+        isSorted = true;
+        for (int j = 0; j < i; j++) {
+            if(arr[j] > arr[j+1]){
+                isSorted = false;
+                ArrayUtils.swap(arr, j, j + 1);
+            }
+        }
+    }
+}
+```
+
+### 五、归并排序
+
+***
+
+## 快速排序
+
+***
+
+## 堆排序
+
+***
