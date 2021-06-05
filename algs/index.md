@@ -134,15 +134,15 @@
 
 最简单的算法，需要~(N^2)/2次比较和N次交换。
 
-- *运行时间与输入无关*
-- *数据移动是所有算法中最少的*
+- *运行时间与输入无关。*
+- *数据移动是所有算法中最少的。*
 
 ### 二、插入排序
 
 每次都将当前元素插入到左侧已排序完成的数组并保证插入之后左侧数组依然有序，最坏情况下（逆序数组）比较次数和交换次数都是~(N^2)/2次。
 
-- *交换的次数等于逆序数量*
-- *适合部分有序的数组排序*
+- *交换的次数等于逆序数量。*
+- *适合部分有序的数组排序。*
 
 ```java
 public static void sort(int[] arr) {
@@ -171,8 +171,8 @@ public static void sort(int[] arr) {
 
 使用插入排序对间隔为h的子序列进行排序，不断减少h直到h为1。
 
-- *对比初级排序算法,数组越大优势越大*
-- *使用序列 1、4、13、40、121...平均性能更好*
+- *对比初级排序算法，在大规模数组下优势很大。*
+- *使用序列 1、4、13、40、121...平均性能更好。*
 
 ```java
 public static void sort(int[] arr) {
@@ -214,12 +214,181 @@ public static void sort(int[] arr) {
 
 ### 五、归并排序
 
+使用分治思想，对一个数组，递归的将它分成两半分别排序，然后将结果归并。
+
+- *能保证**对任意长度为N的数组排序**所需时间都和NlogN成正比。*
+- *需要的额外空间也和N成正比。*
+
+```java
+// merge方法 左数组：[lo, mid] 右数组：[mid+1, hi]
+void merge(int[] arr, int lo, int mid, int hi)
+
+// 自顶向下的归并排序（递归实现）
+private void sort(int[] arr, int lo, int hi) {
+    if (hi <= lo) {
+        return;
+    }
+    int mid = lo + (hi - lo) / 2;
+    sort(arr, lo, mid);
+    sort(arr, mid + 1, hi);
+	merge(arr, lo, mid, hi);
+}
+
+// 自底向上的归并排序（迭代实现）
+private void sort(int[] arr) {
+    int n = arr.length;
+	// size从1开始 每次乘以2
+    for (int sz = 1; sz < n; sz <<= 1) {
+		// 循环每次merge两个size区间
+        for (int lo = 0; lo + sz < n; lo += sz + sz) {
+            merge(arr, lo, lo + sz - 1, Math.min(lo + sz + sz - 1, n - 1));
+        }
+    }
+}
+```
+
 ***
 
 ## 快速排序
 
+一种分治的排序算法，递归的将数组分为两个子数组，将两部分独立的排序。
+
+- *最好的情况是每次切分都将元素对半分，时间复杂度为NlogN级别。*
+- *最坏的情况就是每次选择最小的元素进行切分，这种情况下需要N^2/2次比较。*
+
+### 1、基本算法
+
+```java
+private void sort(int[] arr, int lo, int hi) {
+    if (lo <= hi) {
+        return;
+    }
+    int j = partition(arr, lo, hi);
+    sort(arr, lo, j - 1);
+    sort(arr, j + 1, hi);
+}
+
+private int partition(int[] arr, int lo, int hi) {
+    // 一般默认pivot是lo
+    int pivot = arr[lo];
+    int i = lo, j = hi;
+    while (true) {
+        // 从左边开始找到第一个大于等于pivot的元素
+        while (arr[i++] < pivot) {
+            if (i == hi) {
+                break;
+            }
+        }
+        // 从右边开始找到第一个小于等于pivot的元素 
+        while (arr[j--] > pivot) {
+            if (j == lo) {
+                break;
+            }
+        }
+        // 此处判断不放在循环终止条件中是因为最后一步是j和pivot交换位置
+        if (i >= j) {
+            break;
+        }
+        ArrayUtils.swap(arr, i, j);
+    }
+    // 因为默认pivot是lo，所以最后一步是j和pivot交换位置
+    ArrayUtils.swap(arr, lo, j);
+    return j;
+}
+```
+
+### 2、算法改进
+
+- 切换到插入排序
+> 对于小数组，快速排序比插入排序慢，在排序小数组时使用插入排序。
+
+- 三取样切分
+> 使用中位数作为切分值效率最高，但是代价过高，为了找到比较好的切分值，折中方式是取三个元素并将大小居中的元素作为切分值。
+
+- 三向切分
+> 对于有大量重复元素的数组，将数组切分为三部分，分别是小于、等于和大于切分元素的数组元素，**对有大量重复元素的随机数组排序时间复杂度是线性的**。
+
+```java
+private static void sort(int[] arr, int lo, int hi){
+    if (hi <= lo){
+        return;
+    }
+    int pivot = arr[lo];
+    int lt = lo, i = lo + 1, gt = hi;
+    // 未排序：[i, gt]
+    while (i <= gt) {
+        int cmp = arr[i] - pivot;
+        if (cmp < 0) {
+            // 小于则lt右移，i右移
+            ArrayUtils.swap(arr, i++, lt++);
+        } else if (cmp > 0) {
+            // 大于则gt左移
+            ArrayUtils.swap(arr, i, gt--);
+        } else {
+            // 等于则i右移
+            i++;
+        }
+    } 
+    // 小于：[lo, lt-1] 等于：[lt, gt]  大于：[gt+1, hi]
+    sort(arr, lo, lt - 1);
+    sort(arr, gt + 1, hi);
+}
+```
+
 ***
 
-## 堆排序
+## 堆
+
+优先队列的实现，最大堆的每个结点总是小于等于其父结点，最小堆的每个结点总是大于等于其父结点。
+
+### 二叉堆
+
+二叉堆是一颗完全二叉树，所以可以使用数组来表示，根结点索引为1（不使用0）；任意一个结点索引为k，其子节点为2k和2k+1，其父结点为k/2。
+
+**插入元素和删除堆顶元素时间复杂度都是对数级别。**
+
+- 插入元素：将新元素放到最尾端，让其上浮到合适的的位置。
+- 删除堆顶元素：删去最顶端的元素，并将最尾端的元素放到最顶端，让其下沉到合适的位置。
+
+### 堆排序
+
+使用堆的性质，先使用所有元素构建一个最大堆，再重复调用删除最大元素操作，使元素按顺序删去，达到排序的目的。
+
+- *下沉排序过程和选择排序一样，只是比较的次数少了一些。*
+
+```java
+// 下沉排序，不需要上浮操作
+public static void sort(int[] arr) {
+    // 构建最大堆
+    int n = arr.length;
+    // 从右到左开始使用sink方法，因为如果一个结点的子结点已经是堆了，那么在该结点上使用sink操作也会变成一个堆
+    // 从最后一个结点的父结点开始
+    for (int k = n / 2; k >= 1; k--) {
+        sink(arr, k, n);
+    }
+    // 开始排序
+    while (n > 1) {
+        // 删除完堆顶，n减一
+        ArrayUtils.swap(arr, 1, n--);
+        sink(arr, 1, n);
+    }
+}
+
+private static void sink(int[] arr, int k, int n) {
+    // 循环条件，存在子结点
+    while (k << 1 <= n) {
+        int j = k << 1;
+        // 先取子结点中小的结点
+        if (j < n && arr[j + 1] > arr[j]) {
+            j++;
+        }
+        if (arr[k] >= arr[j]) {
+            break;
+        }
+        ArrayUtils.swap(arr, j, k);
+        k = j;
+    }
+}
+```
 
 ***
