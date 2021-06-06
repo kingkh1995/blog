@@ -220,7 +220,8 @@ public static void sort(int[] arr) {
 - *需要的额外空间也和N成正比。*
 
 ```java
-// merge方法 左数组：[lo, mid] 右数组：[mid+1, hi]
+// merge方法 左数组：[lo, mid] 右数组：[mid + 1, hi]
+// 针对merge优化，如果arr[mid] <= arr[mid + 1]，则不需要merge了。
 void merge(int[] arr, int lo, int mid, int hi)
 
 // 自顶向下的归并排序（递归实现）
