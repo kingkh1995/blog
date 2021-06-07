@@ -4,7 +4,7 @@
 
 ***
 
-## [**DDD架构DEMO**](https://github.com/kingkh1995/kkk-op) 
+## [DDD架构DEMO](https://github.com/kingkh1995/kkk-op) 
 
 ***
 

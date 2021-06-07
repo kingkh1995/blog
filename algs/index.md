@@ -261,7 +261,7 @@ private void sort(int[] arr) {
 
 ```java
 private void sort(int[] arr, int lo, int hi) {
-    if (lo <= hi) {
+    if (li <= lo) {
         return;
     }
     int j = partition(arr, lo, hi);
@@ -272,27 +272,29 @@ private void sort(int[] arr, int lo, int hi) {
 private int partition(int[] arr, int lo, int hi) {
     // 一般默认pivot是lo
     int pivot = arr[lo];
-    int i = lo, j = hi;
+    int i = lo, j = hi + 1;
     while (true) {
         // 从左边开始找到第一个大于等于pivot的元素
-        while (arr[i++] < pivot) {
+        while (arr[++i] < pivot) {
             if (i == hi) {
                 break;
             }
         }
         // 从右边开始找到第一个小于等于pivot的元素 
-        while (arr[j--] > pivot) {
+        while (arr[--j] > pivot) {
+            // 可以去掉，因为pivot默认为lo的值，必然会在lo处终止循环
             if (j == lo) {
                 break;
             }
         }
-        // 此处判断不放在循环终止条件中是因为最后一步是j和pivot交换位置
         if (i >= j) {
             break;
         }
+        // 如果循环未结束则交换i和j
         ArrayUtils.swap(arr, i, j);
     }
-    // 因为默认pivot是lo，所以最后一步是j和pivot交换位置
+    // 循环终止后则交换j和pivot
+    // 因为循环终止时未交换i和j，所以j最终的值必然是小于等于pivot
     ArrayUtils.swap(arr, lo, j);
     return j;
 }
@@ -335,6 +337,9 @@ private static void sort(int[] arr, int lo, int hi){
     sort(arr, gt + 1, hi);
 }
 ```
+
+- 哨兵
+> 排序前使用一次冒泡排序将最大的值排到数组最右边作为右哨兵，又切分默认取第一个数，故左哨兵就是切分自身，这样可以去掉循环内的边界校验。
 
 ***
 
