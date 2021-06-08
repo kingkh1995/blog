@@ -83,7 +83,7 @@
 	}
     ```
 
-- ****拓展***：根据高度加权的quick-union算法*
+- ***拓展***：根据高度加权的quick-union算法*
 
     ```java
     // 只有两个高度相同的树连接在一起，树的高度才会加1;
@@ -365,8 +365,9 @@ private static void sort(int[] arr, int lo, int hi){
 ```java
 // 下沉排序，不需要上浮操作
 public static void sort(int[] arr) {
+    // 数组第一位不使用
     // 构建最大堆
-    int n = arr.length;
+    int n = arr.length - 1;
     // 从右到左开始使用sink方法，因为如果一个结点的子结点已经是堆了，那么在该结点上使用sink操作也会变成一个堆
     // 从最后一个结点的父结点开始
     for (int k = n / 2; k >= 1; k--) {
@@ -374,7 +375,7 @@ public static void sort(int[] arr) {
     }
     // 开始排序
     while (n > 1) {
-        // 删除完堆顶，n减一
+        // 将堆顶的最大元素删除放到后面
         ArrayUtils.swap(arr, 1, n--);
         sink(arr, 1, n);
     }
@@ -384,7 +385,7 @@ private static void sink(int[] arr, int k, int n) {
     // 循环条件，存在子结点
     while (k << 1 <= n) {
         int j = k << 1;
-        // 先取子结点中小的结点
+        // 与子结点中大的结点比较
         if (j < n && arr[j + 1] > arr[j]) {
             j++;
         }
