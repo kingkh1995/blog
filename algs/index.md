@@ -365,7 +365,6 @@ private static void sort(int[] arr, int lo, int hi){
 ```java
 // 下沉排序，不需要上浮操作
 public static void sort(int[] arr) {
-    // 数组第一位不使用
     // 构建最大堆
     int n = arr.length - 1;
     // 从右到左开始使用sink方法，因为如果一个结点的子结点已经是堆了，那么在该结点上使用sink操作也会变成一个堆
