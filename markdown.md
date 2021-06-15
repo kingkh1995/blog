@@ -73,15 +73,15 @@
 ```
 // 一行中只有三个以上连续或不连续的星号或下划线就可以生成一条水平线
 
-文本
+文本1
 ***
-文本
+文本2
 ___
 ```
 
-文本
+文本1
 ***
-文本
+文本2
 ___
 
 ***
@@ -101,6 +101,7 @@ ___
 
 [baidu]: https://www.baidu.com/ '这是百度的标题'
 ```
+
 这是一个[内部资源链接](index)
 
 这是一个 [内联链接](https://www.baidu.com/ '可选的内联链接标题') 
@@ -131,7 +132,7 @@ ___
 
 ## 代码和代码块
 
-只需要空行隔开并缩进一个制表符就可以表示普通代码块，使用 ``` 支持特定的格式的代码块。
+只需要空行隔开并缩进一个制表符就可以表示普通代码块，使用 ```xxx 表示特定的格式的代码块。
 
 ```
     `这是普通代码` ``这也是普通代码``
@@ -172,6 +173,7 @@ public static void main(String[] args) {
     System.out.println("Hello World!");
 }
 ```
+
 ***
 
 ## 图片
@@ -207,6 +209,7 @@ public static void main(String[] args) {
 |col 2 is|centered|$12|
 |zebra stripes|are neat|$1|
 ```
+
 |Tables|Are|Cool|
 |:---|:--:|--:|
 |col 3 is|right-aligned|$1600|

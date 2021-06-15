@@ -5,12 +5,12 @@
 ## 文档
 
 * [Markdown语法](https://kingkh1995.github.io/blog/markdown)
-* [UML图](https://kingkh1995.github.io/blog/uml)
+* [UML图绘制](https://kingkh1995.github.io/blog/uml)
 
 ## 面试
 
 * [剑指offer](https://kingkh1995.github.io/blog/interview)
-* [十月突击计划](https://kingkh1995.github.io/blog/plan)
+* [十月冲刺计划](https://kingkh1995.github.io/blog/plan)
 * [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
 
 ## 算法
