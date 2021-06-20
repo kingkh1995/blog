@@ -17,6 +17,8 @@
 
     > native方法，返回对象的哈希码值，**哈希码值和对象地址有一定关联，但并不一定如此**，具体取决于运行时库和JVM的具体实现。
 
+    > Integer类型直接返回32位值，Long和Double类型返回前32位和后32异或的结果，String类型使用31作为因子对字符数组每一位使用除留余数法，同时String存在软缓存。
+
   - equals()
 
     > 默认是对象引用对比的结果，通常需要在重写此方法时覆盖hashCode方法，是**为了维护hashCode方法的常规协定（散列集合是基于这些协定设计的）**，equals方法对比相等的对象必须具有相等的哈希码值，哈希码值不相等的对象使用equals方法对比必然不相等（可推算出）。
@@ -41,7 +43,7 @@
     
 #### String
 
-  - （private final byte[] value） & （private final byte coder） & （static final boolean COMPACT_STRINGS）
+  - （private final byte[] value） & （private final byte coder） & （static final boolean COMPACT_STRINGS） & （private int hash）
   
     > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种，Latin1（iso-8859-1）和Utf-16，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这么一个字符只会占用一个字节，否则会占用两个字节。
 
@@ -82,6 +84,10 @@
   - split(String regex)
 
     > 参数包含正则表达式的转义符则需要使用\\\\转为普通字符，否则将作为正则表达式去匹配字符串。
+
+  - int hashCode()
+
+    > 第一次被调用时会计算散列值，直接会缓存到hash字段中，使用value数组的每一个元素计算得到散列值。
   
 ***
  
