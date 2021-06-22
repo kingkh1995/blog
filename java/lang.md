@@ -17,7 +17,7 @@
 
     > native方法，返回对象的哈希码值，**哈希码值和对象地址有一定关联，但并不一定如此**，具体取决于运行时库和JVM的具体实现。
 
-    > Integer类型直接返回32位值，Long和Double类型返回前32位和后32异或的结果，String类型使用31作为因子对字符数组每一位使用除留余数法，同时String存在软缓存。
+    > 原生类型均重写了hashcode方法：Integer类型直接返回32位值；Long和Double类型返回前32位和后32异或的结果；Boolean类型直接返回两个特定值；String类型使用31作为因子对字符数组每一位使用除留余数法，并且有软缓存。
 
   - equals()
 
@@ -25,7 +25,7 @@
 
   - clone()
 
-    > **protected** native方法，默认实现是浅拷贝，如果类未实现Cloneable接口调用clone方法会抛出CloneNotSupportedException，**注意Object类未实现Cloneable**。
+    > **protected** native方法，实现为浅拷贝，一个类必须实现Cloneable接口才能使用clone方法，否则会抛出CloneNotSupportedException，其次也可能需要通过重写修改其访问限定修饰符为public，**注意Object类未实现Cloneable**。
 
     > 数组重写了clone方法，会返回一个新数组，但元素复制是浅拷贝，**不推荐使用clone方法**，而是使用Arrays工具类复制数组。
 
@@ -45,17 +45,19 @@
 
   - （private final byte[] value） & （private final byte coder） & （static final boolean COMPACT_STRINGS） & （private int hash）
   
-    > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种，Latin1（iso-8859-1）和Utf-16，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这么一个字符只会占用一个字节，否则会占用两个字节。
+    > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种：Latin1和UTF-16BE，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这么一个字符只会占用一个字节，否则会占用两个字节。
+
+    > Latin1 & ASCII：Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符，ASCII只定义了128个字符，只使用了后7位且最高位默认为0，而Latin1使用了全部8位，定义了256个字符，能完全向下兼容ASCII。
 
     > unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），第一个平面称为基本多语言平面（BMP），其他平面称为辅助平面，字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
 
-    > utf-16：unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
+    > utf-16：unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式（jdk9之前）**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
 
     > utf-8：可变长字符编码，使用1到4个字节表示一个字符，对于ASCII字符utf-8编码的表示与其相同，中文字符却需要三个字节，**java字节码文件是使用utf-8编码的**。
 
   - new String(String original)
 
-    > 该构造函数会创建一个新的String对象，相当于浅拷贝，即会共用value数组。
+    > 该构造函数会使用传入的String对象创建出一个新的String对象，相当于浅拷贝，即两个对象公用同一个value数组，**一般情况下不推荐使用**。
 
   - getBytes(String charsetName)
 
@@ -71,10 +73,6 @@
 
     > 同样BMP外的字符是无法使用char表示的，因为char只占两个字节，codePointAt的返回值则是int。
 
-  - equals()
-
-    > 重写了equals方法，与字符串常量比较时可以使用==，但是**两个变量比较时要使用equals方法**，value值会被复用，但String对象是可以存在多个的，虽然它们都指向内存中同一个value。
-
   - strip()（jdk11） & trim() （**不推荐继续使用**）
 
     > 移除字符串两侧的空白字符，trim()方法移除空格、tab键、换行符，而strip()方法移除所有Unicode空白字符。
@@ -83,11 +81,11 @@
 
   - split(String regex)
 
-    > 参数包含正则表达式的转义符则需要使用\\\\转为普通字符，否则将作为正则表达式去匹配字符串。
+    > 参数为正则表达式，所以对于正则表达式的特殊字符需要使用\\\\转义为普通字符，否则将使用正则表达式模式进行匹配。
 
   - int hashCode()
 
-    > 第一次被调用时会计算散列值，直接会缓存到hash字段中，使用value数组的每一个元素计算得到散列值。
+    > 第一次被调用时才会计算散列值，然后被缓存到hash字段中。
   
 ***
  
@@ -95,9 +93,7 @@
 
   - 相同点
 
-    > 均继承自AbstractStringBuilder，均是可变字符串，默认容量均为16。
-
-    > 
+    > 均是可变字符串，均继承自AbstractStringBuilder，默认容量均为16。
 
   - 不同点
 
@@ -113,9 +109,9 @@
 
 #### Byte、Integer、Long
 
-- valueOf()方法会返回包装类，在-128到127之间会使用缓存。
+- 都通过一个私有的缓存内部类，在静态代码块中为-128到127的值区间加载了缓存，但是只有Integer可以通过JVM参数调整缓存区间的上限（**下限固定为-128**）。
 
-- parseXXX(String s)方法返回基本数据类型。
+- valueOf方法返回基本数据类型对应的包装类（**推荐使用该方法获取包装类**），parseXXX(String s)方法返回基本数据类型。
 
 ***
 
