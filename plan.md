@@ -28,16 +28,16 @@
 - ★☆☆ ES
 - ★☆☆ Sentinel
 - ★☆☆ Spring Security
+- ☆☆☆ Seata
+- ☆☆☆ Canal
+- ☆☆☆ Nacos
 - ☆☆☆ Shiro
 - ☆☆☆ Redisson
 - ☆☆☆ ELK
 - ☆☆☆ Cat
-- ☆☆☆ Nacos
 - ☆☆☆ Maven
 - ☆☆☆ Tomcat
 - ☆☆☆ Jenkins
-- ☆☆☆ Seata
-- ☆☆☆ Canal
 - ☆☆☆ Nginx
 
 ***
@@ -49,10 +49,10 @@
 - 《深入理解 Java 虚拟机（第 3 版）》
 - 《Java并发编程实战》
 - [《深入浅出Java多线程》](https://redspider.gitbook.io/concurrent/)
-- 《Java 8 实战》
+- 《Java 实战（第 2 版）》
 - 《Effective Java（第 3 版）》
 - 《码出高效 Java 开发手册》
-- 《高性能 MySQL 第三版》
+- 《高性能 MySQL 第 3 版》
 - 《MySQL 技术内幕：InnoDB 存储引擎》
 - 《Redis 开发与运维》
 - 《Redis 深度历险：核心原理和应用实践》

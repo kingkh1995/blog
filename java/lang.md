@@ -25,7 +25,7 @@
 
   - clone()
 
-    > **protected** native方法，实现为浅拷贝，一个类必须实现Cloneable接口才能使用clone方法，否则会抛出CloneNotSupportedException，其次也可能需要通过重写修改其访问限定修饰符为public，**注意Object类未实现Cloneable**。
+    > **protected** native方法，实现为浅拷贝，一个类必须实现Cloneable接口才能使用clone方法，否则会抛出CloneNotSupportedException，可能需要通过重写修改其访问限定修饰符为public，**注意Object类未实现Cloneable**。
 
     > 数组重写了clone方法，会返回一个新数组，但元素复制是浅拷贝，**不推荐使用clone方法**，而是使用Arrays工具类复制数组。
 
@@ -35,9 +35,9 @@
 
   - wait()、wait(long timeoutMillis)、wait(long timeoutMillis, int nanos)
 
-    > **final** native方法，调用的均是wait(long timeoutMillis)方法，使当前线程放弃对该对象的监视器锁，等待被唤醒或者时间达到超时时间，之后与其他等待中的线程公平竞争该对象的锁。
+    > **final** native方法，调用的均是wait(long timeoutMillis)方法，使当前线程释放该对象的监视器锁，等待被唤醒或者时间达到超时时间，之后与其他等待中的线程公平竞争该对象的锁。
 
-    > **wait() == wait(0L)，并不是只放弃锁之后立刻进入对象锁等待池，而是一直等待直到被notify方法唤醒**。
+    > **wait() == wait(0L)，并不是释放锁之后立刻进入对象锁等待池，而是一直等待直到被notify方法唤醒**。
 
 ***
     
@@ -45,25 +45,23 @@
 
   - （private final byte[] value） & （private final byte coder） & （static final boolean COMPACT_STRINGS） & （private int hash）
   
-    > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种：Latin1和UTF-16BE，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这么一个字符只会占用一个字节，否则会占用两个字节。
+    > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种：Latin1和UTF-16BE，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这样一个字符只会占用一个字节，否则会占用两个字节。
 
-    > Latin1 & ASCII：Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符，ASCII只定义了128个字符，只使用了后7位且最高位默认为0，而Latin1使用了全部8位，定义了256个字符，能完全向下兼容ASCII。
+    > Latin1 & ASCII：Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符，ASCII定义了128个字符，只使用了后7位且最高位默认为0，而Latin1使用了全部8位，定义了256个字符，能完全向下兼容ASCII。
 
-    > unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），第一个平面称为基本多语言平面（BMP），其他平面称为辅助平面，字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
+    > Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），第一个平面称为基本多语言平面（BMP），其他平面称为辅助平面。字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
 
-    > utf-16：unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式（jdk9之前）**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
+    > utf-16：Unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式（jdk9之前）**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
 
-    > utf-8：可变长字符编码，使用1到4个字节表示一个字符，对于ASCII字符utf-8编码的表示与其相同，中文字符却需要三个字节，**java字节码文件是使用utf-8编码的**。
+    > utf-8：可变长字符编码，使用1到4个字节表示一个Unicode字符，**java字节码文件使用utf-8编码**。对于ASCII字符，utf-8编码表示与其相同，即都只需要一个字节，但是表示一个中文字符却需要三个字节。
 
   - new String(String original)
 
-    > 该构造函数会使用传入的String对象创建出一个新的String对象，相当于浅拷贝，即两个对象公用同一个value数组，**一般情况下不推荐使用**。
+    > 该构造函数会使用传入的String对象构造一个新的String对象，相当于浅拷贝，即两个对象公用同一个value数组，**一般情况下不推荐使用**。
 
   - getBytes(String charsetName)
 
-    > 获取该字符串使用指定编码方式的表示，对于unicode字符集BMP外的字符（如emoji表情），每一个code point需要四个字节。
-
-    > 如果是utf-16会比预计多出两个字节，原因是其以两个字节为编码单元，要考虑字节序，所以返回的字节数组需要使用额外的两个字节表示来标志字节序（FEFF或FFFE），指定UTF-16BE或者UTF-16LE就会是正确的字节表示。
+    > 获取该字符串使用指定编码方式的表示。如果指定编码方式为utf-16会比预计多出两个字节，原因是其以两个字节为编码单元，要考虑字节序，所以返回的字节数组需要使用额外的两个字节表示来标志字节序（FEFF或FFFE），指定UTF-16BE或者UTF-16LE就会是正确的编码表示。
 
   - length()
 
@@ -71,13 +69,13 @@
 
   - char charAt(int index) & int codePointAt(int index)
 
-    > 同样BMP外的字符是无法使用char表示的，因为char只占两个字节，codePointAt的返回值则是int。
+    > 同样BMP外的字符是无法使用char表示的，因为char只占两个字节，所以codePointAt的返回值是四个字节的int。
 
-  - strip()（jdk11） & trim() （**不推荐继续使用**）
+  - strip()（jdk11添加） & trim()
 
-    > 移除字符串两侧的空白字符，trim()方法移除空格、tab键、换行符，而strip()方法移除所有Unicode空白字符。
+    > 移除字符串两侧的空白字符，trim()方法移除空格、tab键、换行符，而strip()方法移除所有Unicode空白字符，**不推荐继续使用trim()方法**。
     
-    > strip()和isBlank()都是使用Character.isWhitespace()实现，能识别所有Unicode空白字符。
+    > strip()和isBlank()内部实现都是调用Character.isWhitespace()，该方法能识别所有Unicode空白字符。
 
   - split(String regex)
 
@@ -85,7 +83,7 @@
 
   - int hashCode()
 
-    > 第一次被调用时才会计算散列值，然后被缓存到hash字段中。
+    > 重写了hashcode方法，第一次被调用计算出散列值后会被缓存到hash字段中。
   
 ***
  
@@ -93,13 +91,13 @@
 
   - 相同点
 
-    > 均是可变字符串，均继承自AbstractStringBuilder，默认容量均为16。
+    > 均是可变字符串，均继承了AbstractStringBuilder，默认容量均为16。
 
   - 不同点
 
-    > StringBuffer的方法均使用了synchronized修饰，所以它是线程安全的。
+    > StringBuffer的所有方法都使用了synchronized修饰，所以它是线程安全的。
     
-    > StringBuffer包含一个toString方法的字串缓冲区（private transient String toStringCache）。
+    > StringBuffer包含一个toString方法的字串缓冲区（private transient String toStringCache），每次调用toString方法时都会缓存，字符串变更时则删除缓存。
 
   - AbstractStringBuilder
 

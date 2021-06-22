@@ -9,9 +9,10 @@
 
 ## 面试
 
-* [剑指offer](https://kingkh1995.github.io/blog/interview)
-* [十月冲刺计划](https://kingkh1995.github.io/blog/plan)
 * [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
+* [剑指offer](https://kingkh1995.github.io/blog/interview)
+* [冲刺计划](https://kingkh1995.github.io/blog/plan)
+
 
 ## 算法
 
