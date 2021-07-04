@@ -73,6 +73,7 @@
 		if (i == j) {
 			return;
 		}
+        // sz[]以该触点为根触点的连通分量的触点总数
 		if (sz[i] < sz[j]) {
 			id[i] = j;
 			sz[j] += sz[i];
@@ -80,16 +81,16 @@
 			id[j] = i;
 			sz[i] += sz[j];
 		}
-		count--;
+		count--; // 连通分量的总数
 	}
     ```
 
 - ***拓展***：根据高度加权的quick-union算法*
 
     ```java
-    // 只有两个高度相同的树连接在一起，树的高度才会加1;
-    // 利用归纳法可知，组成高度h的树，需要至少2^(h-1)个触点;
-    // 故N个触点的树高度不会超过logN。
+    // 只有两个高度相同的树连接在一起，树的高度才会加1
+    // 故利用归纳法可知：组成高度h的树，需要至少2^(h-1)个触点
+    // 即N个触点的树高度不会超过logN。
     public void union(int p, int q) {
 		int i = find(p);
 		int j = find(q);
@@ -114,10 +115,12 @@
     ```java
     // union方法选择quick-union算法或加权quick-union算法
     public int find(int p) {
+        // 找到根触点
 		int root = p;
 		while (root != id[root]) {
 			root = id[root];
 		}
+        // 重新迭代修改路径上所有触点
 		while (id[p] != root) {
 			int temp = p;
 			p = id[p];
@@ -133,7 +136,7 @@
 
 ### 一、选择排序
 
-最简单的算法，需要~(N^2)/2次比较和N次交换。
+最简单的算法，每次遍历选出最小元素放置按顺序放到左侧，需要~(N^2)/2次比较和~N次交换。
 
 - *运行时间与输入无关。*
 - *数据移动是所有算法中最少的。*
@@ -147,23 +150,25 @@
 
 ```java
 public static void sort(int[] arr) {
+    // 从第二个元素开始，将第一个元素视为有序数组
     for (int i = 1; i < arr.length; i++) {
         for (int j = i; j > 0 && arr[j] < arr[j - 1]; j--) {
             // 出现逆序则交换相邻元素
-            ArrayUtils.swap(arr, j, j - 1);
+            swap(arr, j, j - 1);
         }
     }
 }
 ```
 
 ```java
-// 优化解法：循环找到应该所处的位置，并将所有大于当前元素的元素后移一格
+// 优化解法：遍历找到应该所处的位置，并将所有大于当前元素的元素后移一格
 public static void sort(int[] arr) {
     for (int i = 1; i < arr.length; i++) {
-        int temp = arr[i];
-        for (int j = i; j > 0 && temp < arr[j - 1]; j--) {
-            arr[j] = arr[j-1];
+        int j = i, temp = arr[j];
+        for (; j > 0 && temp < arr[j - 1]; j--) {
+            arr[j] = arr[j - 1];
         }
+        arr[j] = temp;
     }
 }
 ```
@@ -172,7 +177,7 @@ public static void sort(int[] arr) {
 
 使用插入排序对间隔为h的子序列进行排序，不断减少h直到h为1。
 
-- *对比初级排序算法，在大规模数组下优势很大。*
+- *对比初级排序算法，在大规模数组下优势很大，且是不稳定的。*
 - *使用序列 1、4、13、40、121...平均性能更好。*
 
 ```java
@@ -182,11 +187,12 @@ public static void sort(int[] arr) {
     while (h < length / 3) {
         h = 3 * h + 1;
     }
-    for (; h >= 1; h /= 3) {
+    // 每趟排序类似于插入排序，只是间隔逐渐缩小直到为1，则等同于插入排序
+    for (; h >= 1; h /= 3) { 
         // 将数组变为h有序
         for (int i = h; i < length; i++) {
             for (int j = i; j >= h && arr[j] < arr[j - h]; j -= h) {
-                ArrayUtils.swap(arr, j, j - h);
+                swap(arr, j, j - h);
             }
         }
     }
@@ -206,7 +212,7 @@ public static void sort(int[] arr) {
         for (int j = 0; j < i; j++) {
             if(arr[j] > arr[j+1]){
                 isSorted = false;
-                ArrayUtils.swap(arr, j, j + 1);
+                swap(arr, j, j + 1);
             }
         }
     }
@@ -239,9 +245,9 @@ private void sort(int[] arr, int lo, int hi) {
 // 自底向上的归并排序（迭代实现）
 private void sort(int[] arr) {
     int n = arr.length;
-	// size从1开始 每次乘以2
+	// 区间大小从1开始 每次乘以2
     for (int sz = 1; sz < n; sz <<= 1) {
-		// 循环每次merge两个size区间
+		// 循环两两合并
         for (int lo = 0; lo + sz < n; lo += sz + sz) {
             merge(arr, lo, lo + sz - 1, Math.min(lo + sz + sz - 1, n - 1));
         }
@@ -262,7 +268,7 @@ private void sort(int[] arr) {
 
 ```java
 private void sort(int[] arr, int lo, int hi) {
-    if (li <= lo) {
+    if (hi <= lo) {
         return;
     }
     int j = partition(arr, lo, hi);
@@ -271,7 +277,7 @@ private void sort(int[] arr, int lo, int hi) {
 }
 
 private int partition(int[] arr, int lo, int hi) {
-    // 一般默认pivot是lo
+    // 默认将lo位置的元素选作切分元素
     int pivot = arr[lo];
     int i = lo, j = hi + 1;
     while (true) {
@@ -292,11 +298,11 @@ private int partition(int[] arr, int lo, int hi) {
             break;
         }
         // 如果循环未结束则交换i和j
-        ArrayUtils.swap(arr, i, j);
+        swap(arr, i, j);
     }
-    // 循环终止后则交换j和pivot
-    // 因为循环终止时未交换i和j，所以j最终的值必然是小于等于pivot
-    ArrayUtils.swap(arr, lo, j);
+    // 循环终止后则交换j和切分元素
+    // 因为循环最后一趟未交换i和j，所以j最终的值必然是小于等于切分元素
+    swap(arr, lo, j);
     return j;
 }
 ```
@@ -319,15 +325,15 @@ private static void sort(int[] arr, int lo, int hi){
     }
     int pivot = arr[lo];
     int lt = lo, i = lo + 1, gt = hi;
-    // 未排序：[i, gt]
+    // 未排序区间：[i, gt]
     while (i <= gt) {
         int cmp = arr[i] - pivot;
         if (cmp < 0) {
             // 小于则lt右移，i右移
-            ArrayUtils.swap(arr, i++, lt++);
+            swap(arr, i++, lt++);
         } else if (cmp > 0) {
             // 大于则gt左移
-            ArrayUtils.swap(arr, i, gt--);
+            swap(arr, i, gt--);
         } else {
             // 等于则i右移
             i++;
@@ -338,9 +344,6 @@ private static void sort(int[] arr, int lo, int hi){
     sort(arr, gt + 1, hi);
 }
 ```
-
-- 哨兵
-> 排序前使用一次冒泡排序将最大的值排到数组最右边作为右哨兵，因为切分值默认取第一个数，故左哨兵就是切分值自身，有了左右哨兵后则可以去掉循环内的边界校验。
 
 ***
 
@@ -368,21 +371,23 @@ private static void sort(int[] arr, int lo, int hi){
 public static void sort(int[] arr) {
     // 构建最大堆
     int n = arr.length - 1;
+    // 从最后一个结点的父结点开始往堆顶顺序使用sink方法即可
     // 如果一个结点的子结点已经是堆了，那么在该结点上使用sink操作也会变成一个堆
-    // 从最后一个结点的父结点开始往堆顶顺序使用sink方法
     for (int k = n / 2; k >= 1; k--) {
         sink(arr, k, n);
     }
     // 开始排序
+    // 将堆顶的最大元素删除
+    // 按顺序将后面的元素和堆顶元素交换并下沉
     while (n > 1) {
-        // 将堆顶的最大元素删除放到后面
-        ArrayUtils.swap(arr, 1, n--);
+        swap(arr, 1, n--);
         sink(arr, 1, n);
     }
 }
 
+// 在1-n区间元素构成的最大堆中将k位置的元素下沉到指定位置
 private static void sink(int[] arr, int k, int n) {
-    // 循环条件，存在子结点
+    // 循环条件，至少拥有一个子结点
     while (k << 1 <= n) {
         int j = k << 1;
         // 与子结点中大的结点比较
@@ -392,7 +397,7 @@ private static void sink(int[] arr, int k, int n) {
         if (arr[k] >= arr[j]) {
             break;
         }
-        ArrayUtils.swap(arr, j, k);
+        swap(arr, j, k);
         k = j;
     }
 }
@@ -406,9 +411,9 @@ private static void sink(int[] arr, int k, int n) {
 
 删除任意结点的流程：
 
-1. 如果该结点任一子结点为空，直接删除该结点，并将其父链接改为指向其非空的子结点。
+1. 为叶子结点直接删除；任一子结点为空，删除该结点，并将其父链接改为指向其非空的子结点。
 2. 若子结点均不为空，则找到该结点的后续结点，即其右子树的最小结点。
-3. 从右子树删除其后续结点，即将后续结点的父链接改为指向后续结点的右子树（因为后续结点为树的最小结点，故其左结点必然为空）。
+3. 从右子树删除其后续结点，将后续结点的父链接改为指向后续结点的右子树（因为后续结点为树的最小结点，故其左结点必然为空）。
 4. 用后续结点替换掉该结点的位置。
 
 ***
@@ -425,15 +430,15 @@ private static void sink(int[] arr, int k, int n) {
 #### **2-3查找树的插入操作**
 
 - 如果插入到2-结点上，直接组成一个3-结点即可；
-- 如果插入到3-结点上，先组成一个临时4-结点，然后分裂成三个2-结点，将中间的结点移动到父结点中，如果父结点产生了临时的4-结点，则继续分解，直到不存在临时的4-结点。
+- 如果插入到3-结点上，先组成一个临时4-结点，然后分裂成三个2-结点，将中间的结点移动到父结点中，并继续向上分解，直到不存在临时的4-结点或者到达了根节点。
 
 ### **红黑树**
 
-使用标准的二叉查找树（全部为2-结点）和一些额外信息（替换3-结点）表示一个2-3树；将一个3-结点替换为由一条左斜的红链接相连的两个2-结点；用黑链接表示结点之间的普通链接。
+使用标准的二叉查找树（全部为2-结点）和一些额外信息表示一个2-3树，将一个3-结点替换为由一条左斜的红链接相连的两个2-结点，用黑链接表示结点之间的普通链接。
 
 因为2-3树是完美平衡的（任意空链接到根结点的距离都相同），所以红黑树是**完美黑色平衡**的，任意空连接到根结点的路径上黑链接（黑色结点）数量都相同。
 
-最坏情况下操作是2lgN级别（即左边路径全是3-结点，其余全是2-结点），平均情况下所有操作均是lgN级别。
+最坏情况下操作是2lgN级别（即左边路径全是3-结点），平均情况下所有操作均是lgN级别。
 
 #### **一、红黑树的插入操作**
 
@@ -453,9 +458,9 @@ private static void sink(int[] arr, int k, int n) {
 
 > 2-3-4树允许存在4-结点，使用一条左斜的红链接和一条右斜的红链接以及三个2-结点来表示一个4-结点
 
-插入算法要保证在向下查询路径上分解所有4-结点（***通过颜色转换将一个4-结点变为3个2-结点***），插入结点后，向上回溯配平4-结点（**通过旋转将不平衡的4-结点变成一条左斜和一条右斜组成的4-结点**）。
+插入算法要保证在向下查询路径上分解所有4-结点（***通过颜色转换将一个4-结点变为3个2-结点***），插入结点后向上回溯配平4-结点（**通过旋转将不平衡的4-结点变成一条左斜和一条右斜组成的4-结点**）。
 
-相对于红黑树的插入算法，只需要将颜色转换的代码提前至移动空判断之后即可（***即在插入结点前将4-结点配平，又因为可以存在4-结点所以插入的最后一步不再需要颜色转换***）。
+相对于红黑树的插入算法，只需要将颜色转换的代码提前至空判断之后递归插入之前即可（***即在插入结点前将4-结点配平，又因为可以存在4-结点所以插入的最后一步不再需要颜色转换***）。
 
 #### **三、红黑树的删除最小值操作**
 
@@ -463,7 +468,7 @@ private static void sink(int[] arr, int k, int n) {
     
 - 3个2-结点可以直接合并为一个4-结点；
 - 如果兄弟结点不是2-结点，将兄弟结点最小键的移动到父结点中，将父结点的最小键移动到左子结点中；
-- 如果兄弟结点也是2-结点，将左子结点、父结点最小键、兄弟结点最小键合并成一个4-结点。
+- 如果兄弟结点也是2-结点，将左子结点、父结点最小键、兄弟结点合并成一个4-结点。
 
 最后从3-结点或4-结点中删除最小值，然后向上回溯分解所有4-结点。
 
@@ -474,7 +479,8 @@ private static void sink(int[] arr, int k, int n) {
 ![](/blog/pic/红黑树删除算法.png)
 
 #### **五、Java红黑树实现**
-> 实现为2-3-4树，每个结点均包含父结点的引用，同时允许右斜红链接存在。
+
+实现为2-3-4树，且每个结点均包含父结点的引用，同时允许单个右斜红链接存在。
 
 - 插入操作：新插入的结点都为红结点，自底向上配平4-结点，最多需要两次旋转以及多次颜色变换。
 
@@ -488,7 +494,7 @@ private static void sink(int[] arr, int k, int n) {
     - 先查找被删除结点是否存在，不存在则直接结束；
     - 如果存在左右子树，找到后继结点，即右子树的最小值，并用后继结点替换掉当前结点；
     - 接下来删除当前结点，因为当前结点必然是只有一颗子树或者没有子树（**如果使用后继结点替换过了，后继结点为最小值必然没有左子树**），用空或存在的单棵子树替换其位置；
-    - 如果被删除的是黑结点则需要对兄弟节点进行调整（**将兄弟子树路径上黑色链接数量减少1**），自底向上直到恢复完美黑色平衡，循环判断直到当前结点不为黑结点。
+    - 如果被删除的是黑结点则需要对兄弟结点进行调整（**将兄弟子树路径上黑色链接数量减少1**），自底向上直到恢复完美黑色平衡，循环判断直到当前结点不为黑结点。
 
 ***
 
