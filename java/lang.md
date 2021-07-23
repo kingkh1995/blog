@@ -43,25 +43,53 @@
     
 #### String
 
-  - （private final byte[] value） & （private final byte coder） & （static final boolean COMPACT_STRINGS） & （private int hash）
-  
-    > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种：Latin1和UTF-16BE，分别对应的coder值为0和1，COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这样一个字符只会占用一个字节，否则会占用两个字节。
+- 内部实现：
+  - private final byte[] value
+  - private final byte coder
+  - static final boolean COMPACT_STRINGS
 
-    > Latin1 & ASCII：Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符，ASCII定义了128个字符，只使用了后7位且最高位默认为0，而Latin1使用了全部8位，定义了256个字符，能完全向下兼容ASCII。
+    > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种：Latin1和UTF-16BE，分别对应的coder值为0和1。
+    
+    > COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这样一个字符只会占用一个字节，否则会占用两个字节。
 
-    > Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），第一个平面称为基本多语言平面（BMP），其他平面称为辅助平面。字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
+    - *字符集相关：*
 
-    > utf-16：Unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式（jdk9之前）**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
+      > Latin1 & ASCII：Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符，ASCII定义了128个字符，只使用了后7位且最高位默认为0，而Latin1使用了全部8位，定义了256个字符，能完全向下兼容ASCII。
 
-    > utf-8：可变长字符编码，使用1到4个字节表示一个Unicode字符，**java字节码文件使用utf-8编码**。对于ASCII字符，utf-8编码表示与其相同，即都只需要一个字节，但是表示一个中文字符却需要三个字节。
+      > Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），第一个平面称为基本多语言平面（BMP），其他平面称为辅助平面。字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
+
+      > utf-16：Unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式（jdk9之前）**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
+
+      > utf-8：可变长字符编码，使用1到4个字节表示一个Unicode字符，**java字节码文件使用utf-8编码**。对于ASCII字符，utf-8编码表示与其相同，即都只需要一个字节，但是表示一个中文字符却需要三个字节。
+
+  - private int hash
+
+    > 重写了hashcode方法，第一次被调用计算出散列值后会被缓存到hash字段中。
+
+- 构造方法：
 
   - new String(String original)
 
     > 该构造函数会使用传入的String对象构造一个新的String对象，相当于浅拷贝，即两个对象公用同一个value数组，**一般情况下不推荐使用**。
 
-  - getBytes(String charsetName)
+  - String(StringBuilder builder) & String(StringBuffer buffer)
 
-    > 获取该字符串使用指定编码方式的表示。如果指定编码方式为utf-16会比预计多出两个字节，原因是其以两个字节为编码单元，要考虑字节序，所以返回的字节数组需要使用额外的两个字节表示来标志字节序（FEFF或FFFE），指定UTF-16BE或者UTF-16LE就会是正确的编码表示。
+    > 应该使用对应的toString方法。
+
+  - String(byte bytes[], String charsetName)
+            throws UnsupportedEncodingException
+  - String(byte bytes[], Charset charset)
+  
+    > 使用特定的编码方式创建一个字符串，推荐使用Charset参数的构造方法，传入StandardCharsets类的一个静态常量。
+
+
+- 常用方法：
+
+  - getBytes()
+
+    > 获取该字符串使用指定编码方式的表示，不带参数则默认为字节码编码方式（即utf-8），指定其他编码方式推荐选择Charset参数的方法。
+    
+    > 如果指定编码方式为utf-16会比预计多出两个字节，原因是其以两个字节为编码单元，要考虑字节序，所以返回的字节数组需要使用额外的两个字节表示来标志字节序（FEFF或FFFE），指定UTF-16BE或者UTF-16LE就会是原始的编码表示。
 
   - length()
 
@@ -69,11 +97,11 @@
 
   - char charAt(int index) & int codePointAt(int index)
 
-    > 同样BMP外的字符是无法使用char表示的，因为char只占两个字节，所以codePointAt的返回值是四个字节的int。
+    > charAt获取BMP内的unicode字符，所以返回值是两个字节的char；而codePointAt能获取BMP外的unicode字符，最多会占四个字节，所以返回值是int。
 
   - strip()（jdk11添加） & trim()
 
-    > 移除字符串两侧的空白字符，trim()方法移除空格、tab键、换行符，而strip()方法移除所有Unicode空白字符，**不推荐继续使用trim()方法**。
+    > 都是移除字符串两侧的空白字符，trim()方法移除空格、tab键、换行符，而strip()方法移除所有Unicode空白字符，**不推荐继续使用trim()方法**。
     
     > strip()和isBlank()内部实现都是调用Character.isWhitespace()，该方法能识别所有Unicode空白字符。
 
@@ -81,27 +109,27 @@
 
     > 参数为正则表达式，所以对于正则表达式的特殊字符需要使用\\\\转义为普通字符，否则将使用正则表达式模式进行匹配。
 
-  - int hashCode()
-
-    > 重写了hashcode方法，第一次被调用计算出散列值后会被缓存到hash字段中。
-  
 ***
  
 #### StringBuffer & StringBuilder
 
-  - 相同点
+  - 相同点：
 
-    > 均是可变字符串，均继承了AbstractStringBuilder，默认容量均为16。
+    > 均是可变字符串，均继承自AbstractStringBuilder，默认容量均为16。
 
-  - 不同点
+  - 不同点：
 
     > StringBuffer的所有方法都使用了synchronized修饰，所以它是线程安全的。
     
-    > StringBuffer包含一个toString方法的字串缓冲区（private transient String toStringCache），每次调用toString方法时都会缓存，字符串变更时则删除缓存。
+    > StringBuffer包含一个私有的transient的String类型属性（toStringCache），是针对toString方法的软缓存，第一次调用toString方法时缓存，字符串变更时则删除缓存。
 
-  - AbstractStringBuilder
+  - **AbstractStringBuilder**
 
-    > 设计与String基本相同，因为是可变字符串，拥有一个count字段来标识可变字符串的实际长度，扩容时变为原容量的两倍加2（why?）。
+    > 设计与String基本相同，因为是可变字符串，拥有一个count字段来标识可变字符串的实际长度。
+    
+    > 扩容时变为原容量的两倍加2（why?），如果容量仍然不足则会直接加上新增的容量。
+
+    > **注意**：并没有AbstractStringBuilder(char c)的构造方法！你可以这么书写而且编译会通过，因为实际上是将char转化为了int类型，所以会执行 StringBuilder(int capacity) 构造方法。
 
 ***
 
