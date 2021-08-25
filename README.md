@@ -14,8 +14,9 @@
 - ★★☆ Kafka
 - ★★☆ Zookeeper
 - ★★☆ Sharding-JDBC
-- ★☆☆ Quartz
 - ★☆☆ ES
+- ★☆☆ Druid
+- ★☆☆ Quartz
 - ★☆☆ Sentinel
 - ★☆☆ Spring Security
 - ☆☆☆ Canal
@@ -29,14 +30,6 @@
 - ☆☆☆ Cat
 - ☆☆☆ Jenkins
 - ☆☆☆ Nginx
-
-***
-
-- ☆☆☆ **RxJava**
-- ☆☆☆ **Golang**
-- ☆☆☆ **Docker**
-- ☆☆☆ **Kubernetes**
-- ☆☆☆ **Istio**
 
 ***
 

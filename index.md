@@ -46,6 +46,7 @@
 
 * [Mysql](https://kingkh1995.github.io/blog/mysql)
 * [Redis](https://kingkh1995.github.io/blog/redis)
+* [Canal](https://kingkh1995.github.io/blog/canal)
 
 ## 工具
 
@@ -53,6 +54,7 @@
 
 ## 第三方库
 
+* [commons](https://kingkh1995.github.io/blog/commons)
 * [mybatis-plus](https://kingkh1995.github.io/blog/mybatis-plus)
 * [lombok](https://kingkh1995.github.io/blog/lombok)
 * [validation](https://kingkh1995.github.io/blog/validation)
@@ -62,10 +64,13 @@
 * [easyexcel](https://kingkh1995.github.io/blog/easyexcel)
 * [xxl-job](https://kingkh1995.github.io/blog/xxl-job)
 * [okhttp](https://kingkh1995.github.io/blog/okhttp)
+* [lettuce](https://kingkh1995.github.io/blog/lettuce)
+* [hikariCP](https://kingkh1995.github.io/blog/hikariCP)
 
 ## 业务
 
 * [缓存常见问题](https://kingkh1995.github.io/blog/caching)
+* [分布式锁](https://kingkh1995.github.io/blog/distributed-lock)
 
 ## 其他
 

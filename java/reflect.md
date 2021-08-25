@@ -32,10 +32,11 @@
 > 没有公共构造函数，当类加载器调用defineClass方法之一时JVM会自动构造类对象。
 
 - Class<?> forName(String className)：native实现，使用该方法，虚拟机会初始化该类，不能用于获取表示基本类型或void的任何类对象。
-- T newInstance()：jdk9新增方法，等同于getDeclaredConstructor().newInstance()。
+- isAssignableFrom()：判断当前类是否是给定类的父类。
 - TypeVariable<Class<T>>[] getTypeParameters()：按声明的顺序返回当前类的泛型声明。
 - Type getGenericSuperclass()：返回带泛型信息的直接父类。
 - Type[] getGenericInterfaces()：返回实现的接口数组，带泛型信息。
+- getEnumConstants()：如果是枚举类型则相当于values方法，否则返回null。
 - getResourceAsStream()：不加'/'，视为相对路径，从该类的包下查找，否则从根目录查找，内部实现是构造出一个绝对路径，最终还是由ClassLoader获取资源。
 - getClassLoader().getResourceAsStream：不需要加'/'，默认从根目录获取资源。
 

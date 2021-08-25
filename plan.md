@@ -24,8 +24,9 @@
 - ★★☆ Kafka
 - ★★☆ Zookeeper
 - ★★☆ Sharding-JDBC
-- ★☆☆ Quartz
 - ★☆☆ ES
+- ★☆☆ Druid
+- ★☆☆ Quartz
 - ★☆☆ Sentinel
 - ★☆☆ Spring Security
 - ☆☆☆ Canal
