@@ -8,6 +8,7 @@
 - ★★★ MySQL
 - ★★★ Redis
 - ★★★ Netty
+- ★★★ gRPC
 - ★★☆ Mybatis
 - ★★☆ Spring Data JPA
 - ★★☆ RocketMQ
