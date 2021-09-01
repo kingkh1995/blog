@@ -1,5 +1,5 @@
 ## [首页](https://kingkh1995.github.io/blog/)
-> ThreadLocal相关
+> ThreadLocal增强实现
 
 ***
 
@@ -83,7 +83,7 @@
 
 ### InheritableThreadLocal extends ThreadLocal
 
-> 可继承的ThreadLocal，子线程能获取到父线程中ThreadLocal的值，实现逻辑是创建线程时将父线程的ThreadLocalMap复制到子线程中。
+> 可继承的ThreadLocal，子线程能获取到父线程中ThreadLocal的值，实现逻辑是创建线程时将父线程的ThreadLocalMap复制到子线程中，故ThreadPoolExecutor、ForkJoinPool不会生效，因为线程池中线程都是事先创建好的。
 
 - 重写了createMap方法，创建ThreadLocalMap并赋值到线程的inheritableThreadLocals变量。
 
@@ -94,11 +94,24 @@
 ***
 
 ### TransmittableThreadLocal extends InheritableThreadLocal
+> InheritableThreadLocal增强实现，能实现线程池的可继承ThreadLocal，同时不推荐使用InheritableThreadLocal，因为有内存泄漏的可能。
 
-- Transmitter：
+- holder：静态属性，InheritableThreadLocal<WeakHashMap<TransmittableThreadLocal<Object>, ?>>类型，用于记录当前线程使用过的ThreadLocal，WeakHashMap的value均设为null被当作set使用。
+
+#### Transmitter
+> 内部类，转移器，核心实现逻辑。
+
+- capture：先抓取线程A的TTL值。
+
+- replay：在线程B中回放抓取到的值，并返回回放前TTL值的备份。
+
+- restore：任务执行完毕后使用备份恢复到回放前的状态。
+
+#### TtlRunnable、TtlCallable
 
 ***
 
 ### InternalThreadLocal
+> ThreadLocal增强
 
 

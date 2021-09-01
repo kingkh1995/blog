@@ -54,7 +54,7 @@
 
 ## 第三方库
 
-* [commons](https://kingkh1995.github.io/blog/commons)
+* [commons-pool2](https://kingkh1995.github.io/blog/commons)
 * [mybatis-plus](https://kingkh1995.github.io/blog/mybatis-plus)
 * [lombok](https://kingkh1995.github.io/blog/lombok)
 * [validation](https://kingkh1995.github.io/blog/validation)
@@ -66,6 +66,7 @@
 * [okhttp](https://kingkh1995.github.io/blog/okhttp)
 * [lettuce](https://kingkh1995.github.io/blog/lettuce)
 * [hikariCP](https://kingkh1995.github.io/blog/hikariCP)
+* [advanced-ThreadLocal](https://kingkh1995.github.io/blog/threadlocal)
 
 ## 业务
 
