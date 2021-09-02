@@ -5,7 +5,7 @@
 
 ### ThreadLocal
 
-- int threadLocalHashCode: 哈希值属性，通过AtomicInteger类型的静态属性nextHashCode获取，每次增加一个神奇数字0x61c88647，产生的哈希码能均匀的分布在2的N次方的数组里（原理是斐波那契散列法）。
+- int threadLocalHashCode: 哈希值属性，通过AtomicInteger类型的静态属性nextHashCode获取，增长步幅为一个神奇数字0x61c88647，产生的哈希码能均匀的分布在2的N次方的数组里（原理是斐波那契散列法）。
 
 - withInitial(Supplier)：静态工厂方法，返回一个SuppliedThreadLocal子类对象，该子类重写了initialValue方法，修改返回值null为通过Supplier获取。
 
@@ -83,7 +83,7 @@
 
 ### InheritableThreadLocal extends ThreadLocal
 
-> 可继承的ThreadLocal，子线程能获取到父线程中ThreadLocal的值，实现逻辑是创建线程时将父线程的ThreadLocalMap复制到子线程中，故ThreadPoolExecutor、ForkJoinPool不会生效，因为线程池中线程都是事先创建好的。
+> 可继承的ThreadLocal，子线程能获取到父线程中ThreadLocal的值，实现逻辑是创建线程时将父线程的ThreadLocalMap复制到子线程中，故ThreadPoolExecutor、ForkJoinPool不会生效，因为线程池中线程会被复用，且会有上下文丢失和内存泄漏的问题，**不推荐在线程池中使用**。
 
 - 重写了createMap方法，创建ThreadLocalMap并赋值到线程的inheritableThreadLocals变量。
 
@@ -94,24 +94,39 @@
 ***
 
 ### TransmittableThreadLocal extends InheritableThreadLocal
-> InheritableThreadLocal增强实现，能实现线程池的可继承ThreadLocal，同时不推荐使用InheritableThreadLocal，因为有内存泄漏的可能。
+> InheritableThreadLocal增强实现，在线程池中也可以生效，通过其crr机制转移TTL值，且能保证上下文不丢失和不会出现内存泄露。
 
 - holder：静态属性，InheritableThreadLocal<WeakHashMap<TransmittableThreadLocal<Object>, ?>>类型，用于记录当前线程使用过的ThreadLocal，WeakHashMap的value均设为null被当作set使用。
 
 #### Transmitter
-> 内部类，转移器，核心实现逻辑。
+> 内部工具类，转移器，转移逻辑实现。
 
-- capture：先抓取线程A的TTL值。
+- capture()：先抓取线程A的ThreadLocal值，holder中的TTL（所有）和threadLocalHolder中的ThreadLocal（手动注册）。
 
-- replay：在线程B中回放抓取到的值，并返回回放前TTL值的备份。
+- replay()：在线程B中回放抓取到的值，并返回回放前TTL值的备份。
 
-- restore：任务执行完毕后使用备份恢复到回放前的状态。
+- restore()：任务执行完毕后使用备份恢复到回放前的状态。
+
+- threadLocalHolder：Transmitter类静态属性，volatile WeakHashMap<ThreadLocal<Object>, TtlCopier<Object>>类型，用于转移ThreadLocal值，需要手动调用registerThreadLocal注册。
+
+- registerThreadLocal()：手动注册ThreadLocal到threadLocalHolder属性，不能用于注册TTL，**主要是作为兼容升级方案，不太建议使用**。
 
 #### TtlRunnable、TtlCallable
+> 装饰器模式，包装Runnable和Callable，创建实例时使用capture，执行run方法前replay，执行后restore。
+
+#### TtlExecutors
+> 提供静态工厂方法将线程池包装成对应的TTL线程池类。
+
+#### ExecutorTtlWrapper、ExecutorServiceTtlWrapper、ScheduledExecutorServiceTtlWrapper
+> 线程池包装类，重写了线程池的方法，将传入的Runnable和Callable包装成TtlRunnable和TtlCallable并交由原线程池执行。
 
 ***
 
 ### InternalThreadLocal
-> ThreadLocal增强
+> 特殊设计的ThreadLocal类（非子类），来自Netty的FastThreadLocal，核心思路是**空间换时间**。
 
+- int index：使用index属性而不是ThreadLocal的hashcode，通过AtomicInteger自增获取，增长步幅为1。
 
+#### InternalThreadLocalMap
+
+#### InternalThread extends Thread

@@ -66,7 +66,7 @@
 * [okhttp](https://kingkh1995.github.io/blog/okhttp)
 * [lettuce](https://kingkh1995.github.io/blog/lettuce)
 * [hikariCP](https://kingkh1995.github.io/blog/hikariCP)
-* [advanced-ThreadLocal](https://kingkh1995.github.io/blog/threadlocal)
+* [advanced-thread-local](https://kingkh1995.github.io/blog/threadlocal)
 
 ## 业务
 

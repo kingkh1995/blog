@@ -21,9 +21,7 @@
 - 使用集合的时候最好手动指定初始容量，**尤其是能预测到数据量会很大的情况下**。
   > 特别是ArrayList，其初始容量只有10，每次扩大为1.5倍，如果数据量很大，会频繁扩容。
 
-- 使用ThreadLocal要手动调用remove()方法，web请求可以考虑使用Spring提供的RequestContextHolder（请求结束后会清空上下文信息），因为线程池会复用线程，如果不手动移除会造成内存泄漏。
-
-- 不要在多线程中使用ThreadLocal的set/remove，因为CallerRunsPolicy拒绝策略以及展开的ForkJoinTask会在任务提交线程执行任务，这种情况下会导致上下文丢失。
+- 不要在线程池中使用ThreadLocal的set/remove，因为在CallerRunsPolicy拒绝策略以及展开的ForkJoinTask情况下会在任务提交线程执行任务，这种情况下会导致上下文丢失。
 
 ***
 
