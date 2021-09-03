@@ -122,11 +122,44 @@
 
 ***
 
-### InternalThreadLocal
-> 特殊设计的ThreadLocal类（非子类），来自Netty的FastThreadLocal，核心思路是**空间换时间**。
+#### InternalThreadLocal
+> 特殊设计的ThreadLocal类（非子类），参照Netty的FastThreadLocal，核心思路是空间换时间，dubbo的RpcContext和FutureContext中使用。
 
-- int index：使用index属性而不是ThreadLocal的hashcode，通过AtomicInteger自增获取，增长步幅为1。
+> ThreadLocal能清除过期键，但是使用场景上需要非static的ThreadLocal的情况不多见，所以其为了清除过期键的复杂设计会一定程度的影响效率，不考虑清除过期键就是InternalThreadLocal对比ThreadLocal的优势。
+
+- index：使用index而不是ThreadLocal的hashcode，通过AtomicInteger自增获取，步幅为1。
+
+- get()：调用InternalThreadLocalMap的get静态方法获取到线程的InternalThreadLocalMap，然后通过index获取索引位置的值，如果不存在则初始化。
+
+- set()：value为null或为UNSET时移除值（**ThreadLocal不会移除值**），否则调用InternalThreadLocalMap的get静态方法获取到线程的InternalThreadLocalMap，然后设置到index索引位置，之后记录到variablesToRemove。
+
+- remove：调用InternalThreadLocalMap的getIfSet静态方法获取到线程的InternalThreadLocalMap，将槽设置为UNSET，之后从variablesToRemove中移除。
+
+- removeAll()：移除所有的ITL值，并移除InternalThreadLocalMap，**建议在拦截器中手动调用**。
 
 #### InternalThreadLocalMap
+> 特殊设计的ThreadLocalMap，底层为Object数组，完全去除了ThreadLocal中清除过期键和线性探测的操作，因为是通过index属性确定槽，而index是通过一个全局的AtomicInteger获取，**所以使用InternalThreadLocal时必须要设置为static**，否则随着InternalThreadLocal数量的增加，必然会造成空间的极大浪费，同时index也会自增到上限导致应用无法继续运行。
+
+- Object[] indexedVariables：初始大小32。
+
+- slowThreadLocalMap：静态属性，ThreadLocal<InternalThreadLocalMap>类型，线程非InternalThread类型情况下使用。
+
+- variablesToRemove：记录使用中的InternalThreadLocal，为Set（使用IdentityHashMap并包装为SetFromMap），保存在InternalThreadLocalMap中索引值为0的槽上。
+
+- get()：静态方法，获取线程的InternalThreadLocalMap，如果不存在则初始化。
+
+- fastGet()：线程为InternalThread类型情况调用，返回InternalThread的threadLocalMap属性，不存在则初始化并赋值。
+
+- slowGet()：线程不为InternalThread类型情况调用，通过静态属性slowThreadLocalMap获取，不存在则初始化并通过slowThreadLocalMap设置。
+
+- getIfSet()：静态方法，获取线程的InternalThreadLocalMap，如未设置不初始化并返回null，获取方式与get方法一致。
+
+- expandIndexedVariableTableAndSet()：set操作如果index超出了数组大小，则进行扩容，扩容为2的次方大小，并使用UNSET填充。
 
 #### InternalThread extends Thread
+> 继承自Thread，持有一个InternalThreadLocalMap类型变量。
+
+#### InternalRunnable implements Runnable
+> 装饰器模式，包装Runnable对象，执行完任务后调用InternalThreadLocal的removeAll方法，**不建议在线程池中使用（理由同不要在线程池中使用ThreadLocal的set/remove）**。
+
+***
