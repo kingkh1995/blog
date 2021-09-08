@@ -1,9 +1,10 @@
 ## [首页](/blog/)
+
 > version: **jdk11**
 
 ***
 
-#### Object
+### Object
 
   - registerNatives()
 
@@ -41,7 +42,7 @@
 
 ***
     
-#### String
+### String
 
 - 内部实现：
   - private final byte[] value
@@ -111,7 +112,7 @@
 
 ***
  
-#### StringBuffer & StringBuilder
+### StringBuffer & StringBuilder
 
   - 相同点：
 
@@ -133,7 +134,7 @@
 
 ***
 
-#### Byte、Integer、Long
+### Byte、Integer、Long
 
 - 都通过一个私有的缓存内部类，在静态代码块中为-128到127的值区间加载了缓存，但是只有Integer可以通过JVM参数调整缓存区间的上限（**下限固定为-128**）。
 
@@ -141,7 +142,7 @@
 
 ***
 
-#### Enum（所有枚举的父类）
+### Enum（所有枚举的父类）
 
   - clone()：重写了clone方法，会直接抛出CloneNotSupportedException，因为是绝对的单例模式所以不允许被克隆。
 
@@ -150,38 +151,74 @@
 ***
 
 ### annotation
-> 隐式实现接口为Annotation，注意注解类无法被继承。
 
-#### ElementType枚举
-> 配合Target注解指定注解能出现在Java程序中的语法位置。
+- 注解本质上是接口，隐式继承自Annotation接口，故注解无法继承其他接口或注解，但是可以被接口继承以及被类实现；
+- 注解中如果声明了value参数，则使用时可以忽略参数名value，通过default指定参数默认值；
+- 注解中可以定义常量，但是无法定义default方法。
 
-#### Target元注解
-> 如果注解声明中不存在Target元注解，则该注解可以java程序的任意位置使用。
+#### 元注解
 
-#### RetentionPolicy枚举
-> 配合Retention元注解，指定注解的保留时间。
+> 负责注解其他注解，实现原理其实是元注解自身也都有元注解。
 
-- CALSS：编译器将把注解记录在类文件中，但在运行时JVM不需要保留注解。
-- RUNTIME:：编译器将把注解记录在类文件中，同时在运行时JVM将保留注解，所以可以通过反射机制读取到注解信息。
-- SOURCE：编译器要丢弃的注解。
+    // 元注解上注解的元注解
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.ANNOTATION_TYPE)
 
-#### Retention元注解
-> 如果注解中不存在Retention注解，则保留策略默认为RetentionPolicy.CLASS。
+#### @Documented
 
-#### Inherited元注解
-> 添加@Inherited元注解后子类可继承父类的注解，但是使用getAnnotation方法才能获取到从父类继承的注解，getDeclaredAnnotation只能获取当前类上定义的注解。
+> 表示注解会被包含在javadoc中。
 
-> 注意Spring的@Service、@Component等注解无法被继承，即子类需要显式定义注解才能被IOC容器管理；同时对@Validated，@RequestMapping等注解的支持，内部实现是AnnotationUtils.findAnnotation方法，可以从自身、父类以及接口上获取到注解，也不需要使用@Inherited元注解配合。
+#### @Target
 
-#### Repeatable元注解
-> 如果声明了Reteatable元注解，代表该注解可以重复使用，需要一个容器注解配合实现。
+> 指定注解的使用范围，值为ElementType枚举，如果注解上不存在该元注解，则注解可以用于任何元素上。
+
+- TYPE：注解可以被使用在类、接口、注解以及枚举上；
+- TYPE_PARAMETER：注解可以被使用在类型变量上；
+- TYPE_USE：注解可以被使用在使用了类型的任何位置。
+
+#### @Retention
+
+> 指定注解的保留级别，值为RetentionPolicy枚举，如果注解上不存在该注解，则注解保留级别默认为CLASS。
+
+- SOURCE：注解会被编译器丢弃；
+- CALSS：注解会被编译器记录在class文件中，但虚拟机运行时不保留。
+- RUNTIME:：注解会被编译器记录，同时虚拟机运行时也会保留，所以可以通过反射机制读取到注解信息。
+
+#### @Inherited
+
+> 表示子类可以从父类中继承此注解，**实际上只是子类class可以通过getAnnotation方法获取到父类的此注解**，并且该注解上的注解也无法被获取到。
+>> 注意getDeclaredAnnotation方法只能获取当前类上的注解。
+
+##### ***拓展：SpringBoot的注解***
+- AnnotationUtils.findAnnotation方法：SpringBoot内部使用，功能远比getAnnotation方法强大，能从类自身、父类、接口以及注解上获取注解信息，也不需要使用@Inherited元注解。
+- @Validated、@RequestMapping等：只要能通过AnnotationUtils.findAnnotation方法获取注解到即开启注解相应功能。
+- @Component及相关注解：需要通过直接或间接的方式注解在类上才能被IOC容器管理，即无法继承，这是SpringBoot自身设计考量。
+
+#### @Repeatable
+
+> 表示此注解可以在同一个元素上使用多次，需要一个容器注解配合实现。
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.FIELD})
+@Repeatable(RepeatableAnnoCol.class)
+public @interface RepeatableAnno {
+}
+
+// 容器注解的Target必须是可重复注解Target的子集
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface RepeatableAnnoCol {
+    RepeatableAnno[] value();
+}
+
+//通过原注解，使用了多次则无法获取
+RepeatableAnno annotation = XXX.class.getAnnotation(RepeatableAnno.class);
+//通过容器注解，只使用了一次则无法获取
+RepeatableAnnoCol annotationCol = XXX.class.getAnnotation(RepeatableAnnoCol.class);
+//推荐获取方式
+RepeatableAnno[] annotations = XXX.class.getAnnotationsByType(RepeatableAnno.class);
+```
 
 ***
-
-#### Thread
-
-#### ThreadLocal
-
-#### InheritableThreadLocal
-
-#### ThreadGroup

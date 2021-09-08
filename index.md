@@ -26,6 +26,7 @@
 * [time](https://kingkh1995.github.io/blog/java/time)
 * [reflect](https://kingkh1995.github.io/blog/java/reflect)
 * [util](https://kingkh1995.github.io/blog/java/util)
+* [thread](https://kingkh1995.github.io/blog/java/thread)
 * [concurrent](https://kingkh1995.github.io/blog/java/concurrent)
 * [stream](https://kingkh1995.github.io/blog/java/stream)
 * [net](https://kingkh1995.github.io/blog/java/net)
@@ -54,19 +55,19 @@
 
 ## 第三方库
 
+* [advanced-threadlocal](https://kingkh1995.github.io/blog/adtl)
 * [commons-pool2](https://kingkh1995.github.io/blog/commons)
-* [mybatis-plus](https://kingkh1995.github.io/blog/mybatis-plus)
 * [lombok](https://kingkh1995.github.io/blog/lombok)
 * [validation](https://kingkh1995.github.io/blog/validation)
-* [mapstruct](https://kingkh1995.github.io/blog/mapstruct)
-* [guava](https://kingkh1995.github.io/blog/guava)
 * [jackson](https://kingkh1995.github.io/blog/jackson)
+* [guava](https://kingkh1995.github.io/blog/guava)
 * [easyexcel](https://kingkh1995.github.io/blog/easyexcel)
-* [xxl-job](https://kingkh1995.github.io/blog/xxl-job)
+* [elasticjob](https://kingkh1995.github.io/blog/elasticjob)
 * [okhttp](https://kingkh1995.github.io/blog/okhttp)
+* [feign](https://kingkh1995.github.io/blog/feign)
 * [lettuce](https://kingkh1995.github.io/blog/lettuce)
 * [hikariCP](https://kingkh1995.github.io/blog/hikariCP)
-* [advanced-thread-local](https://kingkh1995.github.io/blog/threadlocal)
+* [mapstruct](https://kingkh1995.github.io/blog/mapstruct)
 
 ## 业务
 
