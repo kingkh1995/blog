@@ -158,7 +158,7 @@
 
 #### 元注解
 
-> 负责注解其他注解，实现原理其实是元注解自身也都有元注解。
+> 负责注解其他注解，元注解本身也都有被元注解注解。
 
     // 元注解上注解的元注解
     @Documented
@@ -179,7 +179,7 @@
 
 #### @Retention
 
-> 指定注解的保留级别，值为RetentionPolicy枚举，如果注解上不存在该注解，则注解保留级别默认为CLASS。
+> 指定注解的保留级别，值为RetentionPolicy枚举，如果注解上不存在该元注解，则注解保留级别默认为CLASS。
 
 - SOURCE：注解会被编译器丢弃；
 - CALSS：注解会被编译器记录在class文件中，但虚拟机运行时不保留。
@@ -187,11 +187,11 @@
 
 #### @Inherited
 
-> 表示子类可以从父类中继承此注解，**实际上只是子类class可以通过getAnnotation方法获取到父类的此注解**，并且该注解上的注解也无法被获取到。
+> 表示子类可以从父类中继承此注解，**实际上只是子类class可以通过getAnnotation方法获取到父类的此注解**，但该注解上的注解无法被获取到。
 >> 注意getDeclaredAnnotation方法只能获取当前类上的注解。
 
 ##### ***拓展：SpringBoot的注解***
-- AnnotationUtils.findAnnotation方法：SpringBoot内部使用，功能远比getAnnotation方法强大，能从类自身、父类、接口以及注解上获取注解信息，也不需要使用@Inherited元注解。
+- AnnotationUtils.findAnnotation方法：SpringBoot内部使用，功能远比getAnnotation方法强大，能从类自身、父类、接口以及注解上获取注解信息（lang包下的注解除外，如@FunctionalInterface），也不需要使用@Inherited元注解。
 - @Validated、@RequestMapping等：只要能通过AnnotationUtils.findAnnotation方法获取注解到即开启注解相应功能。
 - @Component及相关注解：需要通过直接或间接的方式注解在类上才能被IOC容器管理，即无法继承，这是SpringBoot自身设计考量。
 

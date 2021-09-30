@@ -15,6 +15,7 @@
 - ★★☆ Kafka
 - ★★☆ Zookeeper
 - ★★☆ Sharding-JDBC
+- ★★☆ Redisson
 - ★☆☆ ES
 - ★☆☆ Druid
 - ★☆☆ Quartz
@@ -22,10 +23,10 @@
 - ★☆☆ Spring Security
 - ☆☆☆ Canal
 - ☆☆☆ Seata
-- ☆☆☆ Redisson
-- ☆☆☆ Shiro
+- ☆☆☆ Skywalking
 - ☆☆☆ Nacos
 - ☆☆☆ Maven
+- ☆☆☆ Shiro
 - ☆☆☆ Tomcat
 - ☆☆☆ ELK
 - ☆☆☆ Cat

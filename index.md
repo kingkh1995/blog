@@ -2,6 +2,12 @@
 
 > 好好学习！天天向上！早日当上咸鱼！
 
+***
+
+### [My pull requests](/blog/prs)
+
+***
+
 ## 文档
 
 * [Markdown语法](https://kingkh1995.github.io/blog/markdown)
@@ -61,6 +67,7 @@
 * [validation](https://kingkh1995.github.io/blog/validation)
 * [jackson](https://kingkh1995.github.io/blog/jackson)
 * [guava](https://kingkh1995.github.io/blog/guava)
+* [caffeine](https://kingkh1995.github.io/blog/caffeine)
 * [easyexcel](https://kingkh1995.github.io/blog/easyexcel)
 * [elasticjob](https://kingkh1995.github.io/blog/elasticjob)
 * [okhttp](https://kingkh1995.github.io/blog/okhttp)
