@@ -2,4 +2,4 @@
 
 ***
 
-### [**merged**] https://github.com/apache/dubbo/pull/8697
+### [**merged**][https://github.com/apache/dubbo/pull/8697](https://github.com/apache/dubbo/pull/8697)
