@@ -8,47 +8,9 @@
 
 ***
 
-## 学习清单
-
-- ★★★ Java
-- ★★★ Spring
-- ★★★ Spring Boot
-- ★★★ Spring Cloud
-- ★★★ Dubbo
-- ★★★ MySQL
-- ★★★ Redis
-- ★★★ Netty
-- ★★★ gRPC
-- ★★☆ Mybatis
-- ★★☆ Spring Data JPA
-- ★★☆ RocketMQ
-- ★★☆ Kafka
-- ★★☆ Zookeeper
-- ★★☆ Sharding-JDBC
-- ★★☆ Redisson
-- ★☆☆ ES
-- ★☆☆ Druid
-- ★☆☆ Quartz
-- ★☆☆ Sentinel
-- ★☆☆ Spring Security
-- ☆☆☆ Canal
-- ☆☆☆ Seata
-- ☆☆☆ Skywalking
-- ☆☆☆ Nacos
-- ☆☆☆ Maven
-- ☆☆☆ Shiro
-- ☆☆☆ Tomcat
-- ☆☆☆ ELK
-- ☆☆☆ Cat
-- ☆☆☆ Jenkins
-- ☆☆☆ Nginx
-
-***
-
 ## 书籍清单
 
 - 《算法（第 4 版）》
-- 《网络是怎样连接的》
 - 《Java 实战（第 2 版）》
 - 《Java并发编程实战》
 - [《深入浅出Java多线程》](http://concurrent.redspider.group/)
@@ -61,9 +23,8 @@
 - 《Redis 深度历险：核心原理和应用实践》
 - 《Netty进阶之路》
 - 《从Paxos到Zookeeper 分布式一致性原理与实践》
-- 《Clean Code》
-- 《The Clean Coder》
-- 《Clean Architecture》
+- 《网络是怎样连接的》
+- 《数据密集型应用系统设计》
 - 《重构 改善既有代码的设计》
 - 《领域驱动设计》
 

@@ -59,23 +59,18 @@
 
 * [advanced-threadlocal](https://kingkh1995.github.io/blog/adtl)
 * [jackson](https://kingkh1995.github.io/blog/jackson)
-* [commons-pool2](https://kingkh1995.github.io/blog/commons)
-* [lombok](https://kingkh1995.github.io/blog/lombok)
-* [validation](https://kingkh1995.github.io/blog/validation)
 * [guava](https://kingkh1995.github.io/blog/guava)
 * [caffeine](https://kingkh1995.github.io/blog/caffeine)
 * [easyexcel](https://kingkh1995.github.io/blog/easyexcel)
-* [elasticjob](https://kingkh1995.github.io/blog/elasticjob)
-* [okhttp](https://kingkh1995.github.io/blog/okhttp)
 * [feign](https://kingkh1995.github.io/blog/feign)
-* [lettuce](https://kingkh1995.github.io/blog/lettuce)
 * [hikariCP](https://kingkh1995.github.io/blog/hikariCP)
-* [mapstruct](https://kingkh1995.github.io/blog/mapstruct)
+* [lettuce](https://kingkh1995.github.io/blog/lettuce)
 
 ## 业务
 
 * [缓存常见问题](https://kingkh1995.github.io/blog/caching)
 * [分布式锁](https://kingkh1995.github.io/blog/distributed-lock)
+* [延时调度方案](https://kingkh1995.github.io/blog/timer)
 
 ## 其他
 
@@ -83,4 +78,4 @@
 * [高效编码技巧](https://kingkh1995.github.io/blog/coding)
 * [DDD架构](https://kingkh1995.github.io/blog/ddd)
 
-### [My pull requests](/blog/prs)
+## [My pull requests](/blog/prs)
