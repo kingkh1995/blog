@@ -26,8 +26,8 @@
 - RefreshEventListener收到事件后，执行其持有的ContextRefresher变量的refresh方法；
 - 第一步，重新加载Environment，之后发送EnvironmentChangeEvent事件，ConfigurationPropertiesRebinder收到事件后，对所有的配置类执行rebind方法；
     - 对所有@ConfigurationProperties注解的bean，从ApplicationContext获取到AutowireCapableBeanFactory，先执行destroyBean再执行initializeBean，**会重新启动应用**。
-- 第二步，调用ContextRefresher持有的RefreshScope变量的refreshAll方法，会销毁所有有@RefreshScope注解的由Spring管理的bean；
-    - @RefreshScope可注解在类和方法（@Bean注解）上，bean被销毁后**被使用时才会重新加载**。
+- 第二步，调用ContextRefresher持有的RefreshScope变量的refreshAll方法，使得所有@RefreshScope注解的bean的缓存失效，**再次获取时才重新加载**；
+    - bean的作用域除了Singleton和Prototype之外都会创建Scope对象，@RefreshScope表示设置作用域为refresh，实现为从缓存获取bean。
 - 最后发送RefreshScopeRefreshedEvent事件，可自定义添加监听器。
 
 ***

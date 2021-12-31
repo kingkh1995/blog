@@ -13,15 +13,15 @@
 ***
 
 ### 应用部署
+
 - 使用Dockerfile构建应用
 ```
-docker build -t op-user-web:Ace.RC .
+docker build -t op-user-web:2021.0.0 .
 ```
-
 ```
-docker run -it --name app1 --network mynet --network-alias app1 -p  8081:8080 -d op-user-web:Ace.RC
-docker run -it --name app2 --network mynet --network-alias app2 -p  8082:8080 -d op-user-web:Ace.RC
-docker run -it --name app3 --network mynet --network-alias app3 -p  8083:8080 -d op-user-web:Ace.RC
+docker run -it --name app1 --network mynet --network-alias app1 -p  8081:8080 -d op-user-web:2021.0.0
+docker run -it --name app2 --network mynet --network-alias app2 -p  8082:8080 -d op-user-web:2021.0.0
+docker run -it --name app3 --network mynet --network-alias app3 -p  8083:8080 -d op-user-web:2021.0.0
 ```
 
 ***
@@ -35,6 +35,7 @@ docker run -it --name mysql --network mynet --network-alias mysql -p 3306:3306 -
 ***
 
 ### canal
+
 ```
 docker run -it --name canal --network mynet --network-alias canal -p 11111:11111 -d canal/canal-server
 ```
@@ -64,17 +65,13 @@ canal.master.position=
 docker run -it --name redis --network mynet --network-alias redis -p 6379:6379 --restart always  -d redis redis-server --appendfsync everysec
 ```
 
-- 集群部署
+- 集群部署（IP为宿主机物理机地址）
 ```
-IP为宿主机物理机地址
 docker run -it -p 6371:6379 -p 16371:16379 --name redis1 --network mynet --network-alias redis1 -d redis redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-announce-ip x.x.x.x --cluster-announce-port 6371 --cluster-announce-bus-port 16371 --appendfsync everysec
 docker run -it -p 6372:6379 -p 16372:16379 --name redis2 --network mynet --network-alias redis2 -d redis redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-announce-ip x.x.x.x --cluster-announce-port 6372 --cluster-announce-bus-port 16372 --appendfsync everysec
-docker run -it -p 6373:6379 -p 16373:16379 --name redis3 --network mynet --network-alias redis3 -d redis redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-announce-ip x.x.x.x --cluster-announce-port 6373 --cluster-announce-bus-port 16373 --appendfsync everysec
-docker run -it -p 6374:6379 -p 16374:16379 --name redis4 --network mynet --network-alias redis4 -d redis redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-announce-ip x.x.x.x --cluster-announce-port 6374 --cluster-announce-bus-port 16374 --appendfsync everysec
-docker run -it -p 6375:6379 -p 16375:16379 --name redis5 --network mynet --network-alias redis5 -d redis redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-announce-ip x.x.x.x --cluster-announce-port 6375 --cluster-announce-bus-port 16375 --appendfsync everysec
-docker run -it -p 6376:6379 -p 16376:16379 --name redis6 --network mynet --network-alias redis6 -d redis redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-announce-ip x.x.x.x --cluster-announce-port 6376 --cluster-announce-bus-port 16376 --appendfsync everysec
+docker run -it -p 6373:6379 -p 16373:16379 --name redis3 --network mynet --network-alias redis3 -d redis redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-announce-ip x.x.x.x
+...
 ```
-
 ```
 redis-cli --cluster create x.x.x.x:6371 x.x.x.x:6372 x.x.x.x:6373 x.x.x.x:6374 x.x.x.x:6375 x.x.x.x:6376 --cluster-replicas 1
 ```
@@ -92,7 +89,7 @@ docker run -it --name zookeeper  --network mynet --network-alias zookeeper -p 21
 ```
 docker-compose -f zk-cluster-compose.yml up -d
 ```
-```yml
+```yaml
 version: '3.8'
 networks:
   mynet:
@@ -134,30 +131,7 @@ services:
     environment:
       ZOO_MY_ID: 3
       ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181 server.4=zoo4:2888:3888;2181 server.5=zoo5:2888:3888;2181
-  zoo4:
-    image: zookeeper
-    restart: always
-    hostname: zoo4
-    container_name: zoo4
-    ports:
-      - "2184:2181"
-    networks:
-      - "mynet"
-    environment:
-      ZOO_MY_ID: 4
-      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181 server.4=zoo4:2888:3888;2181 server.5=zoo5:2888:3888;2181
-  zoo5:
-    image: zookeeper
-    restart: always
-    hostname: zoo5
-    container_name: zoo5
-    ports:
-      - "2185:2181"
-    networks:
-      - "mynet"
-    environment:
-      ZOO_MY_ID: 5
-      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181 server.4=zoo4:2888:3888;2181 server.5=zoo5:2888:3888;2181
+  ...
 ```
 
 ***
@@ -165,12 +139,12 @@ services:
 ### elasticsearch
 
 ```
-docker run -it --name elasticsearch --network mynet --network-alias elasticsearch -p 9200:9200 --restart always  -d elasticsearch:7.14.2
+docker run -it --name elasticsearch --network mynet --network-alias elasticsearch -p 9200:9200 -e discovery.type=single-node -e "ES_JAVA_OPTS=-Xms2g -Xmx2g" --restart always  -d elasticsearch:7.16.2
 ```
 
 - 安装中文分词器
 ```
-./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.14.2/elasticsearch-analysis-ik-7.14.2.zip
+./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.16.2/elasticsearch-analysis-ik-7.16.2.zip
 ```
 
 ***
@@ -180,5 +154,49 @@ docker run -it --name elasticsearch --network mynet --network-alias elasticsearc
 ```
 docker run -d --name kafka --network mynet --network-alias kafka -p 9092:9092 -e ALLOW_PLAINTEXT_LISTENER=yes -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_BROKER_ID=0 -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092 -e  KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092 bitnami/kafka
 ```
+
+***
+
+### skywalking
+
+- docker-compose部署（h2数据库）
+```yaml
+version: '3.8'
+services:
+  skywalking-oap:
+    image: apache/skywalking-oap-server
+    container_name: skywalking-oap
+    restart: always
+    ports:
+      - 11800:11800
+      - 12800:12800
+    environment:
+      TZ: Asia/Shanghai
+  skywalking-ui:
+    image: apache/skywalking-ui
+    container_name: skywalking-ui
+    depends_on:
+      - skywalking-oap
+    links:
+      - skywalking-oap
+    restart: always
+    ports:
+      - 8888:8080
+    environment:
+      SW_OAP_ADDRESS: skywalking-oap:12800
+      TZ: Asia/Shanghai
+```
+```
+docker-compose -f skywalking-compose.yml up -d
+```
+
+- 应用接入
+
+  - 下载[Java Agent](https://skywalking.apache.org/downloads/#SkyWalkingJavaAgent)
+
+  - 配置启动项
+  ```
+  -javaagent:${path}/skywalking-agent.jar -Dskywalking.agent.service_name=${app-name} -Dskywalking.collector.backend_service=localhost:11800
+  ```
 
 ***
