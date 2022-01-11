@@ -1,8 +1,8 @@
-## [首页](https://kingkh1995.github.io/blog/)
+# [首页](/blog/)
 
 ***
 
-### 部分命令
+## 命令
 
 ```
 创建网络 docker network create mynet
@@ -12,7 +12,7 @@
 
 ***
 
-### 应用部署
+## 应用部署
 
 - 使用Dockerfile构建应用
 ```
@@ -26,7 +26,7 @@ docker run -it --name app3 --network mynet --network-alias app3 -p  8083:8080 -d
 
 ***
 
-### mysql
+## mysql
 
 ```
 docker run -it --name mysql --network mynet --network-alias mysql -p 3306:3306 --restart always  -e TZ=Asia/Shanghai -e MYSQL_ROOT_PASSWORD=123456 -d mysql
@@ -34,7 +34,7 @@ docker run -it --name mysql --network mynet --network-alias mysql -p 3306:3306 -
 
 ***
 
-### canal
+## canal
 
 ```
 docker run -it --name canal --network mynet --network-alias canal -p 11111:11111 -d canal/canal-server
@@ -56,7 +56,7 @@ canal.master.position=
 
 ***
 
-### redis
+## redis
 
 - [AnotherRedisDesktopManager](https://github.com/qishibo/AnotherRedisDesktopManager/releases)
 
@@ -78,7 +78,7 @@ redis-cli --cluster create x.x.x.x:6371 x.x.x.x:6372 x.x.x.x:6373 x.x.x.x:6374 x
 
 ***
 
-### zookeeper
+## zookeeper
 
 - 单机部署
 ```
@@ -136,7 +136,7 @@ services:
 
 ***
 
-### elasticsearch
+## elasticsearch
 
 ```
 docker run -it --name elasticsearch --network mynet --network-alias elasticsearch -p 9200:9200 -e discovery.type=single-node -e "ES_JAVA_OPTS=-Xms2g -Xmx2g" --restart always  -d elasticsearch:7.16.2
@@ -149,7 +149,7 @@ docker run -it --name elasticsearch --network mynet --network-alias elasticsearc
 
 ***
 
-### kafka
+## kafka
 
 ```
 docker run -d --name kafka --network mynet --network-alias kafka -p 9092:9092 -e ALLOW_PLAINTEXT_LISTENER=yes -e KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_BROKER_ID=0 -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092 -e  KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092 bitnami/kafka
@@ -157,7 +157,7 @@ docker run -d --name kafka --network mynet --network-alias kafka -p 9092:9092 -e
 
 ***
 
-### skywalking
+## skywalking
 
 - docker-compose部署（h2数据库）
 ```yaml

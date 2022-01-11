@@ -6,77 +6,69 @@
 
 ## 文档
 
-* [Markdown语法](https://kingkh1995.github.io/blog/markdown)
-* [UML图绘制](https://kingkh1995.github.io/blog/uml)
+* [Markdown语法](markdown)
+* [UML图绘制](uml)
 
 ## 面试
 
 * [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
-* [剑指offer](https://kingkh1995.github.io/blog/interview)
-* [冲刺计划](https://kingkh1995.github.io/blog/plan)
+* [剑指offer](interview)
 
 
 ## 算法
 
-* [算法基础](algs/)
+* [算法基础](algs)
 * [进阶算法](algs/advanced)
 * [数组与矩阵](algs/array)
 
 ## Jdk
 
-* [lang](https://kingkh1995.github.io/blog/java/lang)
-* [time](https://kingkh1995.github.io/blog/java/time)
-* [reflect](https://kingkh1995.github.io/blog/java/reflect)
-* [util](https://kingkh1995.github.io/blog/java/util)
-* [thread](https://kingkh1995.github.io/blog/java/thread)
-* [concurrent](https://kingkh1995.github.io/blog/java/concurrent)
-* [stream](https://kingkh1995.github.io/blog/java/stream)
-* [net](https://kingkh1995.github.io/blog/java/net)
-* [io](https://kingkh1995.github.io/blog/java/io)
-* [nio](https://kingkh1995.github.io/blog/java/sql)
+* [lang](java/lang)
+* [time](java/time)
+* [reflect](java/reflect)
+* [util](java/util)
+* [thread](java/thread)
+* [concurrent](java/concurrent)
+* [stream](java/stream)
 
 ## Jvm
 
-* [index](https://kingkh1995.github.io/blog/jvm)
-* [oom](https://kingkh1995.github.io/blog/jvm/oom)
+* [index](jvm)
+* [oom](jvm/oom)
+
+## 组件及工具
+
+* [Mysql](mysql)
+* [Redis](redis)
+* [Maven](maven)
 
 ## 框架
 
-* [Spring Cloud Alibaba](https://kingkh1995.github.io/blog/spali)
-* [Shiro](https://kingkh1995.github.io/blog/shiro)
-
-## 组件
-
-* [Mysql](https://kingkh1995.github.io/blog/mysql)
-* [Redis](https://kingkh1995.github.io/blog/redis)
-* [Canal](https://kingkh1995.github.io/blog/canal)
-
-## 工具
-
-* [Maven](https://kingkh1995.github.io/blog/maven)
+* [Spring Cloud Alibaba](spali)
+* [Shiro](shiro)
 
 ## 第三方库
 
-* [advanced-threadlocal](https://kingkh1995.github.io/blog/adtl)
-* [jackson](https://kingkh1995.github.io/blog/jackson)
-* [guava](https://kingkh1995.github.io/blog/guava)
-* [caffeine](https://kingkh1995.github.io/blog/caffeine)
-* [easyexcel](https://kingkh1995.github.io/blog/easyexcel)
-* [feign](https://kingkh1995.github.io/blog/feign)
-* [hikariCP](https://kingkh1995.github.io/blog/hikariCP)
-* [lettuce](https://kingkh1995.github.io/blog/lettuce)
+* [advanced-threadlocal](adtl)
+* [timer](timer)
+* [caffeine](caffeine)
+* [jackson](jackson)
+* [guava](guava)
+* [easyexcel](easyexcel)
+* [feign](feign)
+* [hikariCP](hikariCP)
+* [lettuce](lettuce)
 
 ## 业务
 
-* [缓存常见问题](https://kingkh1995.github.io/blog/caching)
-* [分布式锁](https://kingkh1995.github.io/blog/distributed-lock)
-* [延时调度方案](https://kingkh1995.github.io/blog/timer)
+* [缓存常见问题](caching)
+* [分布式锁](distributed-lock)
 
 ## 其他
 
-* [RESTful API](https://kingkh1995.github.io/blog/restful)
-* [高效编码技巧](https://kingkh1995.github.io/blog/coding)
-* [DDD架构](https://kingkh1995.github.io/blog/ddd)
-* [Docker部署](https://kingkh1995.github.io/blog/docker)
+* [高效编码技巧](coding)
+* [DDD架构](ddd)
+* [Docker部署](docker)
+* [RESTful API](restful)
 
-## [My pull requests](/blog/prs)
+## [My pull requests](prs)

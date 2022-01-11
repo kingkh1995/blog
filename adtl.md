@@ -1,10 +1,10 @@
-## [首页](https://kingkh1995.github.io/blog/)
+# [首页](/blog/)
 
 > ThreadLocal & ThreadLocal增强
 
 ***
 
-### ThreadLocal
+## ThreadLocal
 
 - int threadLocalHashCode: 哈希值属性，通过一个全局的AtomicInteger获取，增长步幅为一个神奇数字0x61c88647，产生的哈希码能均匀的分布在2的N次方的数组里（原理是斐波那契散列法）。
 
@@ -24,17 +24,17 @@
 
 ***
 
-### ThreadLocalMap
+## ThreadLocalMap
 
 > ThreadLocal内部类，ThreadLocal真正的核心。特殊设计的Map，底层为Entry数组，初始容量16，容量要求为2的次方，使用线性探测法解决冲突，阈值为2/3容量。
 
 > 每个线程都包含两个ThreadLocalMap类型的属性，threadLocals和inheritableThreadLocals，threadLocals是在首次调用ThreadLocal方法时初始化，inheritableThreadLocals是在创建子线程时赋值。
 
-#### Entry
+### Entry
 
 > ThreadLocalMap内部类，继承自WeakReference，弱引用ThreadLocal作为key，增加的value属性为强引用，如果ThreadLocal已被回收，则视为过期，可以对Entry进行清除。
 
-#### 软引用、弱引用、虚引用
+### 软引用、弱引用、虚引用
 
 > 都继承自Reference<T>，创造一个对象的引用对象，只有当对象不存在强引用时才可能被回收。
 
@@ -53,7 +53,7 @@
 
     - 虚引用：创建时必须指定ReferenceQueue，创建虚引用后就无法通过虚引用获取到被引用对象，每次gc均会回收只存在虚引用的对象。
 
-#### ThreadLocalMap源码
+### ThreadLocalMap源码
 
 - getEntry()：通过ThreadLocal的threadLocalHashCode属性确定键的位置，获取到Entry后直接使用==对比传入的ThreadLocal和Entry引用的ThreadLocal，如果匹配则返回否则执行getEntryAfterMiss操作。
 
@@ -82,7 +82,7 @@
 
 ***
 
-### InheritableThreadLocal extends ThreadLocal
+## InheritableThreadLocal extends ThreadLocal
 
 > 可继承的ThreadLocal，在父线程中设置的InheritableThreadLocal值在子线程也能获取到，实现逻辑是创建线程时将父线程的ThreadLocalMap复制到子线程中。
 
@@ -96,12 +96,12 @@
 
 ***
 
-### TransmittableThreadLocal extends InheritableThreadLocal
+## TransmittableThreadLocal extends InheritableThreadLocal
 > InheritableThreadLocal增强实现，在线程池中也可以生效，通过其crr机制转移TTL值，且能保证上下文不丢失和不会出现内存泄露。
 
 - holder：静态属性，InheritableThreadLocal<WeakHashMap<TransmittableThreadLocal<Object>, ?>>类型，用于记录当前线程使用过的TTL，WeakHashMap被当作Set使用，键的value均设为null。
 
-#### Transmitter
+### Transmitter
 > 内部工具类，转移器，转移逻辑实现。
 
 - capture()：先抓取线程A的ThreadLocal值，包括TransmittableThreadLocal的holder属性记录的TTL（所有）和Transmitter的threadLocalHolder属性记录的其他ThreadLocal（手动注册）。
@@ -114,18 +114,18 @@
 
 - registerThreadLocal()：手动注册ThreadLocal到threadLocalHolder属性，不能用于注册TTL，**主要是作为兼容方案，不太建议使用**。
 
-#### TtlRunnable、TtlCallable
+### TtlRunnable、TtlCallable
 > 装饰器模式，包装Runnable和Callable。创建实例时使用capture，执行run方法前replay，执行后restore。
 
-#### TtlExecutors
+### TtlExecutors
 > 工具类，提供静态工厂方法将线程池包装成对应的TTL线程池。
 
-#### ExecutorTtlWrapper、ExecutorServiceTtlWrapper、ScheduledExecutorServiceTtlWrapper
+### ExecutorTtlWrapper、ExecutorServiceTtlWrapper、ScheduledExecutorServiceTtlWrapper
 > 线程池包装类，重写了线程池的方法，将传入的Runnable和Callable包装成TtlRunnable和TtlCallable并交由原线程池执行。
 
 ***
 
-### InternalThreadLocal
+## InternalThreadLocal
 > 特殊设计的ThreadLocal类（非子类），在Dubbo的RpcContext和FutureContext中使用，**核心思路是空间换时间**。
 
 > ThreadLocal的优势是能清除过期键，缺点是会一定程度的影响效率，且因为多实例ThreadLocal的使用场景很少见，所以清除过期键的设计必要性不高，同时线性探测法也不如随机访问快。
@@ -140,7 +140,7 @@
 
 - removeAll()：移除所有的ITL值，并移除线程的InternalThreadLocalMap，**建议在拦截器中手动调用**。
 
-#### InternalThreadLocalMap
+### InternalThreadLocalMap
 > 特殊设计的ThreadLocalMap，没有清除过期键操作，能通过InternalThreadLocal的index属性随机访问。
 
 > 因为index是通过一个全局的AtomicInteger获取，**所以使用InternalThreadLocal时一定不要重复创建实例，而应该设置为static**，否则随着InternalThreadLocal数量的增加，index的自增，必然会造成空间的极大浪费，也最终会导致应用无法继续运行。
@@ -161,10 +161,10 @@
 
 - expandIndexedVariableTableAndSet()：set操作如果index超出了数组大小，则进行扩容，扩容为2的次方大小，并使用UNSET填充。
 
-#### InternalThread extends Thread
+### InternalThread extends Thread
 > 继承自Thread，持有一个InternalThreadLocalMap类型的属性threadLocalMap。
 
-#### InternalRunnable implements Runnable
+### InternalRunnable implements Runnable
 > 装饰器模式，包装Runnable对象，执行完任务后调用InternalThreadLocal的removeAll方法，**不建议在线程池中使用（理由同不要在线程池中使用ThreadLocal的set/remove）**。
 
 ***

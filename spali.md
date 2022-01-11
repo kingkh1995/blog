@@ -1,11 +1,11 @@
-## [首页](https://kingkh1995.github.io/blog/)
+# [首页](/blog/)
 > Spring Cloud Alibaba
 
 ***
 
-### Nacos
+## Nacos
 
-#### Nacos Docker
+### Nacos Docker
 
 - docker-compose部署
     
@@ -18,9 +18,9 @@
 
     http://127.0.0.1:8848/nacos/
 
-#### Nacos Config
+### Nacos Config
 
-##### **动态配置原理**
+#### **动态配置原理**
 
 - 客户端通过ClientWorker监听nacos服务器，配置变更后客户端发送RefreshEvent事件；
 - RefreshEventListener收到事件后，执行其持有的ContextRefresher变量的refresh方法；
@@ -32,14 +32,19 @@
 
 ***
 
-### Dubbo
+## Dubbo
 
 ***
 
-### RocketMQ
+## RocketMQ
 
 ***
 
+## Seata
+
+***
+
+```
 ### Nacos
 #### 1.nacos docker
     > 使用方法：
@@ -133,3 +138,4 @@
         调试：
             关闭服务注册：dubbo.registry.register=false
             直连提供者：@Reference(url = "dubbo://{ip}:{port}")
+```
