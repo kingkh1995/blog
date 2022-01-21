@@ -6,7 +6,7 @@
 
 ## BoundedLocalCache
 
-有界本地缓存，使用了W-TinyLFU算法，为了更好的应对突发稀疏流量设计。
+有界本地缓存，底层使用的是ConcurrentHashMap，使用了W-TinyLFU算法，为了更好的应对突发稀疏流量设计。
 
 - 使用SLRU（分段的LRU）算法将缓存空间分为Window Cache和Main Cache，Main Cache又分为protected和probation，**probation的数据命中后会晋升到protected**。Window Cache默认占1%空间，Main Cache中的probation默认占20%，使用中会动态调整Window Cache的大小。
 

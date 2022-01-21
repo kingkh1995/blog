@@ -20,7 +20,6 @@
 - 《高性能 MySQL 第 3 版》
 - 《MySQL 技术内幕：InnoDB 存储引擎》
 - 《Redis 开发与运维》
-- 《Redis 深度历险：核心原理和应用实践》
 - 《Netty进阶之路》
 - 《从Paxos到Zookeeper 分布式一致性原理与实践》
 - 《网络是怎样连接的》
