@@ -41,6 +41,7 @@
 * [Mysql](mysql)
 * [Redis](redis)
 * [Maven](maven)
+* [Gradle](gradle)
 
 ## 框架
 
