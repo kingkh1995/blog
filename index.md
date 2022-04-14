@@ -33,8 +33,9 @@
 
 ## Jvm
 
-* [index](jvm)
-* [oom](jvm/oom)
+* [基础知识](jvm)
+* [Java内存模型](jvm/jmm)
+* [oom异常](jvm/oom)
 
 ## 组件及工具
 
