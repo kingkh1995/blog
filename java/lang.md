@@ -32,11 +32,11 @@
 
   - notify()、notifyAll()
 
-    > **final** native方法，notify唤醒正在此对象监视器上等待的任意的一个线程，notifyAll唤醒正在此对象监视器上等待的所有线程。被唤醒的线程仍然无法继续，直到当前线程放弃对对象的锁定。
+    > **final** native方法，notify唤醒正在此对象监视器上等待的任意的一个线程，notifyAll唤醒正在此对象监视器上等待的所有线程。被唤醒的线程仍然无法继续，直到当前线程放弃对对象的锁定，必须在同步方法或同步块内使用。
 
   - wait()、wait(long timeoutMillis)、wait(long timeoutMillis, int nanos)
 
-    > **final** native方法，调用的均是wait(long timeoutMillis)方法，使当前线程释放该对象的监视器锁，等待被唤醒或者时间达到超时时间，之后与其他等待中的线程公平竞争该对象的锁。
+    > **final** native方法，调用的均是wait(long timeoutMillis)方法，使当前线程释放该对象的监视器锁，等待被唤醒或者时间达到超时时间，之后与其他等待中的线程公平竞争该对象的锁，必须在同步方法或同步块内使用。
 
     > **wait() == wait(0L)，并不是释放锁之后立刻进入对象锁等待池，而是一直等待直到被notify方法唤醒**。
 

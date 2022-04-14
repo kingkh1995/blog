@@ -58,8 +58,6 @@ canal.master.position=
 
 ## redis
 
-- [AnotherRedisDesktopManager](https://github.com/qishibo/AnotherRedisDesktopManager/releases)
-
 - 单机部署
 ```
 docker run -it --name redis --network mynet --network-alias redis -p 6379:6379 --restart always  -d redis redis-server --appendfsync everysec
