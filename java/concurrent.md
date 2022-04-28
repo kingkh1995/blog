@@ -3,6 +3,7 @@
 > version: **jdk17**
 
 ***
+
 ## Atomic
 
 ### AtomicInteger
