@@ -4,7 +4,7 @@
 
 ***
 
-## Atomic
+## **Atomic**
 
 ### AtomicInteger
 
@@ -18,7 +18,7 @@
 
 基于Striped64实现，而Striped64使用VarHandle类执行原子操作。
 
-- **Striped64**：在高并发情况下CAS操作失败概率上升导致原子类效率降低，而Striped64类使用了热点分离和空间换时间的策略，将一个值分为多个cell之和，不同线程针对不同的cell执行CAS操作以提高成功率，cell的数量会随着CAS操作失败而增加，故Striped64在低并发和高并发下都有很好的效率。
+- **Striped64**：在高并发情况下CAS操作失败概率上升导致原子类效率降低，而Striped64类使用了热点分离和空间换时间的策略，其操作针对一个基本值和Cell数组，没有竞争时操作base值，存在竞争时不同线程针对不同的cell执行操作，竞争强度上升后会对Cell数组进行扩容，所以在低并发和高并发下都有很好的效率，**缺点是无法获取到实时的统计值，只适用于并发统计的场景**。
 
 - **VarHandle**：变量句柄，JDK9新增，用于替代Unsafe类，JDK对其安全性和可移植性有保障，允许被用户使用。该类提供了多种对变量的访问模式，只能通过MethodHandles类的内部类Lookup创建。
 
@@ -28,70 +28,121 @@
 
 ***
 
-## AQS
+## **ConcurrentHashMap**
 
-抽象队列同步器，是一个用于构建同步器的框架，底层使用了一个先进先出的同步队列和一个int类型的状态。为模板方法设计模式，提供了一系列方法用于获取和释放同步状态，子类需要实现tryAcquire、tryAcquireShared、tryRelease、tryReleaseShared、isHeldExclusively方法。
+### 属性
 
-### **state**
+- volatile Node<K,V>[] nextTable：用于扩容过程中保存新的数组地址。
 
-volatile的，资源的标识，使用该变量的值来表示同步器的状态，定义了compareAndSetState方法对其进行CAS更新。
+- volatile int sizeCtl：-1则表示正在初始化；非-1的负数表示正在执行扩容操作，其中高16位为扩容标记，低十六位为当前正在执行扩容操作的线程数+1；如果还未初始化则为需要初始化的数组大小，为0时则使用默认大小16；初始化完成后则为容量（固定为0.75数组大小，等同于HashMap的threshold属性）。
 
+- volatile int transferIndex：扩容处理指针，记录下一个待转移的位置。
 
-### **Node**
+- volatile long baseCount：用于统计元素，没有竞争时使用。
 
-同步队列，为先进先出的双端队列，分为独享模式和共享模式，独享模式只允许一个线程获取到资源，而共享模式允许多个。
+- volatile CounterCell[] counterCells：用于统计元素，存在竞争时使用，相关代码改编自LongAdder和Striped64。
 
-- JDK14之前：
-    - waitStatus：节点等待状态标识，0（初始状态）、CANCELLED（1表示该节点已被取消）、SIGNAL（-1表示其后继节点需要被唤醒）、CONDITION（-2表示该节点位于条件等待队列中）、PROPAGATE（-3表示共享模式下无条件向后传播releaseShared状态，是为了解决共享锁并发释放引起线程挂起的问题）
-    - nextWaiter：条件等待队列，如果是共享模式则是一个常量值。
+### 构造方法
 
-- **JDK14**：变为抽象类，子类为ExclusiveNode、SharedNode、ConditionNode（独有nextWaiter属性），取消waitStatus改为status。
-    - status：节点状态，WAITING（**等待状态才可以被挂起或唤醒**）、COND（位于条件等待队列中）、CANCELLED（负数）
+- ConcurrentHashMap(int initialCapacity, float loadFactor, int concurrencyLevel)：使用initialCapacity除以loadFactor的值计算数组大小（HashMap是直接使用initialCapacity值）；loadFactor也只在构造方法里被使用，负载因子固定为0.75；concurrencyLevel也只是用来保证initialCapacity必须大于等于concurrencyLevel。
 
-### 获取和释放资源
+### 静态方法
 
-#### JDK14之前
+- int spread(int h)：计算哈希值，与HashMap的hash方法逻辑相同，但会将符号为置为0以使得结果为非负数，目的是为了避免与MOVED、TREEBIN、RESERVED这三个特定的负数哈希值冲突。**因为是直接使用key.hashcode()作为参数，也意味着不支持键为null。**
 
-- acquire：首先尝试使用tryAcquire方法获取资源，失败则使用addWaiter方法往同步队列中加入一个独享节点后，再使用acquireQueued方法自旋处理队列直到获取资源成功。
-    - acquireQueued：自旋处理直到加入节点的前置节点为头节点且再次调用tryAcquire方法获取资源成功，**成功后将当前节点设置为头节点（同步队列的头节点是虚节点或已出队节点）**，否则调用shouldParkAfterFailedAcquire判断是否需要阻塞当前节点（使用LockSupport的park方法挂起线程）。
-    - **shouldParkAfterFailedAcquire**：判断前置节点的waitStatus，**只有为SIGNAL才阻塞当前节点（表示当前节点只需等待前置节点释放资源后将其唤醒然后再次尝试获取资源即可）**；如果大于0（取消状态）则从后往前移除所有连续的取消节点后；其他情况（初始状态或PROPAGATE）则更新前置节点waitStatus为SIGNAL。
+- tabAt()、casTabAt()、setTabAt()：使用Unsafe类对Node数组进行读写操作。
 
-- acquireShared：尝试使用tryAcquireShared获取资源，如果返回值小于0调用doAcquireShared阻塞获取资源。
-    - doAcquireShared：首先往同步队列中加入一个共享节点，之后自旋处理队列直到获取资源成功。处理逻辑与acquireQueued一致，当加入节点的前置节点为头节点时调用tryAcquireShared获取资源，成功后将当前节点设置为头节点，**在剩余资源数大于0、头节点状态为空、头节点非取消状态情景下，如果加入节点不存在后继节点、或后继节点仍然为共享节点**， 则需要调用doReleaseShared方法唤醒同步队列中节点以获取资源。
+- newKeySet()：JDK8新增，用于创建线程安全的Set，返回值为KeySetView<K,Boolean>类型，支持添加操作（添加时值默认为Boolean.TRUE）。
 
-- release：使用tryRelease方法释放资源，**释放成功后不移除同步队列头节点**，头节点非空且非初始状态时则使用unparkSuccessor方法处理同步队列。
-    - **unparkSuccessor**：首先如果头节点waitStatus小于0则先尝试将其设置为0（**并发释放资源时阻止其他线程进入该方法**），然后唤醒头节点的第一个非取消状态的后续节点（节点竞争资源失败且处于阻塞状态，使用LockSupport的unpark方法唤醒线程）。如果头节点的后继节点不存在或为取消状态，则**从同步队列尾端往前查找到最后一个非取消状态的节点（出于线程安全考虑）**。
+### 方法
 
-- releaseShared：使用tryReleaseShared方法释放资源，释放成功后不移除同步队列头节点，调用doReleaseShared方法唤醒后续节点。
-    - **doReleaseShared**：**循环尝试对同步队列头节点使用unparkSuccessor方法直到头节点不再变化**，即同步队列中的节点不再能获取到资源，因为如果等待的节点获取到资源则头节点会改变。
+- size()：ConcurrentHashMap并没有size属性，实际上是调用了sumCount方法进行统计。
 
-#### **JDK14**
+- sumCount()：统计元素，返回long值，累加baseCount属性和counterCells数组的统计值。
 
-- acquire & acquireShared：首先尝试调用tryAcquire或tryAcquireShared获取资源，失败则调用核心的acquire方法，参数node为null。
+- get(Object key)：使用HashMap相同的公式计算出下标，首先判断下标位置节点是否命中，**如未命中且节点为特殊节点（hash属性小于0）则调用节点的find方法查找**，否则遍历链表查找。
 
-- **final int acquire(Node node, int arg, boolean shared, boolean interruptible, boolean timed, long time)**：获取资源核心方法，自旋操作直到获取到资源或等待超时。
-    - spins、postSpins：**记录自旋次数，目的是尽可能的使用自旋而不是将线程挂起**。每次线程被挂起时postSpins都会增加，并将spins重置为postSpins，每自旋一次spins减一直到为0时则再次挂起线程。
-    - 首先判断当前节点的前置节点是否为头节点，否的场景下，如果前置节点是取消状态（status小于0）则调用cleanQueue方法清理队列；
-    - 继续处理，如果前置节点已经为头节点或者前置节点为null（节点还没加入队列），则调用tryAcquire或tryAcquireShared获取资源，如获取资源成功且当前节点已经入队，则当前节点设为头节点，**共享模式时还需要对当前节点调用signalNextIfShared方法（与signalNext方法相同但是只唤醒共享节点）**；
-    - 继续处理，如未则初始化节则初始化；如未入队则入队，使用CAS设置到tail；如前置节点已经是头节点了且spins非0（表示在上一步中抢占资源仍然是失败且线程已被挂起过），尝试使用Thread.onSpinWait()让出CPU；如节点状态为0则直接设置为WAITING；其他情况下则设置postSpins和spins然后挂起线程，如果超时或需要中断则退出循环并取消当前节点，**自动苏醒或被唤醒后清空节点状态（设置为0，阻止被其他线程并发操作）**。
+- initTable()：循环尝试直到初始化数组成功。如果sizeCtl小于0（**表示其他线程在执行初始化或者扩容操作**）则执行yield方法进行自旋；初始化操作前需要CAS设置sizeCtl为初始化状态（-1）以及再次检查数组，创建的数组大小为原sizeCtl值，如果是使用无参构造方法创建的则原sizeCtl值为0，数组大小则默认为16，初始化完成之后设置sizeCtl为0.75倍数组大小（表示默认容量）。
 
-- release & releaseShared：使用tryRelease或tryReleaseShared释放资源成功后，对头节点调用signalNext方法通知后续节点。
+- tryPresize(int size)：给定一个容量，尝试保证数组至少能容纳**1.5倍**该值，循环执行直到sizeCtl小于0或成功。如果未初始化，则取需要初始化的数组大小（当前sizeCtl值）和要求的最小数组大小之中的大者来初始化数组（初始化逻辑与initTable方法相同）；如已初始化则需要循环多次调用transfer方法扩容，直到数组大小达到要求或循环因并发操作而终止，扩容前需要检查数组地址以及CAS设置sizeCtl为扩容状态（负数并设置扩容线程数为1）。
 
-- **void signalNext(Node h)**：如果后继节点存在且非初始化状态，则修改状态并唤醒，修改状态使用getAndUnsetStatus(WAITING)（如果状态为0或1则设置为0，如果为2则仍为2，如果为负数则仍然为负数）。
+- addCount(long x, int check)：用于统计元素个数，并发较小时直接CAS更新baseCount属性，失败则更新counterCells数组的某个位置，多次失败则扩容counterCells，counterCells扩容期间还会尝试更新baseCount。统计完成之后，如果当前个数大于sizeCtl则扩容或协助扩容。
 
-- **hasQueuedPredecessors()**：是否在同步队列中有前驱节点，即之前是否有线程在等待获取资源。调用getFirstQueuedThread方法，从当前tail往前遍历一遍同步队列，查找到最后一个非空的waiter值。
+- putVal(K key, V value, boolean onlyIfAbsent)：put操作，自旋重试直到成功，与HashMap不同的是键和值均不能为null。首先如未初始化则初始化；其次如果下标位置处不存在节点则直接CAS设置一个新的Node节点；如果存在节点；先根据节点hash属性判断为ForwardingNode，则调用helpTransfer方法尝试协助扩容并跳转到新数组中；如果onlyIfAbsent为true且下标位置节点匹配则直接返回旧值；最后**获取下标位置节点的同步锁后**执行插入操作，同步操作完成后如果需要升级红黑树则升级。
+    - 同步插入操作：获取到同步锁之后，检查到下标位置节点未被改变才能执行；如果节点为Node类型（**hahs属性大于等于0**），执行插入链表操作即可，链表长度超过8时会升级为红黑树；如果节点为TreeBin类型，调用TreeBin的putTreeVal方法进行插入；如果节点为ReservationNode类型，则直接抛出IllegalStateException；如果节点为ForwardingNode类型则本次操作结束并进入下一轮循环（即尝试扩容）。
 
-#### 区别
+- treeifyBin(Node<K,V>[] tab, int index)：将链表升级为红黑树。如果数组大小小于64则不升级为红黑树而是调用tryPresize方法尝试扩容为两倍大小；下标位置节点为Node类型时才**获取其同步锁**执行升级操作，将Node链表替换为TreeNode链表后，使用TreeNode链表构造一个TreeBin节点并设置到下标位置处。
 
-JDK14之前，通过头节点的waitStatus判断是否需要阻塞，而JDK14之后不需要判断头节点的status，同时独占和共享模式的实现被集成到了一起。
+- helpTransfer(Node<K,V>[] tab, Node<K,V> f)：协助扩容并返回新数组地址。自旋尝试直到扩容结束或参与扩容线程数超过限制（**扩容时sizeCtl属性后十六位为当前正在执行扩容操作的线程数+1**），当CAS更新sizeCtl属性成功（使扩容线程数加一）才调用transfer方法。
 
-### **ConditionObject(TODO)**
+- transfer(Node<K,V>[] tab, Node<K,V>[] nextTab)：转移节点到新数组，**并不是判断nextTable属性而是判断nextTab参数**，如nextTab参数为null则表示新数组还没创建，创建大小为原数组大小两倍的新数组并立即设置到nextTable属性，以及设置transferIndex值为原数组大小；**每个节点转移完成后将原位置处设置为ForwardingNode节点**，扩容完成后CAS修改sizeCtl值使扩容线程数减一，如果是最后一个扩容线程则使用新数组替换原数组。
+    - **转移操作为分块处理**，每次处理的槽个数stride由数组大小和cpu核心数计算得到，默认最小值为16，循环处理直到全部转移完成。每轮转移开始前，需要使用CAS将transferIndex指针前移stride位，再从后往前遍历执行。每轮处理时，如果原数组被处理的位置为空则直接设置为ForwardingNode节点；如果当前位置是ForwardingNode节点，则表示当前区块已经或正在被其他线程处理，则执行advance寻找下一个需要处理的区块；其他情况下**获取其同步锁**执行转移，如果是链表或红黑树则进行拆分（与HashMap逻辑相同）并在转移完成后将原数组位置处设置为ForwardingNode节点，如果是ReservationNode则抛出IllegalStateException。
 
--
+- replaceNode(Object key, V value, Object cv)：替换或移除节点，要求cv为null或值等于cv才执行操作，当value为null时则移除结点，自旋重试直到成功。如果下标位置处存在节点，如果根据hash属性判断节点是ForwardingNode则调用helpTransfer方法协助扩容，否则**获取其同步锁**；如果节点hash值大于等于0（节点为Node类型）则遍历查找并替换或移除；如果节点为TreeBin类型则获取红黑树根节点，调用其findTreeNode方法查找节点并替换或移除，移除树节点时调用TreeBin的removeTreeNode方法，如果该方法返回结果为true则执行退化操作后进入下一轮循环；如果节点为ReservationNode则抛出IllegalStateException。
 
-### **原子操作**
+- **compute方法**：重写了默认实现，自旋重试直到成功。如未初始化则调用initTable方法初始化；**如下标位置为空则创建一个ReservationNode，获取其同步锁后，将其设置到下标位置处以表示占据该位置，成功后执行mapping函数并根据函数结果操作节点**；如果下标位置节点为ForwardingNode则调用helpTransfer尝试协助扩容；如果下标位置节点匹配则直接返回结果；其他情况下获取下标位置节点的同步锁执行同步操作（逻辑与putVal方法相似）。
 
-JDK8使用Unsafe类（sun.misc），JDK9改为使用VarHandle类，JDK14重新使用Unsafe类（jdk.internal.misc）。
-> JDK14：*We use jdk.internal Unsafe versions of atomic access methods rather than VarHandles to avoid potential VM bootstrap issues.*
+### Node
+
+与HashMap.Node类基本一致，区别是val属性和next属性为volatile。
+
+- find(int h, Object k)：于get操作中调用，在给定位置处查找键，子类均重写了该方法。
+
+### ForwardingNode
+
+扩容节点，表示当前位置的节点已被转移到扩容后的新数组中，hash属性默认为MOVED（-1），持有新数组的引用。
+
+- find方法：通过nextTable属性定位到新数组中查找节点，调用find方法。
+
+### TreeBin
+
+红黑树代理节点，维护树根节点和链表头节点，key、val、next属性均为null，hash属性默认为TREEBIN（-2）。
+
+- TreeNode<K,V> root：红黑树根节点，**非volatile**。
+
+- volatile TreeNode<K,V> first：链表头节点。
+
+- volatile Thread waiter：正在等待获取锁的线程。
+
+- volatile int lockState：锁状态，使用volatile和CAS操作实现读写锁，包含WRITER（写锁）、WAITER（等待获取锁）、READER（读锁）三个特殊状态，0表示未加锁。
+
+- TreeBin(TreeNode<K,V> b)：构造方法，使用TreeNode链表构造红黑树代理类，红黑树构造方式与HashMap一致，但是构造完成后不需要调整链表，因为使用了first属性维护链表的头节点。
+
+- lockRoot()：阻塞获取当前对象的写锁。
+
+- putTreeVal(int h, K k, V v)：查找或添加节点，如果需要恢复平衡，执行恢复平衡操作需要调用lockRoot方法加锁。
+
+- removeTreeNode(TreeNode<K,V> p)：移除给定的红黑树节点，返回值为当前红黑树是否需要退化。使用与HashMap相同的方式判断是否需要退化，如需退化则直接返回true，否则调用lockRoot方法加锁后移除树节点。
+
+- find方法：自旋直到获取到读锁后，调用根节点的findTreeNode方法查找。
+
+### TreeNode
+
+红黑树节点，与hashMap的TreeNode基本一致，属性均为volatile，并且大部分方法移至TreeBin类中。
+
+- find方法：调用findTreeNode方法。
+
+- findTreeNode(int h, Object k, Class<?> kc)：查找节点，与hashMap的TreeNode类find方法完全相同，先比对hash属性，再使用equals方法判断，如果不等则使用Comparable判断，如果非Comparable类型或compareTo方法比较相等时，则只能在左右子树递归查找。
+
+### ReservationNode
+
+预留节点，表示当前位置已被compute或computeIfAbsent操作预留，hash属性默认为RESERVED（-3）。
+
+- find方法：返回null。
+
+### **使用时安全吗？**
+
+需要谨慎使用compute和computeIfAbsent操作，可能会创建ReservationNode节点，会导致其他操作抛出IllegalStateException，为方法API声明之外的异常。
+
+### **为什么效率高？**
+
+- 支持的并发级别即为数组大小，相比于使用segment粒度更小了，从使用ReentrantLock锁多个槽变为使用同步锁锁单个槽。
+- 扩容操作支持并发协助，且不阻塞操作，get操作直接通过ForwardingNode跳转到新数组中，put操作会先尝试协助扩容再跳转到新数组中。
+
+***
+
+## **BlockingQueue extends Queue**
+
+阻塞队列，线程安全的队列，主要用于生产者-消费者模式，不允许接受null元素。有四种操作模式，抛出异常和立即返回结果来自于Queue接口，**put和take操作为阻塞等待，带参数的offer和poll操作为等待指定时间后返回结果**。
 
 ***

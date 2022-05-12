@@ -4,24 +4,23 @@
 
 ***
 
+## ★
+
+* [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
+* [面试要点](interview)
+* [书籍清单](book)
+
 ## 文档
 
 * [Markdown语法](markdown)
 * [UML图绘制](uml)
 
-## 面试
-
-* [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
-* [剑指offer](interview)
-
-
 ## 算法
 
 * [算法基础](algs)
 * [进阶算法](algs/advanced)
-* [数组与矩阵](algs/array)
 
-## Jdk
+## JDK
 
 * [lang](java/lang)
 * [time](java/time)
@@ -29,25 +28,14 @@
 * [util](java/util)
 * [thread](java/thread)
 * [concurrent](java/concurrent)
+* [aqs](java/aqs)
 * [stream](java/stream)
 
-## Jvm
+## JVM
 
 * [基础知识](jvm)
 * [Java内存模型](jvm/jmm)
 * [oom异常](jvm/oom)
-
-## 组件及工具
-
-* [Mysql](mysql)
-* [Redis](redis)
-* [Maven](maven)
-* [Gradle](gradle)
-
-## 框架
-
-* [Spring Cloud Alibaba](spali)
-* [Shiro](shiro)
 
 ## 第三方库
 
@@ -61,6 +49,18 @@
 * [hikariCP](hikariCP)
 * [lettuce](lettuce)
 
+## 组件及工具
+
+* [Mysql](mysql)
+* [Redis](redis)
+* [Maven](maven)
+* [Gradle](gradle)
+
+## 框架
+
+* [Spring Cloud Alibaba](spali)
+* [Shiro](shiro)
+
 ## 业务
 
 * [缓存常见问题](caching)
@@ -70,7 +70,8 @@
 
 * [高效编码技巧](coding)
 * [DDD架构](ddd)
-* [Docker部署](docker)
 * [RESTful API](restful)
+* [Docker部署](docker)
+* [IDEA使用](idea)
 
 ## [My pull requests](prs)

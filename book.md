@@ -2,18 +2,10 @@
 
 ***
 
-## 学习计划
-
-![](/blog/pic/学习计划.png)
-
-***
-
-## 书籍清单
-
+- 《剑指offer》
 - 《算法（第 4 版）》
 - 《Java 实战（第 2 版）》
 - 《Java并发编程实战》
-- [《深入浅出Java多线程》](http://concurrent.redspider.group/)
 - 《深入理解 Java 虚拟机（第 3 版）》
 - 《Effective Java（第 3 版）》
 - 《码出高效 Java 开发手册》
