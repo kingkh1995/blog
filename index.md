@@ -1,10 +1,10 @@
-# 学习笔记
+***
 
 > 好好学习！天天向上！早日当上咸鱼！
 
 ***
 
-## ★
+## ★★★
 
 * [个人简历](https://github.com/kingkh1995/blog/blob/master/interview/resume.md)
 * [面试要点](interview)

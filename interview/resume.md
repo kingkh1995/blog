@@ -3,22 +3,22 @@
      <div>
          <span>
              <img src="phone-solid.svg" width="18px">
-             188XXXXXXXX
+             17600040150
          </span>
          ·
          <span>
              <img src="envelope-solid.svg" width="18px">
-             xxxxxxxx@xxx.com
+             kingkh1995@outlook.com
          </span>
          ·
          <span>
              <img src="github-brands.svg" width="18px">
-             <a href="https://github.com/kingkh1995">github主页</a>
+             <a href="https://github.com/kingkh1995">Github个人主页</a>
          </span>
          ·
          <span>
              <img src="rss-solid.svg" width="18px">
-             <a href="https://kingkh1995.github.io/blog/">博客地址</a>
+             <a href="https://kingkh1995.github.io/blog/">个人博客</a>
          </span>
      </div>
  </div>
@@ -51,5 +51,5 @@
 ## <img src="tools-solid.svg" width="30px"> 技能清单
 
 - ★★★ Java、MySQL、Redis
-- ★★☆ Spring
+- ★★☆ DDD、Spring
 - ★☆☆ RabbitMQ、ZooKeeper

@@ -103,4 +103,4 @@ System.out.println(int.class.getCanonicalName()); // int
 
 #### Cglib
 > Enhancer.create(Class type, MethodInterceptor callback)
->> 基于子类继承，使用字节码技术，动态生成被代理类的子类（所以类和方法不能声明为final）。
+>> 基于子类继承，底层使用了字节码处理框架ASM，动态生成被代理类的子类（所以类和方法不能声明为final）。
