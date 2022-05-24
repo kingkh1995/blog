@@ -12,22 +12,6 @@
 
 ***
 
-## **CopyOnWriteArrayList**
-
-线程安全的List，COW思想设计，适用于读多写少的并发场景。使用volatile和一个对象锁实现，每次写操作都需要获取到对象的同步锁，写操作并不修改原数组，而是创建新数组，完成后使用新数组替换原数组，因此原数组是线程安全的（**查询操作无需使用Unsafe类**）。
-
-***
-
-## CopyOnWriteArraySet
-
-线程安全的Set，使用CopyOnWriteArrayList实现。
-
-- **获取线程安全的Set更推荐的方式：**
-    - 使用ConcurrentHashMap的静态方法newKeySet()创建。
-    - 使用Collections工具类的newSetFromMap方法包装ConcurrentHashMap。
-
-***
-
 ## **HashMap**
 
 ### 属性

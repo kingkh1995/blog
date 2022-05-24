@@ -18,13 +18,30 @@
 
 基于Striped64实现，而Striped64使用VarHandle类执行原子操作。
 
-- **Striped64**：在高并发情况下CAS操作失败概率上升导致原子类效率降低，而Striped64类使用了热点分离和空间换时间的策略，其操作针对一个基本值和Cell数组，没有竞争时操作base值，存在竞争时不同线程针对不同的cell执行操作，竞争强度上升后会对Cell数组进行扩容，所以在低并发和高并发下都有很好的效率，**缺点是无法获取到实时的统计值，只适用于并发统计的场景**。
+- **Striped64**：在高并发情况下CAS操作失败概率上升导致原子类效率降低，而Striped64类使用了**热点分离（空间换时间）** 的策略。其操作针对一个基本值和Cell数组，没有竞争时操作base值，存在竞争时不同线程针对不同的cell执行操作，竞争强度上升后会对Cell数组进行扩容，所以在低并发和高并发下都有很好的效率，**缺点是更新操作无法获取到实时的统计值**，只适用于并发统计的场景。
 
 - **VarHandle**：变量句柄，JDK9新增，用于替代Unsafe类，JDK对其安全性和可移植性有保障，允许被用户使用。该类提供了多种对变量的访问模式，只能通过MethodHandles类的内部类Lookup创建。
 
 ### AtomicStampedReference
 
 相比于AtomicReference，解决了ABA问题，操作的变量为私有内部类Pair，其为reference变量捆绑了版本号stamp变量，也是基于VarHandle类实现。
+
+***
+
+## **CopyOnWriteArrayList**
+
+线程安全的List，COW写时复制思想设计，读写分离，适用于读多写少的并发场景。使用volatile和一个对象锁实现，读操作是直接读取效率高，写操作需要获取到对象的同步锁，写操作并不修改原数组，而是创建新数组，完成后使用新数组替换原数组。
+
+***
+
+## CopyOnWriteArraySet
+
+线程安全的Set，使用CopyOnWriteArrayList实现。
+
+- **获取线程安全的Set更推荐的方式：**
+    - 使用ConcurrentHashMap的静态方法newKeySet()创建。
+    - 使用Collections工具类的newSetFromMap方法包装ConcurrentHashMap。
+    - ***也可以使用ConcurrentSkipListSet（使用ConcurrentSkipListMap实现）。***
 
 ***
 
@@ -141,8 +158,47 @@
 
 ***
 
+## ConcurrentLinkedQueue （TODO）
+
+线程安全的队列
+
+***
+
+### ConcurrentSkipListMap（TODO）
+
+跳跃表
+
+***
+
 ## **BlockingQueue extends Queue**
 
 阻塞队列，线程安全的队列，主要用于生产者-消费者模式，不允许接受null元素。有四种操作模式，抛出异常和立即返回结果来自于Queue接口，**put和take操作为阻塞等待，带参数的offer和poll操作为等待指定时间后返回结果**。
+
+### ArrayBlockingQueue
+
+数组实现的有界阻塞队列，只记录队首和队尾的索引，不会产生和销毁额外对象，GC压力小。只使用了一个ReentrantLock，可以设置是否使用公平锁，默认非公平锁。
+
+### LinkedBlockingQueue
+
+链表实现，可有界可无界（容量为Integer.MAX_VALUE），需要创建和销毁Node对象，GC压力大。put和take各使用了一个非公平的ReentrantLock，并发效率更高。
+
+### DelayQueue
+
+无界的延时队列，元素必须实现Delayed接口，使用以延时时间维护的PriorityQueue保存元素，只有元素延迟时间已到才允许被获取。只使用了一个非公平的ReentrantLock，**但使用leader属性保存了第一个阻塞等待获取元素的线程，take操作等同于是公平的**。
+
+### DelayedWorkQueue
+
+ScheduledThreadPoolExecutor使用的队列，与DelayQueue设计相同。不同之处是自己使用数组实现了堆，**堆内元素是ScheduledFutureTask，保存了其在堆中的索引，则remove操作不再需要遍历堆查找到元素**。
+
+### PriorityBlockingQueue
+
+基于优先级的无界阻塞队列，使用Object数组实现，只使用了一个非公平的ReentrantLock。
+
+### SynchronousQueue (TODO)
+
+特殊的阻塞队列，**不保存元素**，支持公平和非公平的方式。每个put必须等待一个take，反之亦然，都是使用内部类Transfer的transfer方法实现。
+
+- TransferQueue：公平模式下使用，队列方式。
+- TransferStack：非公平模式下使用，栈方式。
 
 ***
