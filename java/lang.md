@@ -1,224 +1,272 @@
-## [首页](/blog/)
+# [首页](/blog/)
 
-> version: **jdk11**
-
-***
-
-### Object
-
-  - registerNatives()
-
-    > native方法，在静态代码块中被调用。
-
-  - getClass()
-
-    > native方法，返回一个运行时Class对象，返回的类对象是被该类static synchronized方法锁住的对象。
-
-  - hashCode()
-
-    > native方法，返回对象的哈希码值，**哈希码值和对象地址有一定关联，但并不一定如此**，具体取决于运行时库和JVM的具体实现。
-
-    > 原生类型均重写了hashcode方法：Integer类型直接返回32位值；Long和Double类型返回前32位和后32异或的结果；Boolean类型直接返回两个特定值；String类型使用31作为因子对字符数组每一位使用除留余数法，并且有软缓存。
-
-  - equals()
-
-    > 默认是对象引用对比的结果，通常需要在重写此方法时覆盖hashCode方法，是**为了维护hashCode方法的常规协定（散列集合是基于这些协定设计的）**，equals方法对比相等的对象必须具有相等的哈希码值，哈希码值不相等的对象使用equals方法对比必然不相等（可推算出）。
-
-  - clone()
-
-    > **protected** native方法，实现为浅拷贝，一个类必须实现Cloneable接口才能使用clone方法，否则会抛出CloneNotSupportedException，可能需要通过重写修改其访问限定修饰符为public，**注意Object类未实现Cloneable**。
-
-    > 数组重写了clone方法，会返回一个新数组，但元素复制是浅拷贝，**不推荐使用clone方法**，而是使用Arrays工具类复制数组。
-
-  - notify()、notifyAll()
-
-    > **final** native方法，notify唤醒正在此对象监视器上等待的任意的一个线程，notifyAll唤醒正在此对象监视器上等待的所有线程。被唤醒的线程仍然无法继续，直到当前线程放弃对对象的锁定，必须在同步方法或同步块内使用。
-
-  - wait()、wait(long timeoutMillis)、wait(long timeoutMillis, int nanos)
-
-    > **final** native方法，调用的均是wait(long timeoutMillis)方法，使当前线程释放该对象的监视器锁，等待被唤醒或者时间达到超时时间，之后与其他等待中的线程公平竞争该对象的锁，必须在同步方法或同步块内使用。
-
-    > **wait() == wait(0L)，并不是释放锁之后立刻进入对象锁等待池，而是一直等待直到被notify方法唤醒**。
-
-***
-    
-### String
-
-- 内部实现：
-  - private final byte[] value
-  - private final byte coder
-  - static final boolean COMPACT_STRINGS
-
-    > **jdk9开始使用byte数组存储字符**，存储时字符编码方式有两种：Latin1和UTF-16BE，分别对应的coder值为0和1。
-    
-    > COMPACT_STRINGS代表jvm是否允许压缩字符，如果允许压缩字符并且字符串中字符全在Latin1能表示的范围内，那么会使用Latin1编码，这样一个字符只会占用一个字节，否则会占用两个字节。
-
-    - *字符集相关：*
-
-      > Latin1 & ASCII：Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符，ASCII定义了128个字符，只使用了后7位且最高位默认为0，而Latin1使用了全部8位，定义了256个字符，能完全向下兼容ASCII。
-
-      > Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），第一个平面称为基本多语言平面（BMP），其他平面称为辅助平面。字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
-
-      > utf-16：Unicode字符集规定的标准编码实现，**也是jvm运行时字符的默认编码方式（jdk9之前）**，固定使用两个字节去表示BMP（包括中文）内的字符，BMP之外的字符则需要四个字节去表示。
-
-      > utf-8：可变长字符编码，使用1到4个字节表示一个Unicode字符，**java字节码文件使用utf-8编码**。对于ASCII字符，utf-8编码表示与其相同，即都只需要一个字节，但是表示一个中文字符却需要三个字节。
-
-  - private int hash
-
-    > 重写了hashcode方法，第一次被调用计算出散列值后会被缓存到hash字段中。
-
-- 构造方法：
-
-  - new String(String original)
-
-    > 该构造函数会使用传入的String对象构造一个新的String对象，相当于浅拷贝，即两个对象公用同一个value数组，**一般情况下不推荐使用**。
-
-  - String(StringBuilder builder) & String(StringBuffer buffer)
-
-    > 应该使用对应的toString方法。
-
-  - String(byte bytes[], String charsetName)
-            throws UnsupportedEncodingException
-  - String(byte bytes[], Charset charset)
-  
-    > 使用特定的编码方式创建一个字符串，推荐使用Charset参数的构造方法，传入StandardCharsets类的一个静态常量。
-
-
-- 常用方法：
-
-  - getBytes()
-
-    > 获取该字符串使用指定编码方式的表示，不带参数则默认为字节码编码方式（即utf-8），指定其他编码方式推荐选择Charset参数的方法。
-    
-    > 如果指定编码方式为utf-16会比预计多出两个字节，原因是其以两个字节为编码单元，要考虑字节序，所以返回的字节数组需要使用额外的两个字节表示来标志字节序（FEFF或FFFE），指定UTF-16BE或者UTF-16LE就会是原始的编码表示。
-
-  - length()
-
-    > 实现为value.length >> coder()，这也是为什么coder值为0和1的原因，**但需要知道对于BMP外的字符是占用四个字节的，所以该返回值可以说并不是完全正确**。
-
-  - char charAt(int index) & int codePointAt(int index)
-
-    > charAt获取BMP内的unicode字符，所以返回值是两个字节的char；而codePointAt能获取BMP外的unicode字符，最多会占四个字节，所以返回值是int。
-
-  - strip()（jdk11添加） & trim()
-
-    > 都是移除字符串两侧的空白字符，trim()方法移除空格、tab键、换行符，而strip()方法移除所有Unicode空白字符，**不推荐继续使用trim()方法**。
-    
-    > strip()和isBlank()内部实现都是调用Character.isWhitespace()，该方法能识别所有Unicode空白字符。
-
-  - split(String regex)
-
-    > 参数为正则表达式，所以对于正则表达式的特殊字符需要使用\\\\转义为普通字符，否则将使用正则表达式模式进行匹配。
-
-***
- 
-### StringBuffer & StringBuilder
-
-  - 相同点：
-
-    > 均是可变字符串，均继承自AbstractStringBuilder，默认容量均为16。
-
-  - 不同点：
-
-    > StringBuffer的所有方法都使用了synchronized修饰，所以它是线程安全的。
-    
-    > StringBuffer包含一个私有的transient的String类型属性（toStringCache），是针对toString方法的软缓存，第一次调用toString方法时缓存，字符串变更时则删除缓存。
-
-  - **AbstractStringBuilder**
-
-    > 设计与String基本相同，因为是可变字符串，拥有一个count字段来标识可变字符串的实际长度。
-    
-    > 扩容时变为原容量的两倍加2（why?），如果容量仍然不足则会直接加上新增的容量。
-
-    > **注意**：并没有AbstractStringBuilder(char c)的构造方法！你可以这么书写而且编译会通过，因为实际上是将char转化为了int类型，所以会执行 StringBuilder(int capacity) 构造方法。
+> version: **jdk17**
 
 ***
 
-### Byte、Integer、Long
+## Object
 
-- 都通过一个私有的缓存内部类，在静态代码块中为-128到127的值区间加载了缓存，但是只有Integer可以通过JVM参数调整缓存区间的上限（**下限固定为-128**）。
+- native int hashCode()：返回对象的哈希值，**哈希值和对象地址有一定关联，但并不一定如此**，具体取决于运行时库和JVM的具体实现。
+  > Boolean类型返回固定值；Byte、Short、Integer、Character直接返回int值；Float返回按int类型读取的值；Long和Double类型返回高32位和低32异或的结果；**String类型使用以31作为因子的除留余数法计算字符数组的所有字符，并且有软缓存（hash属性）**。
 
-- valueOf方法返回基本数据类型对应的包装类（**推荐使用该方法获取包装类**），parseXXX(String s)方法返回基本数据类型。
+- boolean equals(Object obj)：默认实现为使用==对比。**重写equals方法时需要遵守hashCode方法的常规协定（散列集合是基于此协定设计的），equals方法对比相等的对象必须具有相等的哈希值，哈希值不等的对象equals方法对比必然不等**。
+
+- **protected** native Object clone() throws CloneNotSupportedException：默认实现为浅拷贝，一个类必须实现Cloneable接口才能调用clone方法，否则会抛出CloneNotSupportedException，**注意Object类未实现Cloneable**。
+  > **数组可以调用clone方法且访问限定修饰符为public**，推荐使用Arrays工具类的copyOf方法复制数组。
+
+- protected void finalize() throws Throwable：**jdk9开始已经被标记为废弃。**
+
+- final native notify() & notifyAll()：notify唤醒正在此对象监视器上等待的任意的一个线程，notifyAll唤醒正在此对象监视器上等待的所有线程。**必须在同步方法或同步块内使用，被唤醒的线程仍然需要竞争到同步锁才可以恢复执行**。
+
+- final native void wait(long timeoutMillis)：线程状态变为TIMED_WAITING，等待被唤醒或者达到超时时间后被自动唤醒，**必须在同步方法或同步块内使用，当前线程会释放同步锁**。
+
+- final void wait()：wait(0L)，线程状态变为WAIT，一直等待直到被唤醒或者被打断。
+
+***
+    
+## String
+
+### 属性
+
+- final byte coder：字符编码方式，0表示Latin1，1表示UTF-16BE。**jdk9开始支持字符压缩，之前默认使用UTF-16BE编码**，如果字符全部在Latin1能表示的范围内，那么会使用Latin1编码，否则使用UTF-16BE。
+
+- final byte[] value：**jdk9开始使用byte数组存储字符，之前使用char数组**。Latin1编码使用一个byte值，UTF-16BE编码使用两个连续的byte值。
+
+- int hash：哈希值缓存。
+
+- boolean hashIsZero：标识哈希值是否为0，因为hash属性默认值也为0。
+
+### 字符编码
+
+- Latin1 & ASCII：**Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符**；ASCII定义了128个字符，只使用了后7位最高位默认为0；Latin1定义了256个字符，使用了全部8位，能完全向下兼容ASCII。
+
+- Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），**第一个平面称为基本多语言平面（BMP，包括中文）**，其他平面称为辅助平面。Unicode字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
+
+- utf-16：Unicode字符集规定的标准编码实现，固定使用两个字节去表示BMP内的字符，而BMP之外的字符则需要四个字节去表示。
+
+- utf-8：可变长字符编码，1到4个字节表示一个Unicode字符。**字节码文件使用的编码**，对于ASCII字符，utf-8编码能完全兼容，即只需要一个字节，但是表示一个中文字符utf-8却需要三个字节。
+  > 代码使用的字符几乎都是ASCII字符，故字节码文件使用utf-8编码相比于utf-16能大大节约空间，因为utf-16表示一个ASCII字符需要两个字节。
+
+### 构造方法
+
+- String(String original)：创建对象，并复用value数组。
+  > **String s = new String("abc")，如果字符串常量池中不存在abc，则需要创建两个String对象，但是只会创建一个value数组。**
+
+- 其他构造方法均会创建新的value数组，因为要保证value数组是stable的。
+
+- String(byte bytes[], Charset charset)：**将byte数组按给定的编码方式解码为字符串**，charset参数使用StandardCharsets类中的常量。
+
+### 实例方法
+
+- char charAt(int index) & int codePointAt(int index)：charAt获取BMP内的unicode字符，所以返回两个字节的char；而codePointAt能获取BMP外的unicode字符，所以返回四个字节的int。
+
+- formatted(Object... args)：使用自身作为模式字符串生成格式化字符串，与String.format()相同，每次都会创建一个新的Formatter。
+
+- getBytes()：使用默认的utf-8编码或指定的编码方式将字符串编码为字节数组。
+  > 指定编码为utf-16时会多出两个字节，因为需要使用额外的两个字节来标志字节序（FEFF或FFFE）。
+
+- isBlank() & strip()：**jdk11新增**，isBlank()判断是否是空字符串，strip()移除首尾的空字符，都是使用Character.isWhitespace()方法识别Unicode空白字符。
+  > **strip方法移除所有Unicode空白字符，而trim方法只移除空格、tab键、换行符。**
+
+- length()：value.length >> coder()。**需要知道对于BMP外的字符是占用四个字节的，所以返回值并不一定代表字符串的长度**。
+
+- split(String regex, int limit)：regex为正则表达式，如果正则表达式的特殊字符需要按普通字符匹配则需要使用\\\\转义；limit大于0时拆分后数组长度不能超过limit。
 
 ***
 
-### Enum（所有枚举的父类）
+## AbstractStringBuilder
 
-  - clone()：重写了clone方法，会直接抛出CloneNotSupportedException，因为是绝对的单例模式所以不允许被克隆。
+可变字符串的基类，内部实现与String基本相同。**使用一个int类型的属性count来记录字符串的实际长度；扩容操作会先考虑扩容为原容量的两倍加2，如果不足则会直接扩容为能刚好满足的容量。**
 
-  - valueOf()：**如果枚举常量不存在会抛出IllegalArgumentException，而不会返回null。**
+### **StringBuilder**
+
+非线程安全，默认容量16。
+
+### StringBuffer
+
+线程安全，所有方法都为同步方法，默认容量16，toString方法有缓存。
+
+### **要点**
+
+- 不存在构造方法AbstractStringBuilder(char c)，你可以这么写并且编译会通过，因为实际上执行的是构造方法AbstractStringBuilder(int capacity)。
+
+- 连续使用 + 拼接字符串会被优化为使用StringBuilder。
 
 ***
 
-### annotation
+## 包装类
 
-- 注解本质上是接口，隐式继承自Annotation接口，故注解无法继承其他接口或注解，但是可以被接口继承以及被类实现；
+- Boolean直接使用常量创建。
+
+- Byte、Short、Integer、Long都有自己的私有缓存内部类，为-128到127的区间预先加载了包装类缓存。
+  > 只有Integer可以通过JVM参数调整缓存区间的上限。
+
+- Character为ASCII字符添加了缓存，即值区间为0-127。
+
+- valueOf方法返回包装类（**推荐使用该静态工厂方法获取包装类**）
+
+- parse方法返回基本数据类型。
+
+- signum方法用于输出数字的符号，1：正数，0：0，-1：负数。
+
+- toUnsignedString方法将整形参数转化为无符号整形，**无符号整形即二进制表示的最高位不再视为符号位**。
+
+***
+
+## BigDecimal
+
+使用BigInteger实现，通过scale属性记录小数点位，可以指定MathContext（精度和舍入模式），默认MathContext.UNLIMITED（精度0及HALF_UP舍入），精度表示有效数字的最大长度，必须大于等于0，0则表示不限制。
+
+### 创建对象
+
+- **不要使用new BigDecimal(double val)，而是使用BigDecimal valueOf(double val)**。
+
+- **整数应该使用valueOf()方法创建，特殊值能利用到缓存。**
+
+### 方法
+
+- stripTrailingZeros()：去除所有尾随零，返回新的对象，精度可能不同。
+- toString()：有软缓存，返回MathContext处理过后的格式。
+- toPlainString()：数字原始文本格式。
+- toEngineeringString()：有必要时使用工程计数法格式输出。
+
+***
+
+## Enum
+
+所有枚举的基类，是绝对的单例模式。重写了clone方法，不允许被clone，直接抛出CloneNotSupportedException。**注意如果valueOf方法找不到枚举值会抛出IllegalArgumentException。**
+
+***
+
+## Throwable
+
+所有Error和Exception的父类，RuntimeException是Exception的子类，**RuntimeException与其子类之外的其他Exception称为受检查异常**，方法如果抛出受检查异常，调用方必须使用try-catch捕获异常或者继续向上抛出。
+
+***
+
+## System
+
+- nanoTime()：用来精准计时，不能用于计算时间。**返回从某一固定但任意的时间算起的纳秒数（或许从以后算起，所以该值可能为负）。**
+
+- identityHashCode()：native方法，返回对象的标识哈希值，即Object的默认hashcode方法计算出的值。
+
+***
+
+## Runtime
+
+JVM的运行时环境，饿汉单例模式，**使用Runtime.getRuntime()获取实例**。
+
+- availableProcessors()：返回JVM可以使用的处理器数量（逻辑处理器）。
+
+- addShutdownHook(Thread hook)：为JVM添加一个钩子线程，**使用kill -9 pid则无法执行钩子线程**。
+
+- exit(int status)：退出JVM，**如果使用非零的状态码则表示异常终止**。
+
+- gc()：**不要显式调用，因为完全是不可控的。**
+
+***
+
+## Annotation
+
+- **注解实际上是接口，隐式继承自Annotation接口**，故注解无法继承其他接口或注解，但是可以被接口继承以及被类实现；
 - 注解中如果声明了value参数，则使用时可以忽略参数名value，通过default指定参数默认值；
 - 注解中可以定义常量，但是无法定义default方法。
 
-#### 元注解
+### 元注解
 
-> 负责注解其他注解，元注解本身也都有被元注解注解。
-
-    // 元注解上注解的元注解
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.ANNOTATION_TYPE)
-
-#### @Documented
-
-> 表示注解会被包含在javadoc中。
-
-#### @Target
-
-> 指定注解的使用范围，值为ElementType枚举，如果注解上不存在该元注解，则注解可以用于任何元素上。
-
-- TYPE：注解可以被使用在类、接口、注解以及枚举上；
-- TYPE_PARAMETER：注解可以被使用在类型变量上；
-- TYPE_USE：注解可以被使用在使用了类型的任何位置。
-
-#### @Retention
-
-> 指定注解的保留级别，值为RetentionPolicy枚举，如果注解上不存在该元注解，则注解保留级别默认为CLASS。
-
-- SOURCE：注解会被编译器丢弃；
-- CALSS：注解会被编译器记录在class文件中，但虚拟机运行时不保留。
-- RUNTIME:：注解会被编译器记录，同时虚拟机运行时也会保留，所以可以通过反射机制读取到注解信息。
-
-#### @Inherited
-
-> 表示子类可以从父类中继承此注解，**实际上只是子类class可以通过getAnnotation方法获取到父类的此注解**，但该注解上的注解无法被获取到。
->> 注意getDeclaredAnnotation方法只能获取当前类上的注解。
-
-##### ***拓展：SpringBoot的注解***
-- AnnotationUtils.findAnnotation方法：SpringBoot内部使用，功能远比getAnnotation方法强大，能从类自身、父类、接口以及注解上获取注解信息（lang包下的注解除外，如@FunctionalInterface），也不需要使用@Inherited元注解。
-- @Validated、@RequestMapping等：只要能通过AnnotationUtils.findAnnotation方法获取注解到即开启注解相应功能。
-- @Component及相关注解：需要通过直接或间接的方式注解在类上才能被IOC容器管理，即无法继承，这是SpringBoot自身设计考量。
-
-#### @Repeatable
-
-> 表示此注解可以在同一个元素上使用多次，需要一个容器注解配合实现。
+负责注解其他注解，元注解本身也都有被元注解注解。
 
 ```java
+// 元注解上注解的元注解
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.FIELD})
-@Repeatable(RepeatableAnnoCol.class)
-public @interface RepeatableAnno {
-}
-
-// 容器注解的Target必须是可重复注解Target的子集
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface RepeatableAnnoCol {
-    RepeatableAnno[] value();
-}
-
-//通过原注解，使用了多次则无法获取
-RepeatableAnno annotation = XXX.class.getAnnotation(RepeatableAnno.class);
-//通过容器注解，只使用了一次则无法获取
-RepeatableAnnoCol annotationCol = XXX.class.getAnnotation(RepeatableAnnoCol.class);
-//推荐获取方式
-RepeatableAnno[] annotations = XXX.class.getAnnotationsByType(RepeatableAnno.class);
+@Target(ElementType.ANNOTATION_TYPE)
 ```
+
+- @Documented：表示注解会被包含在javadoc中。
+
+- @Target：指定注解的使用范围，值为ElementType枚举，如果注解上不存在该元注解，则注解可以用于任何元素上。
+  - TYPE：注解可以被使用在类、接口、注解以及枚举上；
+  - TYPE_PARAMETER：注解可以被使用在类型变量上；
+  - TYPE_USE：注解可以被使用在使用了类型的任何位置（如jakarta注解）。
+
+- @Retention：指定注解的保留级别，值为RetentionPolicy枚举，如果注解上不存在该元注解，则注解保留级别默认为CLASS。
+  - SOURCE：注解会被编译器丢弃；
+  - CALSS：注解会被编译器记录在class文件中，但虚拟机运行时不保留。
+  - RUNTIME：注解会被编译器记录，同时虚拟机运行时也会保留，所以可以通过反射机制读取到注解信息。
+
+- @Inherited：表示子类可以从父类中继承此注解。**仅仅意味着子类class对象可以通过getAnnotation方法获取到父类的此注解**。
+
+- @Repeatable：表示此注解可以在同一个元素上使用多次，需要一个容器注解配合实现。
+
+  ```java
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.TYPE, ElementType.FIELD})
+  @Repeatable(RepeatableAnnoCol.class)
+  public @interface RepeatableAnno {
+  }
+
+  // 容器注解的Target必须是可重复注解Target的子集
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  public @interface RepeatableAnnoCol {
+      RepeatableAnno[] value();
+  }
+
+  //通过原注解，使用了多次则无法获取
+  RepeatableAnno annotation = XXX.class.getAnnotation(RepeatableAnno.class);
+  //通过容器注解，只使用了一次则无法获取
+  RepeatableAnnoCol annotationCol = XXX.class.getAnnotation(RepeatableAnnoCol.class);
+  //推荐获取方式
+  RepeatableAnno[] annotations = XXX.class.getAnnotationsByType(RepeatableAnno.class);
+  ```
+
+### **SpringBoot注解**
+
+- AnnotationUtils的findAnnotation方法：SpringBoot内部使用，功能远比getAnnotation方法强大，能从类自身、父类、接口以及注解上获取注解信息（**lang包下的注解除外，如@FunctionalInterface**），无需@Inherited元注解。
+
+- @Validated、@RequestMapping等：只要能通过AnnotationUtils.findAnnotation方法获取注解到即开启注解相应功能。
+
+- @Component等DI注解：需要通过直接或间接的方式注解在类上才能被IOC容器管理，即无法继承，这是SpringBoot自身设计考量。
+
+***
+
+## Reference
+
+引用对象类型的基类，用于创造一个对象的引用对象，与垃圾回收机制息息相关，**只有当对象非强可达时，对象才可能被回收**。
+
+### 生命周期
+
+创建完成后状态为active，当被引用对象变为不可达后，如果指定了ReferenceQueue会转变成pending，然后被加入pending list，等待ReferenceHandler处理，处理完成后状态变为enqueued，如未指定ReferenceQueue或被移出后，状态转变为最终态inactive，等待引用对象变为不可达后被GC回收。
+
+### 属性
+
+- T referent：被引用的对象，可以为null（**不建议**）。
+
+- volatile ReferenceQueue<? super T> queue：如未指定或已被移出ReferenceQueue则为常量值NULL，如已入队则更新为常量值ENQUEUED。
+
+- volatile Reference next：ReferenceQueue中下一个Reference。
+
+- Reference<?> discovered：active状态时，是由GC维护的引用链；pending状态时，是等待入ReferenceQueue的pending list；inactive状态时，为null。
+
+### ReferenceQueue
+
+等待被回收的Reference队列，由Reference中的next指针连接而成的。**如果创建Reference时指定了ReferenceQueue，则被引用对象被回收后Reference将会被添加到队列中**。
+
+### ReferenceHandler
+
+高优先级的**daemon**线程，用于处理pending list，执行清理工作和入队ReferenceQueue。
+
+### SoftReference
+
+软引用，由垃圾收集器根据内存需求决定回收，在抛出OutOfMemoryError之前，会保证清除所有软引用。
+
+### WeakReference
+
+弱引用，每次执行GC时，弱引用都可以被回收。
+
+### PhantomReference
+
+虚引用，用于跟踪GC的回收活动，每次执行GC时，虚引用都可以被回收。创建时必须指定ReferenceQueue，get方法永远返回null。
 
 ***

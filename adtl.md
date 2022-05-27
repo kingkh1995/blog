@@ -34,25 +34,6 @@
 
 > ThreadLocalMap内部类，继承自WeakReference，弱引用ThreadLocal作为key，增加的value属性为强引用，如果ThreadLocal已被回收，则视为过期，可以对Entry进行清除。
 
-### 软引用、弱引用、虚引用
-
-> 都继承自Reference<T>，创造一个对象的引用对象，只有当对象不存在强引用时才可能被回收。
-
-- Reference:
-
-    - 构造方法：单个对象的构造方法，或单个对象和一个ReferenceQueue的构造方法。
-
-    - get()：通过该方法获取被引用对象，如已被回收或者为虚引用则会返回null。
-
-    - ReferenceQueue：被引用对象被回收时，会将引用对象加入ReferenceQueue队列中。
-
-- 区别：
-    - 软引用：如gc后可用内存仍然不足，则会回收只存在软引用的对象。
-
-    - 弱引用：每次gc均会回收只存在弱引用的对象。
-
-    - 虚引用：创建时必须指定ReferenceQueue，创建虚引用后就无法通过虚引用获取到被引用对象，每次gc均会回收只存在虚引用的对象。
-
 ### ThreadLocalMap源码
 
 - getEntry()：通过ThreadLocal的threadLocalHashCode属性确定键的位置，获取到Entry后直接使用==对比传入的ThreadLocal和Entry引用的ThreadLocal，如果匹配则返回否则执行getEntryAfterMiss操作。

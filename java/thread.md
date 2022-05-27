@@ -6,27 +6,6 @@
 
 ## Thread implements Runnable
 
-### 静态方法
-
-- nextThreadID()：静态同步方法，用于生成线程ID，**基于静态long类型属性threadSeqNumber自增实现**，并没有使用原子类型。
-
-- currentThread()：静态本地方法，获取当前线程对象的引用。
-
-- yield()：静态本地方法，表示当前线程愿意让出对当前CPU的占用，重新进入竞争CPU的状态。
-
-- sleep()：静态本地方法，抛出InterruptedException异常，让当前线程停止执行并让出对CPU的占用，当指定的时间到了之后会自动恢复运行状态，睡眠期间不会释放对象锁资源。
-
-- interrupted()：获取当前线程的中断标识后清除标识。
-
-### 实例方法
-
-- start()：同步方法，用于启动线程，启动后虚拟机会调用run方法，再次调用会抛出IllegalThreadStateException异常。
-
-- join()：同步方法，当前线程调用另一个线程的join方法，当前线程会一直等待直到另一个线程死亡才继续，要求另一个线程必须是启动状态。
-    - ***内部通过Object的wait方法实现，使当前线程等待直到另一个线程退出后当前线程才会被唤醒。***
-
-- interrupt()：并不是打断线程，只是将中断标识设置为true，只有当线程处于等待状态时，线程才会检查中断标识，如果为true会抛出InterruptedException异常。
-
 ### 线程状态
 
 - **操作系统主要线程状态**：
@@ -36,15 +15,52 @@
 
 - **java线程状态**：
     - NEW：线程创建成功，还未调用start方法；
-    - RUNNABLE：线程在jvm中运行，**包含了操作系统线程的ready和running两个状态**；
-    - BLOCKED：阻塞状态，正在等待锁的释放；
-    - WAITING：等待状态，需要被唤醒才能进入RUNNABLE状态；
-    - TIMED_WAITING：超时等待状态，线程等待一个具体的时间后会被自动唤醒；
-    - TERMINATED：终止状态，线程已执行完毕。
+
+    - RUNNABLE：线程在jvm中运行，**包含了操作系统的ready和running两个状态**；
+
+    - BLOCKED：阻塞状态，线程正在等待锁的释放以进入同步区；
+        > 线程在RUNNABLE如果无法获取到锁则转变为BLOCKED状态，竞争到锁之后则转变回RUNNABLE状态。
+
+    - WAITING：等待状态，需要被唤醒才能进入RUNNABLE状态，**等待状态也可以被中断，但中断后仍然需要获取到锁才能继续执行**；
+        > Object的wait()、Thread的join()和LockSupport.park()会使线程进入此状态。
+
+    - TIMED_WAITING：超时等待状态，与WAITING不同的是线程在等待一个具体的时间后会被自动唤醒；
+        > Thread.sleep()以及带参数的wait、join、park会使线程进入此状态。
+
+    - TERMINATED：终止状态，线程执行完毕，由RUNNABLE转变为TERMINATED。
+
+### 静态方法
+
+- nextThreadID()：用于生成线程ID，**并没有使用原子类型而是使用同步**，通过静态long类型属性threadSeqNumber自增实现。
+
+- currentThread()：静态本地方法，获取当前运行的线程对象的引用。
+
+- yield()：静态本地方法，表示当前线程愿意让出对当前CPU的占用，重新进入竞争CPU的状态。
+    > ***线程状态仍然是RUNNABLE，但是操作系统线程状态从running变为ready**。
+
+- sleep()：静态本地方法，让当前线程停止执行并让出对CPU的占用，进入TIMED_WAITING状态，**不会释放同步锁**。
+    > 睡眠期间如果被打断会抛出InterruptedException异常使线程提前苏醒。
+
+- interrupted()：**返回当前线程的中断标识并清除标识。**
+
+### 实例方法
+
+- start()：同步方法，用于启动线程，线程状态转变为RUNNABLE，获取到CPU资源后JVM会执行线程的run方法。
+    > 只允许被调用一次，再次调用会抛出IllegalThreadStateException异常。
+
+- join()：同步方法，在当前线程中调用另一个线程的join方法后，当前线程会进入等待状态，直到另一个线程死亡才继续执行，要求另一个线程必须已启动。
+    > **当前线程循环调用另一个线程对象的wait方法使当前线程一直等待，直到另一个线程对象的isAlive方法返回false才退出循环，当前线程才能继续执行**。
+
+- interrupt()：并不是打断线程的执行，只是将线程的中断标识设置为true。
+    > **只有处于等待状态的线程才会检查其中断标识，如果为true会抛出InterruptedException异常，使线程进入运行状态并清除中断标识，而运行状态的线程只能通过主动检查中断标识以自行终止执行。**
+
+- isInterrupted()：获取线程的中断标识。
 
 ### ThreadGroup
 
-每个Thread必然存在于一个ThreadGroup中，ThreadGroup是一个标准的向下引用的树状结构，是防止"上级"线程被"下级"线程引用而无法有效地被GC回收，可以指定1~10的优先级，java中默认为5，线程的优先级最终还是由操作系统决定，高优先级的线程会有更高的几率得到执行，线程优先级不能大于其所在线程组的最大优先级。
+- 每个Thread必然存在于一个ThreadGroup中，ThreadGroup是一个标准的向下引用的树状结构，是防止"上级"线程被"下级"线程引用而无法有效地被GC回收；
+
+- 可以指定1~10的优先级，java中默认为5，线程的优先级最终还是由操作系统决定，高优先级的线程会有更高的几率得到执行，线程优先级不能大于其所在线程组的最大优先级。
 
 ***
 
@@ -151,7 +167,7 @@ ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包�
 
 - newScheduledThreadPool(int corePoolSize)：使用DelayedWorkQueue，只会创建核心线程，用于执行延时任务。
 
-- newWorkStealingPool(int parallelism)：返回ForkJoinPool，默认并发度为处理器个数。
+- newWorkStealingPool(int parallelism)：返回ForkJoinPool，默认并发度为处理器个数，**适合计算密集型场景，不要用于执行阻塞型任务**。
 
 ***
 

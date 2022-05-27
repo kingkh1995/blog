@@ -56,9 +56,9 @@
   - 再其次的是由 Application Service、Repository、ACL 等组合成的 Application Layer（应用层），核心是负责组件编排的 Application Service。 应用层依赖领域层，但不依赖具体实现。Application 层属于Use Case （业务用例），是描述比较大方向的需求， 接口相对稳定，一般不会频繁变更。
   - 最后是 ACL，Repository 等的具体实现，这些实现通常依赖外部具体的技术实现和框架，所以统称为 Infrastructure Layer（基础设施层）。Web 框架里的对象如 Controller 之类的通常也属于基础设施层。Infrastructure 层属于最低频变更的，一般这个层的模块只有在外部依赖变更了之后才会跟着升级。
 
-#### Entity、Data Object ( DO)和 Data Transfer Object (DTO)：
+#### Entity、Data Object (DO) 和 Data Transfer Object (DTO)：
 
-##### Data Object （DO、数据对象）：
+##### Data Object （数据对象，同 Persistent Object 、PO）：
 实际上是我们在日常工作中最常见的数据模型。在 DDD 的规范里，DO 应该仅仅作为数据库物理表格的映射，不能参与到业务逻辑中。为了简单明了，DO 的字段类型和名称应该和数据库物理表格的字段类型和名一一对应。
 
 ##### Entity（实体对象）：

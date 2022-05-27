@@ -117,7 +117,7 @@
 
 ## WeakHashMap
 
-与HashMap实现基本一致但并无红黑树，其Entry类继承自WeakReference，即使用WeakReference保存键，当键被GC回收后，视作键值对已被回收，get、put、resize等操作都会附带移除已被回收键值对。
+只使用拉链法实现，其Entry类继承自WeakReference，使用WeakReference保存键，当键被GC回收则视作键值对被回收，get、put、resize等操作都会附带移除已被回收键值对。支持空键，使用常量NULL_KEY替换空键，故空键永远不会被回收。
 
 ***
 
