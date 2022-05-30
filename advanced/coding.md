@@ -69,13 +69,22 @@
 
 - COUNT(*) & COUNT(1) 效率是完全一样的。
 
-- 不做超大偏移量分页，部分情况下可以使用id限定优化。
-  > 可确定id范围，*如已知上一页最后一条数据id、全量查询可预估出id范围*，直接代入查询条件可极大优化；
-    >> select * from t where ... and id >10000 limit 10;
-  
-  > 按id排序情况下，使用子查询查出id范围可以有效优化。
-    >> select * from t where ... and id >= (select id from t where ... limit 1000,1) limit 10;
-  
+- **不建议做超大偏移量分页**，id自增时可以使用主键索引进行一定优化。
+  1. 确定id偏移位置，使用子查询（一定要走索引）或作为参数传入（已知上一页最后一条数据id）。
+  ``` sql
+  select ... from t where id > (select id from t where ... limit 10000, 1) and ... limit 10;
+  ```
+  2. 使用id限定方式，直接限定id的值范围，效率最高，但是适用场景比较有限。
+  ``` sql
+  select ... from t where id between 10000 and 10100 and ... limit 10;
+  ```
+
+- 索引区分度很低时应忽略索引选择全表扫描，加载该索引后回表查询反而消耗更大。
+  > 如包含state字段的索引，state为0的数据占绝大多数，则status=0时强制不走索引。
+  ``` sql
+  select * from t ignore index (idx_stauts) where status = 0 limit 10;
+  ```
+
 ***
 
 ## 技术方案

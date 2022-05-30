@@ -69,6 +69,14 @@
 
 ***
 
+## Striped
+
+用于并发场景下创建锁对象。
+
+***
+
 ## Monitor
+
+对象监视器，用于替代ReentrantLock。
 
 ***

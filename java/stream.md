@@ -19,7 +19,9 @@
 - takeWhile()：JDK9增加，有状态中间操作，获取元素直到元素不满足条件后终止获取，**可用于终止无限流**。
 
 - mapMulti(BiConsumer<? super T, ? super Consumer<R>> mapper)：JDK16增加，中间操作，将一个元素替换为0-n个元素。
-    > **委托给flatMap操作实现，使用缓存区保存新元素，并使用Spliterator创建流，开销小于使用直接创建新流。**
+    > **委托给flatMap操作实现，使用SpinedBuffer对象的缓存区保存新元素，并使用其Spliterator创建流，开销小于使用flatMap且每次都创建新流。**
+    
+    > 与使用builder模式创建流的实现相同，**元素数量较少时更应该使用of静态工厂方法创建流**。
 
     ```java
     // 结果集为 [1,2,2,3,3,3]
@@ -35,8 +37,8 @@
         .toList();
     ```
 
-- toList()：JDK16增加，中断操作，收集为List，使用toArray方法返回的数组创建ArrayList然后包装成unmodifiableList。
-    > **Collectors.toList()收集为ArrayList，toList()多了一次数组复制。**
+- toList()：JDK16增加的默认方法，中断操作，收集为List，使用toArray方法返回的数组创建ArrayList然后包装成unmodifiableList。
+    > **Collectors.toList()收集为ArrayList，toList()比其多了一次数组复制。**
 
 ### 静态方法
 

@@ -1,4 +1,4 @@
-## [首页](https://kingkh1995.github.io/blog/)
+## [首页](/blog/)
 
 > version: **jdk11**
 
@@ -6,38 +6,6 @@
 
 ## Type
 > Java编程语言中所有类型的公共超接口。
-
-***
-
-## WildcardType
-> 通配符型表达，如 ? ， ? extends Number ，或 ? super Integer。
-
-***
-
-## GenericArrayType
-> 范型数组，组成数组的元素是 ParameterizedType 或 TypeVariable。
-
-- Type getGenericComponentType()：返回组成泛型数组的实际参数化类型
-
-***
-
-## ParameterizedType
-> 参数化类型，例如Map.Entry<String, ,Person>entry。
->> 含有<>则为参数化类型，比如 List<? extends String> 为 ParameterizedType 非 WildcardType。
-
-- Type[] getActualTypeArguments(); // String，Person
-- Type getRawType(); // Entry
-- Type getOwnerType(); // Map
-
-***
-
-## TypeVariable
-> 类型变量，在编译时会被转换为一个特定的类型，用来反映在JVM编译该泛型前的信息。
->> 比如 TypeVariableBean<K extends InputStream & Serializable, V> 中的K ，V 都是属于类型变量。
-
-- Type[] getBounds()：得到上边界的 Type数组。// K ：InputStream、 Serializable、 V：Object
-- D getGenericDeclaration(); 返回的是声明这个 TypeVariable 所在的类的 Type // TypeVariableBean
-- String getName(); 返回的是这个 TypeVariable 的名称 // K、V
 
 ***
 
@@ -88,7 +56,35 @@ System.out.println(int.class.getCanonicalName()); // int
 
 ***
 
-## ClassLoader
+## WildcardType
+> 通配符型表达，如 ? ， ? extends Number ，或 ? super Integer。
+
+***
+
+## GenericArrayType
+> 范型数组，组成数组的元素是 ParameterizedType 或 TypeVariable。
+
+- Type getGenericComponentType()：返回组成泛型数组的实际参数化类型
+
+***
+
+## ParameterizedType
+> 参数化类型，例如Map.Entry<String, ,Person>entry。
+>> 含有<>则为参数化类型，比如 List<? extends String> 为 ParameterizedType 非 WildcardType。
+
+- Type[] getActualTypeArguments(); // String，Person
+- Type getRawType(); // Entry
+- Type getOwnerType(); // Map
+
+***
+
+## TypeVariable
+> 类型变量，在编译时会被转换为一个特定的类型，用来反映在JVM编译该泛型前的信息。
+>> 比如 TypeVariableBean<K extends InputStream & Serializable, V> 中的K ，V 都是属于类型变量。
+
+- Type[] getBounds()：得到上边界的 Type数组。// K ：InputStream、 Serializable、 V：Object
+- D getGenericDeclaration(); 返回的是声明这个 TypeVariable 所在的类的 Type // TypeVariableBean
+- String getName(); 返回的是这个 TypeVariable 的名称 // K、V
 
 ***
 

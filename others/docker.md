@@ -16,12 +16,12 @@
 
 - 使用Dockerfile构建应用
 ```
-docker build -t op-user-web:2021.0.0 .
+docker build -t ddd-user-web:2022.0.0 .
 ```
 ```
-docker run -it --name app1 --network mynet --network-alias app1 -p  8081:8080 -d op-user-web:2021.0.0
-docker run -it --name app2 --network mynet --network-alias app2 -p  8082:8080 -d op-user-web:2021.0.0
-docker run -it --name app3 --network mynet --network-alias app3 -p  8083:8080 -d op-user-web:2021.0.0
+docker run -it --name app1 --network mynet --network-alias app1 -p  8081:8080 -d ddd-user-web:2022.0.0
+docker run -it --name app2 --network mynet --network-alias app2 -p  8082:8080 -d ddd-user-web:2022.0.0
+docker run -it --name app3 --network mynet --network-alias app3 -p  8083:8080 -d ddd-user-web:2022.0.0
 ```
 
 ***

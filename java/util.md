@@ -170,6 +170,12 @@
 
 ***
 
+## ArrayDeque
+
+基于数组的Deque，容量无限，非线程安全。可指定初始容量，故在容量固定的场景下不需要扩容效率更高。
+
+***
+
 ## **Arrays**
 
 - asList()：数组转List，返回私有内部类ArrayList，**直接将数组代理为List**，支持set和replace，不支持add和remove。

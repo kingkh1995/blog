@@ -41,7 +41,6 @@
 - **获取线程安全的Set更推荐的方式：**
     - 使用ConcurrentHashMap的静态方法newKeySet()创建。
     - 使用Collections工具类的newSetFromMap方法包装ConcurrentHashMap。
-    - ***也可以使用ConcurrentSkipListSet（使用ConcurrentSkipListMap实现）。***
 
 ***
 
@@ -73,9 +72,12 @@
 
 ### 方法
 
-- size()：ConcurrentHashMap并没有size属性，实际上是调用了sumCount方法进行统计。
+- size() & mappingCount()：都是调用sumCount方法，size方法需要将long转为int，**建议使用mappingCount方法**。
 
 - sumCount()：统计元素，返回long值，累加baseCount属性和counterCells数组的统计值。
+
+- **jdk8新增带parallelismThreshold参数的foreach（全部执行操作）、reduce（全部整合为一个结果）、search（执行操作直到searchFunction返回非空的结果）**，parallelismThreshold参数表示并发阈值，如果预估大小（sumCount）小于该值则会单线程操作，否则使用ForkJoinPool并行操作。
+    > 故parallelismThreshold参数为1则可以开启最大并行执行，为Long.MAX_VALUE则顺序执行。
 
 - get(Object key)：使用HashMap相同的公式计算出下标，首先判断下标位置节点是否命中，**如未命中且节点为特殊节点（hash属性小于0）则调用节点的find方法查找**，否则遍历链表查找。
 
@@ -166,7 +168,7 @@
 
 ### ConcurrentSkipListMap（TODO）
 
-跳跃表
+跳跃表，线程安全的NavigableMap。
 
 ***
 
