@@ -14,7 +14,7 @@
 
 实现基于ThreadPoolExecutor，使用的阻塞队列为DelayedWorkQueue，任务类型为ScheduledFutureTask。
 
-任务提交均直接加入队列，并确保存在运行中的worker，保证了任务一定是被worker从队列中取出执行。
+任务提交均直接加入队列，并使用ensurePrestart方法确保存在运行中的worker，保证了任务一定是被worker从队列中取出执行。
 
 ### DelayedWorkQueue
 
