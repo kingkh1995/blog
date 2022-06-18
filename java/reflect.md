@@ -114,15 +114,3 @@ System.out.println(int.class.getCanonicalName()); // int
 > List<? super Apple>，它表示某种类型的 List，我们不知道实际类型是什么，但是这个类型肯定是 Apple 的父类型。因此，向这个 List 添加一个 Apple 或者其子类型的对象是安全的，这些对象都可以向上转型为 Apple。但是我们不知道加入 Fruit 对象是否安全，因为那样会使得这个 List 添加跟 Apple 无关的类型。同时编译器只允许返回Object对象，因为只能向上转型为Object。
 
 ***
-
-## 动态代理两种方式
-
-### Proxy
-> Proxy.newProxyInstance(ClassLoader loader, Class<?>[] interfaces, InvocationHandler h)
->> 基于接口实现，生成一个实现代理接口的匿名类，方法执行时使用反射机制实现（jdk1.8版本后效率与cglib不再有差距）。
-
-### Cglib
-> Enhancer.create(Class type, MethodInterceptor callback)
->> 基于子类继承，底层使用了字节码处理框架ASM，动态生成被代理类的子类（所以类和方法不能声明为final）。
-
-***

@@ -27,9 +27,9 @@
 ## <img src="info-circle-solid.svg" width="25px"> 个人信息
 
 - 男，1995 年出生
-- 求职意向：Java 开发工程师
 - 工作经验：4 年
-- 期望薪资：28k-35k
+- 求职岗位：Java 开发工程师
+- 意向城市：武汉
 
 ## <img src="graduation-cap-solid.svg" width="32px"> 教育经历
 

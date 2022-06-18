@@ -10,6 +10,8 @@
 
 - @JsonAlias：属性注解，指定反序列化时属性的别名。
 
+- @JsonUnwrapped：扁平化对象，将对象拆分为属性。
+
 - @JsonAnyGetter：序列化时将map类型属性拆包作为普通属性。
 
 - @JsonAnySetter：反序列化时，使用一个map接受未知属性。

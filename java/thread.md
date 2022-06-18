@@ -70,7 +70,7 @@
 
 ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包装任务并提交给execute方法后返回。
 
-### **FutureTask<V> implements RunnableFuture<V>**
+### **FutureTask\<V> implements RunnableFuture\<V>**
 
 - RunnableFuture同时继承了Runnable和Future。用来包装任务后，将自身作为Runable提交，之后当作future使用。
 
@@ -89,6 +89,7 @@ ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包�
 - int corePoolSize：线程池中允许的核心线程数最大值。
     - 核心线程默认一旦创建则不会被销毁，可以通过allowCoreThreadTimeOut方法修改。
     - 提交任务时才会创建核心线程，可以通过prestartCoreThread方法（一个）或prestartAllCoreThreads方法（所有）提前创建。
+    - IO密集型配置线程数经验值是2N，CPU密集型配置线程数经验值是N + 1。
 
 - int maximumPoolSize：线程池中允许的线程总数最大值，等于核心线程数 + 非核心线程数。
 
@@ -183,12 +184,12 @@ ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包�
 
 ### 构造方法
 
-- int parallelism：并行度，默认值为CPU逻辑处理器个数，并不表示worker最大值；
+- int parallelism：并行度，默认值为CPU逻辑处理器个数（**公共池为N-1**），并不表示worker最大值；
 - ForkJoinWorkerThreadFactory factory：worker创建工厂；
 - boolean asyncMode：实际上是工作队列执行模式，true为FIFO（队列），false为LIFO（栈），默认false；
 - corePoolSize：核心线程数，通常情况下等于并行度。
-- maximumPoolSize：允许的最大线程数量，最大为256；
-- maximumPoolSize：最小线程数，可以为0。
+- maximumPoolSize：允许的最大线程数量，最大为32567（**公共池为256**）；
+- maximumPoolSize：最小线程数，可以为0（**公共池为1**）。
 
 ### **属性**
 

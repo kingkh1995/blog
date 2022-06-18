@@ -244,19 +244,19 @@ JDK8使用Unsafe类（sun.misc），JDK9改为使用VarHandle类，JDK14重新�
 
 ## **Phaser**
 
-移相器，升级的栅栏，能维护一个树状的层级关系，阶段将沿着树状结构完成，可以动态地控制每个阶段的任务总量。
+移相器，升级的栅栏，还能能维护一个树状的层级关系，可以动态地控制每个阶段的任务总量，当任务总量减少为0时才会终止（onAdvance方法）。
 
 - volatile long state：0-15表示还未到达的数量，16-31表示任务总量，32-62表示栅栏的阶段，63位标识栅栏是否被终止。
 
 - register() & bulkRegister()：注册任务，即动态调整任务总量，任务需要全部到达才能继续进入下一阶段。
 
-- arrive()：一个任务到达，并返回达到的阶段。
+- arrive()：一个任务到达，并返回当前的阶段。
   
-- arriveAndDeregister()：一个任务之后删除掉该任务。
+- arriveAndDeregister()：一个任务到达之后删除掉该任务。
 
 - arriveAndAwaitAdvance()：一个任务达到，并阻塞等待进入下一个阶段。
   
-- awaitAdvance(int phase)：等待直到指定阶段。
+- awaitAdvance(int phase)：phase与当前阶段相同则等待。
 
 ***
 
