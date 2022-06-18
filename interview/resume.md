@@ -29,7 +29,7 @@
 - 男，1995 年出生
 - 工作经验：4 年
 - 求职岗位：Java 开发工程师
-- 意向城市：武汉
+- 意向城市：深圳、武汉
 
 ## <img src="graduation-cap-solid.svg" width="32px"> 教育经历
 
@@ -61,7 +61,7 @@
   &emsp;&emsp;基于低代码平台开发的赋能SaaS产品彻底杜绝了项目延期的问题，同时产品后期维护的投入也平均下降了50%。
 
   #### **职责描述：**
-  1. 负责后端代码的整体架构及方案设计；
+  1. 负责后端项目的技术架构及方案设计；
   2. 开发通用的基础设施组件及业务模块；
   3. 协助基于低代码平台开发的新产品落地。
 
@@ -87,7 +87,7 @@
 
 - **2018.10 – 2019.12，【优惠券系统】，VIPKID**
 
-  *所用技术：Maven、Spring Cloud、Eruka、Feign、Redis、MySQL、Spring Data Jpa、RocketMQ*
+  *所用技术：Maven、Spring Cloud、Eureka、Feign、Redis、MySQL、Spring Data JPA、RocketMQ*
 
   #### **项目介绍：**
   
@@ -105,6 +105,6 @@
   ***
 
 ## <img src="tools-solid.svg" width="25px"> 技能清单
-- ★★★ Java、MySQL、Redis
-- ★★☆ DDD、Spring、Spring Boot、Spring Cloud、Maven、MyBatis、Spring Data Jpa、Feign、Dubbo、Shiro
+- ★★★ Java、MySQL、Redis、Spring、Spring Boot
+- ★★☆ DDD、Spring Cloud、Maven、MyBatis、Spring Data Jpa、Feign、Dubbo、Shiro
 - ★☆☆ RocketMQ、ZooKeeper、Activiti、Elasticsearch

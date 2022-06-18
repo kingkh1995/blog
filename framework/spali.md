@@ -5,19 +5,6 @@
 
 ## Nacos
 
-### Nacos Docker
-
-- docker-compose部署
-    
-    https://github.com/nacos-group/nacos-docker/blob/master/example
-
-    ```
-    docker-compose -f standalone-derby.yaml up
-    ```
-- 控制台地址
-
-    http://127.0.0.1:8848/nacos/
-
 ### Nacos Config
 
 #### **动态配置原理**
@@ -32,15 +19,34 @@
 
 ***
 
-## Dubbo
-
-***
-
 ## RocketMQ
 
 ***
 
 ## Seata
+
+支持AT、TCC、SAGA 和 XA四种事务模式
+
+### 分布式事务组件
+
+- Transaction Coordinator (TC)： 事务协调器，维护全局事务的运行状态，负责协调并驱动全局事务的提交或回滚；
+- Transaction Manager (TM)： 控制全局事务的边界，负责开启一个全局事务，并最终发起全局提交或全局回滚的决议；
+- Resource Manager (RM)： 控制分支事务，负责分支注册、状态汇报，并接收事务协调器的指令，驱动分支（本地）事务的提交和回滚。
+
+### AT事务模式
+1. 一阶段：业务数据和回滚日志记录在同一个本地事务中提交，释放本地锁和连接资源。
+   - branchRegister：RM与TC交互获取全局锁和BranchId；
+   - branchReport：本地事务提交后，RM将结果通知TC；
+2. 二阶段：由TM形成全局决议提交到TC，TC下方命令到RM。
+   - branchCommit：只需要删除一阶段的undo_log和释放全局锁，并不是立即执行而是异步处理以提升性能；
+   - branchRollback：使用undo_log表进行回滚，回滚前需要校验脏写，如果失败**则只能人工处理**。
+
+- before image & after image：保存更新前后快照，用于恢复和校验是否发生脏写。
+- 优点：性能高、无入侵；缺点：SDK较重、脏写无法处理。
+
+***
+
+## Sentinel
 
 ***
 

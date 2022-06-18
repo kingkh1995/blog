@@ -198,3 +198,15 @@ docker-compose -f skywalking-compose.yml up -d
   ```
 
 ***
+
+## Nacos Docker
+
+- [docker-compose部署](https://github.com/nacos-group/nacos-docker/blob/master/example)
+    
+  ```
+  docker-compose -f standalone-derby.yaml up
+  ```
+  
+- 控制台地址：http://127.0.0.1:8848/nacos/
+
+***

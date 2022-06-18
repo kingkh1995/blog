@@ -34,7 +34,6 @@
 
 * [Mysql](tool/mysql.md)
 * [Redis](tool/redis.md)
-* [Zookeeper](zookeeper)
 * [Maven](tool/maven.md)
 
 ## Open Source Project
@@ -53,13 +52,17 @@
 
 * [Shiro](framework/shiro)
 * [Spring](framework/spring)
+* [MyBatis](framework/mybatis)
 * [Spring Cloud Alibaba](framework/spali)
 
 ## Advanced
 
-* [高效编码技巧](advanced/coding)
-* [缓存常见问题](advanced/caching)
+* [Coding](advanced/coding)
+* [缓存](advanced/caching)
 * [分布式锁](advanced/distributed-lock)
+* [分布式系统](advanced/distribution)
+* [RPC](advanced/rpc)
+* [消息队列](advanced/mq)
 * [RESTful](advanced/restful)
 
 ## System Architecture
