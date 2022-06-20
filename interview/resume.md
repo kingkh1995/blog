@@ -76,7 +76,7 @@
 
   &emsp;&emsp;多租户是以低代码入侵方式实现，基于拦截器、过滤器、ThreadLocal 以及Mycat等技术，同时产品中定义了大量的基于数据库的配置点，可以满足租户一定程度的个性化需求。
 
-  &emsp;&emsp;在产品上线之后，售前转化率得到了显著的提高，不到半年就已有三十多家租户入住，且客户留存率接近50%。
+  &emsp;&emsp;在产品上线之后，售前转化率得到了显著的提高，不到半年就已有三十多家企业客户入驻，且客户留存率接近50%。
 
   #### **职责描述：**
   1.	参与多租户方案的设计；
@@ -106,5 +106,5 @@
 
 ## <img src="tools-solid.svg" width="25px"> 技能清单
 - ★★★ Java、MySQL、Redis、Spring、Spring Boot
-- ★★☆ DDD、Spring Cloud、Maven、MyBatis、Spring Data Jpa、Feign、Dubbo、Shiro
+- ★★☆ DDD、Spring Cloud、Maven、MyBatis、Spring Data JPA、Feign、Dubbo、Shiro
 - ★☆☆ RocketMQ、ZooKeeper、Activiti、Elasticsearch
