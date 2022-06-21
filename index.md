@@ -32,9 +32,9 @@
 
 ## Middleware & Tool
 
-* [Mysql](tool/mysql.md)
-* [Redis](tool/redis.md)
-* [Maven](tool/maven.md)
+* [Mysql](middleware/mysql.md)
+* [Redis](middleware/redis.md)
+* [Maven](middleware/maven.md)
 
 ## Open Source Project
 
