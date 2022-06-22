@@ -80,7 +80,7 @@
 ## TransmittableThreadLocal extends InheritableThreadLocal
 > InheritableThreadLocal增强实现，在线程池中也可以生效，通过其crr机制转移TTL值，且能保证上下文不丢失和不会出现内存泄露。
 
-- holder：静态属性，InheritableThreadLocal<WeakHashMap<TransmittableThreadLocal<Object>, ?>>类型，用于记录当前线程使用过的TTL，WeakHashMap被当作Set使用，键的value均设为null。
+- holder：静态属性，InheritableThreadLocal\<WeakHashMap\<TransmittableThreadLocal\<Object\>, ?>>类型，用于记录当前线程使用过的TTL，WeakHashMap被当作Set使用，键的value均设为null。
 
 ### Transmitter
 > 内部工具类，转移器，转移逻辑实现。

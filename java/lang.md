@@ -143,7 +143,7 @@
 
 ## ClassLoader
 
-- BootstrapClassLoader：为JVM内置的加载器，无法被获取，用于加载JDK的APi类（java_home/jre/lib目录下）；
+- BootstrapClassLoader：启动类加载器，为JVM内置的加载器，无法被获取，用于加载JDK的APi类（java_home/jre/lib目录下）；
 
 - PlatformClassLoader：替代了拓展加载器，用于加载Java SE平台API及其实现类、特定的JVM运行时所需的类等；
 
@@ -160,6 +160,12 @@
 - 数组的类对象不是由类加载器创建的，而是运行时根据需要自动创建的；
 - 对象数组的类加载器与其元素的类加载器相同；
 - 基本数据类型和基本数据类型数组没有类加载器。
+
+### JAVA主动破坏双亲委派模型
+
+1. 1.2才新增的双亲委派的逻辑在loadClass方法中，为了向前兼容不是final方法，只需要重写即可破坏；
+2. JNDI、JDBC等在classpath路径下，因此为Thread对象增加了getContextClassLoader()方法，启动类加载器使用该方法获取应用加载器以加载用户的具体实现；
+3. 引入模块化后，新增final loadClass(Module module, String name)方法，其实现为直接使用findClass方法加载，然后判断类所属模块是不是给定模块，相同才返回。
 
 ***
 

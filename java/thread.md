@@ -36,7 +36,7 @@
 - currentThread()：静态本地方法，获取当前运行的线程对象的引用。
 
 - yield()：静态本地方法，表示当前线程愿意让出对当前CPU的占用，重新进入竞争CPU的状态。
-    > ***线程状态仍然是RUNNABLE，但是操作系统线程状态从running变为ready**。
+    > ***线程状态仍然是RUNNABLE，但是操作系统线程状态从running变为ready。***
 
 - sleep()：静态本地方法，让当前线程停止执行并让出对CPU的占用，进入TIMED_WAITING状态，**不会释放同步锁**。
     > 睡眠期间如果被打断会抛出InterruptedException异常使线程提前苏醒。
