@@ -6,72 +6,218 @@
 
 ## Object
 
-- native int hashCode()：返回对象的哈希值，**哈希值和对象地址有一定关联，但并不一定如此**，具体取决于运行时库和JVM的具体实现。
-  > Boolean类型返回固定值；Byte、Short、Integer、Character直接返回int值；Float返回按int类型读取的值；Long和Double类型返回高32位和低32异或的结果；**String类型使用以31作为因子的除留余数法计算字符数组的所有字符，并且有软缓存（hash属性）**。
+- ```java
+  public native int hashCode();
+  ```
+  返回对象的哈希值，与对象地址有一定关联，但并不一定如此，具体取决于运行时库和JVM的具体实现。
+  ```java
+  // Boolean
+  public static int hashCode(boolean value) {
+    return value ? 1231 : 1237;
+  }
+  // Byte、Short、Character
+  public static int hashCode(byte value) {
+    return (int)value;
+  }
+  // Integer
+  public static int hashCode(int value) {
+    return value;
+  }
+  // Long
+  public static int hashCode(long value) {
+    return (int)(value ^ (value >>> 32));
+  }
+  // Float
+  public static int hashCode(float value) {
+    return floatToIntBits(value); // 返回二进制表示 
+  }
+  // Double
+  public static int hashCode(double value) {
+    long bits = doubleToLongBits(value); // 返回二进制表示
+    return (int)(bits ^ (bits >>> 32));
+  }
+  ```
 
-- boolean equals(Object obj)：默认实现为使用==对比。**重写equals方法时需要遵守hashCode方法的常规协定（散列集合是基于此协定设计的），equals方法对比相等的对象必须具有相等的哈希值，哈希值不等的对象equals方法对比必然不等**。
+- ```java
+  public boolean equals(Object obj) {
+    return (this == obj);
+  }
+  ```
+  重写equals方法需要遵守hashCode方法的常规协定（**散列集合是基于此协定设计的**）：equals方法对比相等的两个对象必然具有相等的哈希值，哈希值不等的两个对象使用equals方法对比必然不等。
 
-- **protected** native Object clone() throws CloneNotSupportedException：默认实现为浅拷贝，一个类必须实现Cloneable接口才能调用clone方法，否则会抛出CloneNotSupportedException，**注意Object类未实现Cloneable**。
-  > **数组可以调用clone方法且访问限定修饰符为public**，推荐使用Arrays工具类的copyOf方法复制数组。
+- ```java
+  protected native Object clone() throws CloneNotSupportedException;
+  ```
+  实现为浅拷贝，一个类必须实现Cloneable接口才能调用clone方法，否则会抛出CloneNotSupportedException，**注意Object类未实现Cloneable**。
+    > **数组可以调用clone方法（显然访问限定修饰符被重写为public），但拷贝数组更推荐使用Arrays的copyOf相关方法或System的arraycopy方法。**
 
-- protected void finalize() throws Throwable：**jdk9开始已经被标记为废弃。**
+- ```java
+  public final void wait() throws InterruptedException {
+    wait(0L);
+  }
 
-- final native notify() & notifyAll()：notify唤醒正在此对象监视器上等待的任意的一个线程，notifyAll唤醒正在此对象监视器上等待的所有线程。**必须在同步方法或同步块内使用，被唤醒的线程仍然需要竞争到同步锁才可以恢复执行**。
+  public final void wait(long timeoutMillis, int nanos) throws InterruptedException {
+    ...
+    // 并不会真的精确到nanos
+    if (nanos > 0 && timeoutMillis < Long.MAX_VALUE) {
+      timeoutMillis++;
+    }
+    wait(timeoutMillis); 
+  }
 
-- final native void wait(long timeoutMillis)：线程状态变为TIMED_WAITING，等待被唤醒或者达到超时时间后被自动唤醒，**必须在同步方法或同步块内使用，当前线程会释放同步锁**。
+  // 最终都是调用该方法
+  public final native void wait(long timeoutMillis) throws InterruptedException;
+  ```
+  **wait方法必须在同步方法或同步块内使用，调用后线程会释放同步锁**；参数为0L时，Java线程状态转变为WAIT，一直等待直到被唤醒或被打断；大于0L则Java线程状态转变为TIMED_WAITING，等待被唤醒、打断或达到超时时间后被自动唤醒。
 
-- final void wait()：wait(0L)，线程状态变为WAIT，一直等待直到被唤醒或者被打断。
+- ```java
+  // 唤醒任意一个在此对象监视器上等待的线程（非公平）
+  public final native void notify();
+
+  // 唤醒所有在此对象监视器上等待的线程
+  public final native void notifyAll();
+  ```
+  **必须在同步方法或同步块内使用**，线程被唤醒后Java状态转变为RUNNABLE，尝试竞争锁，如果失败则进入锁等待池，Java线程状态转变为BLOCKED。
+
+- ```java
+  @Deprecated(since="9")
+  protected void finalize() throws Throwable { }
+  ```
 
 ***
     
 ## String
 
-### 属性
+### 字符存储
 
-- final byte coder：字符编码方式，0表示Latin1，1表示UTF-16BE。**jdk9开始支持字符压缩，之前默认使用UTF-16BE编码**，如果字符全部在Latin1能表示的范围内，那么会使用Latin1编码，否则使用UTF-16BE。
-
-- final byte[] value：**jdk9开始使用byte数组存储字符，之前使用char数组**。Latin1编码使用一个byte值，UTF-16BE编码使用两个连续的byte值。
-
-- int hash：哈希值缓存。
-
-- boolean hashIsZero：标识哈希值是否为0，因为hash属性默认值也为0。
+```java
+private final byte[] value;
+private final byte coder; // 字符编码方式，0: Latin1，1: UTF-16BE。
+static final boolean COMPACT_STRINGS; // 是否压缩字符，默认true。
+```
+JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围内会使用Latin1编码，否则使用UTF-16BE编码（之前的编码方式），并使用byte\[]存储字符（之前使用char\[]），Latin1编码的操作类为StringLatin1，UTF-16BE编码的操作类为StringUTF16（**使用getChar方法将两个连续的byte值读取为一个char值**）。
 
 ### 字符编码
 
-- Latin1 & ASCII：**Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符**；ASCII定义了128个字符，只使用了后7位最高位默认为0；Latin1定义了256个字符，使用了全部8位，能完全向下兼容ASCII。
+- ASCII & Latin1：**Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符**；ASCII定义了128个字符，只使用了后7位最高位默认为0；Latin1定义了256个字符，使用了全部8位，能完全向下兼容ASCII。
 
-- Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65,536个码位（code point），**第一个平面称为基本多语言平面（BMP，包括中文）**，其他平面称为辅助平面。Unicode字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号。
+- Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65536个码位（code point），第一个平面称为基本多语言平面（BMP）（含中文），其他平面称为辅助平面。**Unicode字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号**。
 
-- utf-16：Unicode字符集规定的标准编码实现，固定使用两个字节去表示BMP内的字符，而BMP之外的字符则需要四个字节去表示。
+- utf-16：Unicode字符集规定的标准编码实现，固定使用两个字节去表示BMP内的字符，BMP之外的字符则需要四个字节去表示。
 
-- utf-8：可变长字符编码，使用1到4个字节表示一个Unicode字符。**字节码文件使用的编码**，对于ASCII字符，utf-8编码能完全兼容，即只需要一个字节，但是表示一个中文字符utf-8却需要三个字节。
-  > 代码使用的字符几乎都是ASCII字符，故字节码文件使用utf-8编码相比于utf-16能大大节约空间，因为utf-16表示一个ASCII字符需要两个字节。
+- utf-8：可变长字符编码，使用1到4个字节表示一个Unicode字符。对于ASCII字符，utf-8编码能完全兼容，即只需要一个字节，但是表示一个中文字符却需要三个字节。
+  > **为Java字节码文件使用的编码**，因为代码中使用的字符几乎都是ASCII字符，故使用utf-8相比于utf-16能大大节约空间，因为utf-16表示一个ASCII字符需要两个字节。
 
 ### 构造方法
 
-- String(String original)：创建对象，并复用value数组。
-  > **String s = new String("abc")，如果字符串常量池中不存在abc，则需要创建两个String对象，但是只会创建一个value数组。**
+- ```java
+  public String(String original) {
+    this.value = original.value;
+    this.coder = original.coder;
+    this.hash = original.hash;
+  }
+  ```
+  唯一会复用value数组的构造方法，如果字符串常量池中不存在original，则需要创建两个String对象和一个byte数组。
+    > **只有通过""创建的字符串才会被加入字符串常量池中，而new出来的String对象会存放在堆中。**
 
-- 其他构造方法均会创建新的value数组，因为要保证value数组是stable的。
-
-- String(byte bytes[], Charset charset)：**将byte数组按给定的编码方式解码为字符串**，charset参数使用StandardCharsets类中的常量。
+- public String(byte bytes[], Charset charset)：将byte数组按给定的编码方式解码为字符串，StandardCharsets类中定义了常用的Charset类型常量。
 
 ### 实例方法
 
-- char charAt(int index) & int codePointAt(int index)：charAt获取BMP内的unicode字符，所以返回两个字节的char；而codePointAt能获取BMP外的unicode字符，所以返回四个字节的int。
+- ```java
+  public native String intern();
+  ```
+  如果字符串常量池已经存在和该字符串相等的字符串则返回常量池内的对象，否则将当前字符串对象加入字符串常量池然后返回自身。
 
-- getBytes()：使用默认的utf-8编码或指定的编码方式将字符串编码为字节数组。
-  > 指定编码为utf-16时会多出两个字节，因为需要使用额外的两个字节来标志字节序（FEFF或FFFE）。
+- ```java
+  private int hash; // 哈希值缓存，默认0。
+  private boolean hashIsZero; // 标识哈希值是否为0，默认false。
+  // 重写hashCode方法
+  public int hashCode() {
+    int h = hash;
+    if (h == 0 && !hashIsZero) {
+      // 使用除留余数法计算哈希值
+      h = isLatin1() ? StringLatin1.hashCode(value) : StringUTF16.hashCode(value);
+      if (h == 0) {
+        hashIsZero = true;
+      } else {
+        hash = h; // 首次计算后才设置到hash属性
+      }
+    }
+    return h;
+  }
+  //  StringLatin1
+  public static int hashCode(byte[] value) {
+    int h = 0;
+    for (byte v : value) {
+      h = 31 * h + (v & 0xff);
+    }
+    return h;
+  }
+  // StringUTF16
+  public static int hashCode(byte[] value) {
+    int h = 0;
+    int length = value.length >> 1;
+    for (int i = 0; i < length; i++) {
+      h = 31 * h + getChar(value, i);
+    }
+    return h;
+  }
+  ```
 
-- isBlank() & strip()：**jdk11新增**，isBlank()判断是否是空字符串，strip()移除首尾的空字符，都是使用Character.isWhitespace()方法识别Unicode空白字符。
-  > **strip方法移除所有Unicode空白字符，而trim方法只移除空格、tab键、换行符。**
+- ```java
+  public int length() {
+    return value.length >> coder();
+  }
+  ```
+  需要知道BMP外的字符会占用四个字节，所以返回值并不一定等于字符串的长度。
 
-- length()：value.length >> coder()。**需要知道对于BMP外的字符是占用四个字节的，所以返回值并不一定代表字符串的长度**。
+- public char charAt(int index)：获取BMP内的Unicode字符，所以返回两个字节的char。
 
-- split(String regex, int limit)：regex为正则表达式，如果正则表达式的特殊字符需要按普通字符匹配则需要使用\\\\转义；limit大于0时拆分后数组长度不能超过limit。
+- public int codePointAt(int index)：获取CodePoint，所以返回四个字节的int。
 
-- formatted(Object... args)：jdk15新增，使用自身作为模式字符串生成格式化字符串，与String.format()相同，每次都会创建一个新的Formatter。
-  > matches(String regex)每次也都会创建一个Pattern对象，所以这两个方法都不建议多次调用。
+- public IntStream chars()：转换为字符流，会把char扩展为int，因为没有CharacterStream。
+
+- public IntStream codePoints()：转换为CodePoint流。
+
+- public byte[] getBytes(Charset charset)：将字符串按指定的编码方式编码为byte数组。
+  > UTF_16编码需要使用额外的两个字节来标识字节序（FEFF或FFFE）。
+
+- public boolean contentEquals(CharSequence cs)：与给定CharSequence进行比较，**如果是StringBuffer类型会加上同步**。
+
+- public int indexOf(int ch, int fromIndex)：ch是单个CodePoint值。
+
+- public int indexOf(String str, int fromIndex)：没有使用任何算法优化，直接遍历查找。
+
+- public String strip()：JDK11新增，移除首尾的Unicode空白字符，使用Character.isWhitespace()识别。
+  > **trim()只移除空格、tab键、换行符。**
+
+- public boolean isBlank()：JDK11新增，判断是否为空字符串，也是使用Character.isWhitespace()识别Unicode空白字符。
+
+- ```java
+  public boolean matches(String regex) {
+    return Pattern.matches(regex, this);
+  }
+  // Pattern
+  public static boolean matches(String regex, CharSequence input) {
+    Pattern p = Pattern.compile(regex);
+    Matcher m = p.matcher(input);
+    return m.matches();
+  }
+  ```
+  不建议使用，因为每次都会使用regex创建一个Pattern对象，同理其他有regex参数的方法也是一样。
+
+- public String[] split(String regex, int limit)：
+  - 因为参数为regex，即正则表达式的特殊字符如需按普通字符匹配则需要使用\\\\转义；
+  - limit参数如果大于0，则拆分后数组长度不会超过limit；
+  - 因为每次都会编译regex，**故更推荐使用Guava的Splitter工具类**。
+
+- ```java
+  public String formatted(Object... args) {
+    return new Formatter().format(this, args).toString();
+  }
+  ```
+  JDK15新增，使用自身作为模式字符串生成格式化字符串。不推荐多次调用该方法以及静态format方法，不仅每次都会创建一个新的Formatter，且在执行format方法时才会去解析模式字符串。
 
 ***
 
@@ -91,7 +237,13 @@
 
 - 不存在构造方法AbstractStringBuilder(char c)，你可以这么写并且编译会通过，因为实际上执行的是构造方法AbstractStringBuilder(int capacity)。
 
-- 连续使用 + 拼接字符串会被优化为使用StringBuilder。
+- **使用 + 拼接字符串会被优化为使用StringBuilder。**
+  ```java
+  // 不应该在循环中使用 + 拼接，每次都会new一个StringBuilder对象。
+  for(String s = ""; ; ){
+    s = s + "123";
+  }
+  ```
 
 ***
 
