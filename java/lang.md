@@ -176,7 +176,7 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
 
 - public int codePointAt(int index)：获取CodePoint，所以返回四个字节的int。
 
-- public IntStream chars()：转换为字符流，会把char扩展为int，因为没有CharacterStream。
+- public IntStream chars()：转换为字符流，会把char扩展为int，因为没有CharStream。
 
 - public IntStream codePoints()：转换为CodePoint流。
 
@@ -217,33 +217,45 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
     return new Formatter().format(this, args).toString();
   }
   ```
-  JDK15新增，使用自身作为模式字符串生成格式化字符串。不推荐多次调用该方法以及静态format方法，不仅每次都会创建一个新的Formatter，且在执行format方法时才会去解析模式字符串。
+  JDK15新增，使用自身作为模式字符串生成格式化字符串。不推荐多次调用该方法以及静态format方法，不仅每次都会创建一个Formatter对象，且在执行format方法时才会去解析模式字符串。
 
 ***
 
-## AbstractStringBuilder
+## 可变字符串
 
-可变字符串的基类，内部实现与String基本相同。**使用一个int类型的属性count来记录字符串的实际长度；扩容操作会先考虑扩容为原容量的两倍加2，如果不足则会直接扩容为能刚好满足的容量。**
+### abstract class **AbstractStringBuilder** implements Appendable, CharSequence
+
+StringBuilder和StringBuffer的基类，内部实现与String基本相同。
+
+- ```java
+  int count; // 记录实际字符（非codePoint）数量
+  public int length() {
+    return count;
+  }
+  ```
+
+- 执行变更操作时至少要保证容量不能低于所需的最小容量，如果足够则增长为两倍当前容量加2，但value数组的长度也不能超过虚拟机的限制（比Integer.MAX_VALUE略小），若都无法满足则抛出OutOfMemoryError。
 
 ### **StringBuilder**
 
-非线程安全，默认容量16。
+非线程安全，默认容量16，所有方法全是直接调用父类方法。
 
 ### StringBuffer
 
-线程安全，所有方法都为同步方法，默认容量16，toString方法有缓存。
+线程安全，默认容量16，所有方法全是直接调用父类方法，但都加上了同步，同时toString方法有缓存（使用toStringCache属性）。
 
 ### **要点**
 
-- 不存在构造方法AbstractStringBuilder(char c)，你可以这么写并且编译会通过，因为实际上执行的是构造方法AbstractStringBuilder(int capacity)。
-
-- **使用 + 拼接字符串会被优化为使用StringBuilder。**
-  ```java
-  // 不应该在循环中使用 + 拼接，每次都会new一个StringBuilder对象。
-  for(String s = ""; ; ){
-    s = s + "123";
-  }
-  ```
+1. 除了delete其他变更操作都会尝试使用inflate()方法压缩字符串；
+1. append和insert操作如果对象参数为null，则会视作"null"；
+1. 不存在char参数的构造方法，你可以这么写但实际上执行的构造方法是AbstractStringBuilder(int capacity)；
+1. 使用 + 拼接字符串会被优化为使用StringBuilder。
+    ```java
+    // 不应该在循环中使用 + 拼接字符串，因为每次都会new一个StringBuilder对象。
+    for(String s = ""; ; ){
+      s = s + "123";
+    }
+    ```
 
 ***
 

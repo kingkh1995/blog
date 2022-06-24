@@ -29,13 +29,7 @@
 * [Java内存模型](jvm/jmm)
 * [oom异常](jvm/oom)
 
-## Middleware & Tool
-
-* [Mysql](middleware/mysql.md)
-* [Redis](middleware/redis.md)
-* [Maven](middleware/maven.md)
-
-## Open Source Project
+## Open Source Projects
 
 * [advanced-threadlocal](project/adtl)
 * [timer](project/timer)
@@ -47,7 +41,14 @@
 * [hikariCP](project/hikariCP)
 * [lettuce](project/lettuce)
 
-## Framework
+## Components & Tools
+
+* [Mysql](component/mysql)
+* [Redis](component/redis)
+* [Maven](component/maven)
+* [Gradle](component/gradle)
+
+## Frameworks
 
 * [Shiro](framework/shiro)
 * [Spring](framework/spring)
