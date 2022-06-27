@@ -32,7 +32,7 @@
 
 - value：等同于scopeName
   - singleton：单例模式，默认作用域；
-  - prototype：多例模式和，每次使用都会创建一个实例；
+  - prototype：多例模式，每次使用都会创建一个实例；
   - request：每次HTTP请求都会创建一个实例，仅在当前HTTP请求内有效；
   - session : 为每个HTTP会话创建一个新的实例，仅在当前会话内有效；
 
@@ -91,10 +91,11 @@
 
 ### **如何解决循环依赖**
 
-1. Bean实例化完成后，会往三级缓存中添加一个ObjectFactory函数，其实现为使用SmartInstantiationAwareBeanPostProcessor类型的后置处理器的getEarlyBeanReference方法获取Bean；
-2. 然后开始注入依赖，从各级缓存中查找，如果不存在则递归创建Bean；
-3. 有循环依赖的Bean，可以从三级缓存获取到ObjectFacotry，通过其getObject方法获取到半成品的Bean注入；
-4. 然后递归回退完成所有Bean的注入依赖，并将Bean标记为完成并加入一级缓存中。
+1. Bean实例化完成后，会往三级缓存中加入当前‘半成品’Bean，实际上是添加一个ObjectFactory函数，其getObject方法实现为顺序使用所有SmartInstantiationAwareBeanPostProcessor类型的后置处理器的getEarlyBeanReference方法处理半成品Bean；
+2. 然后开始依赖注入，从各级缓存中查找，如果不存在则递归创建依赖的Bean；
+3. 存在循环依赖时，之后处理的Bean可以从三级缓存获取到ObjectFacotry，通过其getObject方法获取到之前处理的Bean的半成品注入；
+4. Bean依赖注入完成后，标记为完成并加入一级缓存中；
+5. 递归回退依次完成所有Bean的创建。
 
 ***
 
@@ -147,9 +148,9 @@ Spring AOP默认使用Jdk动态代理，如果没有实现接口则使用cglib�
 
 ### **AOP下依赖循环问题如何处理**
 
-1. AOP的AbstractAutoProxyCreator为SmartInstantiationAwareBeanPostProcessor类型，其getEarlyBeanReference方法实现为使用Bean（或半成品）创建代理对象并返回，同时将其加入二级缓存中，在其postProcessAfterInitialization方法中会先判断二级缓存中是否存在代理对象，不存在则创建代理对象。
+AOP的AbstractAutoProxyCreator为SmartInstantiationAwareBeanPostProcessor类型，**其getEarlyBeanReference方法实现为使用半成品Bean创建代理对象并返回，同时还会将其加入二级缓存中**；在其postProcessAfterInitialization方法中会为Bean创建代理对象，如果二级缓存中已经存在代理对象则直接获取。
 
-2. 若A、B互相依赖，A先创建，则B依赖注入时，注入的就是通过getEarlyBeanReference方法创建的A的代理对象，之后在postProcessAfterInitialization方法创建了B的代理对象，然后A从一级缓存中获取到B的代理对象注入，之后在postProcessAfterInitialization方法中从二级缓存中获取到自己的代理对象，然后加入一级缓存中。
+若A、B互相依赖，A先创建，则B注入A时，注入的是通过getEarlyBeanReference方法创建的半成品A的代理对象；B依赖注入完成后在postProcessAfterInitialization方法中创建了B的代理对象，然后加入一级缓存内；递归回退到A的依赖注入后，A直接从一级缓存中获取到B的代理对象注入；A依赖注入完成后，执行postProcessAfterInitialization方法时，直接从二级缓存中获取到自己的代理对象，然后加入一级缓存中。
 
 ***
 

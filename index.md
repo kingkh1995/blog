@@ -26,20 +26,20 @@
 ### *JVM*
 
 * [基础知识](jvm)
-* [Java内存模型](jvm/jmm)
-* [oom异常](jvm/oom)
+* [JMM](jvm/jmm)
+* [调优&监控](jvm/performance)
 
 ## Open Source Projects
 
-* [advanced-threadlocal](project/adtl)
-* [timer](project/timer)
-* [caffeine](project/caffeine)
-* [guava](project/guava)
-* [jackson](project/jackson)
-* [easyexcel](project/easyexcel)
-* [feign](project/feign)
-* [hikariCP](project/hikariCP)
-* [lettuce](project/lettuce)
+* [Advanced ThreadLocal](project/adtl)
+* [Timer](project/timer)
+* [Caffeine](project/caffeine)
+* [Guava](project/guava)
+* [Jackson](project/jackson)
+* [EasyExcel](project/easyexcel)
+* [Feign](project/feign)
+* [HikariCP](project/hikariCP)
+* [Lettuce](project/lettuce)
 
 ## Components & Tools
 
@@ -73,7 +73,7 @@
 
 ## Others
 
-* [Markdown语法](others/markdown)
+* [Markdown](others/markdown)
 * [UML图绘制](others/uml)
 * [Docker部署](others/docker)
 * [IDEA使用](others/idea)
