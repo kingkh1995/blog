@@ -27,6 +27,7 @@
 
 * [基础知识](jvm)
 * [JMM](jvm/jmm)
+* [GC](jvm/gc)
 * [调优&监控](jvm/performance)
 
 ## Open Source Projects

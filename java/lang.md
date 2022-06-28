@@ -13,34 +13,34 @@
   ```java
   // Boolean
   public static int hashCode(boolean value) {
-    return value ? 1231 : 1237;
+      return value ? 1231 : 1237;
   }
   // Byte、Short、Character
   public static int hashCode(byte value) {
-    return (int)value;
+      return (int)value;
   }
   // Integer
   public static int hashCode(int value) {
-    return value;
+      return value;
   }
   // Long
   public static int hashCode(long value) {
-    return (int)(value ^ (value >>> 32));
+      return (int)(value ^ (value >>> 32));
   }
   // Float
   public static int hashCode(float value) {
-    return floatToIntBits(value); // 返回二进制表示 
+      return floatToIntBits(value); // 返回二进制表示 
   }
   // Double
   public static int hashCode(double value) {
-    long bits = doubleToLongBits(value); // 返回二进制表示
-    return (int)(bits ^ (bits >>> 32));
+      long bits = doubleToLongBits(value); // 返回二进制表示
+      return (int)(bits ^ (bits >>> 32));
   }
   ```
 
 - ```java
   public boolean equals(Object obj) {
-    return (this == obj);
+      return (this == obj);
   }
   ```
   重写equals方法需要遵守hashCode方法的常规协定（**散列集合是基于此协定设计的**）：equals方法对比相等的两个对象必然具有相等的哈希值，哈希值不等的两个对象使用equals方法对比必然不等。
@@ -53,16 +53,16 @@
 
 - ```java
   public final void wait() throws InterruptedException {
-    wait(0L);
+      wait(0L);
   }
 
   public final void wait(long timeoutMillis, int nanos) throws InterruptedException {
-    ...
-    // 并不会真的精确到nanos
-    if (nanos > 0 && timeoutMillis < Long.MAX_VALUE) {
-      timeoutMillis++;
-    }
-    wait(timeoutMillis); 
+      ...
+      // 并不会真的精确到nanos
+      if (nanos > 0 && timeoutMillis < Long.MAX_VALUE) {
+          timeoutMillis++;
+      }
+      wait(timeoutMillis); 
   }
 
   // 最终都是调用该方法
@@ -112,9 +112,9 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
 
 - ```java
   public String(String original) {
-    this.value = original.value;
-    this.coder = original.coder;
-    this.hash = original.hash;
+      this.value = original.value;
+      this.coder = original.coder;
+      this.hash = original.hash;
   }
   ```
   唯一会复用value数组的构造方法，如果字符串常量池中不存在original，则需要创建两个String对象和一个byte数组。
@@ -134,34 +134,34 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
   private boolean hashIsZero; // 标识哈希值是否为0，默认false。
   // 重写hashCode方法
   public int hashCode() {
-    int h = hash;
-    if (h == 0 && !hashIsZero) {
-      // 使用除留余数法计算哈希值
-      h = isLatin1() ? StringLatin1.hashCode(value) : StringUTF16.hashCode(value);
-      if (h == 0) {
-        hashIsZero = true;
-      } else {
-        hash = h; // 首次计算后才设置到hash属性
+      int h = hash;
+      if (h == 0 && !hashIsZero) {
+          // 使用除留余数法计算哈希值
+          h = isLatin1() ? StringLatin1.hashCode(value) : StringUTF16.hashCode(value);
+          if (h == 0) {
+              hashIsZero = true;
+          } else {
+              hash = h; // 首次计算后才设置到hash属性
+          }
       }
-    }
-    return h;
+      return h;
   }
   // StringLatin1
   public static int hashCode(byte[] value) {
-    int h = 0;
-    for (byte v : value) {
-      h = 31 * h + (v & 0xff);
-    }
-    return h;
+      int h = 0;
+      for (byte v : value) {
+          h = 31 * h + (v & 0xff);
+      }
+      return h;
   }
   // StringUTF16
   public static int hashCode(byte[] value) {
-    int h = 0;
-    int length = value.length >> 1;
-    for (int i = 0; i < length; i++) {
-      h = 31 * h + getChar(value, i);
-    }
-    return h;
+      int h = 0;
+      int length = value.length >> 1;
+      for (int i = 0; i < length; i++) {
+          h = 31 * h + getChar(value, i);
+      }
+      return h;
   }
   ```
 
@@ -196,13 +196,13 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
 
 - ```java
   public boolean matches(String regex) {
-    return Pattern.matches(regex, this);
+      return Pattern.matches(regex, this);
   }
   // Pattern
   public static boolean matches(String regex, CharSequence input) {
-    Pattern p = Pattern.compile(regex);
-    Matcher m = p.matcher(input);
-    return m.matches();
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(input);
+      return m.matches();
   }
   ```
   不建议使用，因为每次都会使用regex创建一个Pattern对象，同理其他有regex参数的方法也是一样。
@@ -214,7 +214,7 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
 
 - ```java
   public String formatted(Object... args) {
-    return new Formatter().format(this, args).toString();
+      return new Formatter().format(this, args).toString();
   }
   ```
   JDK15新增，使用自身作为模式字符串生成格式化字符串。不推荐多次调用该方法以及其他静态format方法，不仅每次都会创建一个Formatter对象，且在执行format方法时才会去解析模式字符串。
@@ -230,7 +230,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 - ```java
   int count; // 记录实际字符（非codePoint）数量
   public int length() {
-    return count;
+      return count;
   }
   ```
 
@@ -253,7 +253,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
     ```java
     // 不应该在循环中使用 + 拼接字符串，因为每次都会new一个StringBuilder对象。
     for(String s = ""; ; ){
-      s = s + "123";
+        s = s + "123";
     }
     ```
 
@@ -307,29 +307,87 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 
 ## ClassLoader
 
-- BootstrapClassLoader：启动类加载器，为JVM内置的加载器，无法被获取，用于加载JDK的APi类（java_home/jre/lib目录下）；
+- ```java
+  protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+      synchronized (getClassLoadingLock(name)) { // 获取同步锁
+          Class<?> c = findLoadedClass(name); // 首先检查是否已经加载
+          if (c == null) {
+              ...
+              try {
+                  // 父级存在则委托给父级加载，不存在则委托给Bootstrap加载。
+                  if (parent != null) {
+                      c = parent.loadClass(name, false);
+                  } else {
+                      c = findBootstrapClassOrNull(name);
+                  }
+              } catch (ClassNotFoundException e) {
+                  // 直接丢弃异常
+              }
+              // 父类无法加载才由自身尝试加载
+              if (c == null) {
+                  ...
+                  c = findClass(name);
+                  ...
+              }
+          }
+          if (resolve) {
+            resolveClass(c); // 如果未加载成功则抛出NullPointerException
+          }
+          return c;
+      }
+  }
+  ```
+  类加载方法，双亲委派模型的保证。
 
-- PlatformClassLoader：替代了拓展加载器，用于加载Java SE平台API及其实现类、特定的JVM运行时所需的类等；
+- ```java
+  protected Class<?> findClass(String name) throws ClassNotFoundException {
+      throw new ClassNotFoundException(name);
+  }
+  ```
+  自定义类加载器需要重写findClass方法。
 
-- SystemClassLoader：系统加载器，也称为应用加载器，用于加载classpath下的所有类。
+- ```java
+  final Class<?> loadClass(Module module, String name) {
+      synchronized (getClassLoadingLock(name)) {Class<?> c = findLoadedClass(name);
+          // 没有遵守双亲委派模型
+          if (c == null) {
+              c = findClass(module.getName(), name);
+          }
+          if (c != null && c.getModule() == module) {
+              return c;
+          } else {
+              return null;
+          }
+      }
+  }
+  // 属于模块的加载器需要重写该方法
+  protected Class<?> findClass(String moduleName, String name) {
+      if (moduleName == null) {
+          try {
+              return findClass(name);
+          } catch (ClassNotFoundException ignore) { }
+      }
+      return null;
+  }
+  ```
+  在 Class.forName(Module module, String name) 中调用，使用模块的加载器加载类。
 
-### loadClass方法流程：
-
-  1. 从已加载类中查找（JVM方法区），不存在则需要获取同步锁，锁对象使用ConcurrentHashMap保存，键为className，值为new Object()；
-  2. 由于双亲委派模型，如果父加载器存在则先尝试使用父加载器加载（也会继续向上委托），否则尝试使用BootstrapClassLoader加载；
-  3. 如都无法加载，最后才调用自身findClass方法加载。
-
-### 要点
-
-- 数组的类对象不是由类加载器创建的，而是运行时根据需要自动创建的；
-- 对象数组的类加载器与其元素的类加载器相同；
-- 基本数据类型和基本数据类型数组没有类加载器。
-
-### JAVA主动破坏双亲委派模型
-
-1. 1.2才新增的双亲委派的逻辑在loadClass方法中，为了向前兼容不是final方法，只需要重写即可破坏；
-2. JNDI、JDBC等在classpath路径下，因此为Thread对象增加了getContextClassLoader()方法，启动类加载器使用该方法获取应用加载器以加载用户的具体实现；
-3. 引入模块化后，新增final loadClass(Module module, String name)方法，其实现为直接使用findClass方法加载，然后判断类所属模块是不是给定模块，相同才返回。
+- ```java
+  private final ConcurrentHashMap<String, Object> parallelLockMap;
+  // 非parallelCapable则锁定加载器自身
+  protected Object getClassLoadingLock(String className) {
+      Object lock = this;
+      if (parallelLockMap != null) {
+          Object newLock = new Object();
+          lock = parallelLockMap.putIfAbsent(className, newLock);
+          if (lock == null) {
+              lock = newLock;
+          }
+      }
+      return lock;
+  }
+  ```
+  需要调用registerAsParallelCapable方法注册为parallelCapable才会创建parallelLockMap，JVM会执行resetArchivedStates方法清理parallelCapable相关的集合。
 
 ***
 
