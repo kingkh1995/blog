@@ -389,6 +389,11 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
   ```
   需要调用registerAsParallelCapable方法注册为parallelCapable才会创建parallelLockMap，JVM会执行resetArchivedStates方法清理parallelCapable相关的集合。
 
+- ```java
+  protected final Class<?> defineClass(String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError
+  ```
+  使用defineClass方法将字节码文件转换为Class对象。
+
 ***
 
 ## Throwable

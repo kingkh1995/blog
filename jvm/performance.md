@@ -10,12 +10,13 @@
 - -Xmx：最大堆大小；
 - -Xss：每个线程的堆栈大小，默认值为0，表示使用系统默认值，64位系统中为1M；
 - -Xmn：新生代大小，官方推荐配置为整个堆大小的3/8；
-- -XX:SurvivorRatio=：新生代中Eden区域与Survivor区域的容量比值，默认值为8；
+- -XX:SurvivorRatio=：新生代中Eden区域与Survivor区域的容量比值，默认值为8，即8:1:1；
 - -XX:PermSize：永久代初始大小，已废弃；
 - -XX:MaxPermSize：永久代最大值，已废弃；
 - -XX:MetaspaceSize：元空间的初始空间大小，达到该值就会触发Full GC进行类型卸载，同时收集器会对该值进行调整；
 - -XX:MaxMetaspaceSize：设置元空间最大值，默认是 -1，表示不限制；
 - -XX:MaxTenuringThreshold：生存区对象的最大年龄；
+- -XX:PretenureSizeThreshold：任何超过该阈值的对象都不会尝试在新生代进行分配而是直接进入老年代；
 - -XX:SoftRefLRUPolicyMSPerMB=：能够忍受的软引用存在的最大时间。
 
 ***
@@ -148,5 +149,11 @@ jcmd <pid> [option]
 - 内存溢出的情况可以通过配置【-XX:+HeapDumpOnOutOfMemoryError】，java程序在内存溢出时自动输出dump文件。
 - 垃圾回收频繁，使用jstat命令查看垃圾回收情况；
 - 内存分析，使用jmap或jcmd获取堆dump文件。
+
+***
+
+## 常规优化思路
+
+确定系统瓶颈，如果是数据库瓶颈，则判断是否需要优化索引、是否需要引入缓存、最后才考虑分库分表；如果确实是硬件瓶颈了则需要考虑机器扩容了；扩容前还得先尝试优化问，首先从应用层面优化，快速失败、平滑流量、异步处理等，然后从JVM方法层面优化，最后尝试从网络和操作系统排查。
 
 ***

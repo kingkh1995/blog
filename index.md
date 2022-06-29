@@ -78,7 +78,7 @@
 * [UML图绘制](others/uml)
 * [Docker部署](others/docker)
 * [IDEA使用](others/idea)
-* [面试要点](interview)
+* [面试要点](others/interview)
 * [书籍清单](book)
 
 ## [My pull requests](prs)
