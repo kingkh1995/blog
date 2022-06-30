@@ -105,7 +105,7 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
 
 - utf-16：Unicode字符集规定的标准编码实现，固定使用两个字节去表示BMP内的字符，BMP之外的字符则需要四个字节去表示。
 
-- utf-8：可变长字符编码，使用1到4个字节表示一个Unicode字符。对于ASCII字符，utf-8编码能完全兼容，即只需要一个字节，但是表示一个中文字符却需要三个字节。
+- utf-8：可变长字符编码，使用1到6个字节表示一个Unicode字符。对于ASCII字符，utf-8编码能完全兼容，即只需要一个字节，但是表示一个中文字符却需要三个字节。
   > **为Java字节码文件使用的编码**，因为代码中使用的字符几乎都是ASCII字符，故使用utf-8相比于utf-16能大大节约空间，因为utf-16表示一个ASCII字符需要两个字节。
 
 ### 构造方法
@@ -392,7 +392,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 - ```java
   protected final Class<?> defineClass(String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError
   ```
-  使用defineClass方法将字节码文件转换为Class对象。
+  使用defineClass方法将字节码文件转换为Class对象，**每个ClassLoader实例只能转换同一个类（全限定名相同视为同一个类）一次**，除非该类对象已被卸载，但是类卸载是不可控的。
 
 ***
 

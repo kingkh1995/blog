@@ -8,7 +8,7 @@
 
 * [算法基础](fundamentals/algs)
 * [算法进阶](fundamentals/advanced)
-* [网络通信](fundamentals/network)
+* [计算机基础](fundamentals/cs)
 
 ### *JDK*
 
