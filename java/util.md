@@ -6,7 +6,7 @@
 
 ## ArrayList
 
-动态数组，非线程安全，默认容量10，每次扩容为1.5倍。
+动态数组，非线程安全，支持随机访问（实现了RandomAccess），默认容量10，每次扩容为1.5倍。
 
 - subList()：返回私有内部类SubList对象，所有操作全部被代理到ArrayList对象上。
 
@@ -89,6 +89,17 @@
 
 ***
 
+## LinkedHashSet
+
+继承自HashSet，使用HashSet中专门为其提供的构造方法：
+```java
+HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+    map = new LinkedHashMap<>(initialCapacity, loadFactor);
+}
+```
+
+***
+
 ## **EnumMap**
 
 使用**固定大小为枚举类型中值的个数的数组分开保存枚举键和值**，使用枚举值的ordinal确定下标，键不允许为null，但值允许为null。
@@ -123,7 +134,7 @@
 
 ## TreeMap
 
-红黑树（2-3-4树），实现NavigableMap接口，非线程安全。如果键非Comparable类型且构造时未指定Comparator，则运行时会抛出ClassCastException（不存在Comparator会直接转换为Comparable），迭代时以中序遍历的方式迭代。
+红黑树（2-3-4树），实现NavigableMap接口，非线程安全。如果键非Comparable类型且构造时未指定Comparator，则运行时会抛出ClassCastException（不存在Comparator会直接转换为Comparable），**注意是通过Comparable或在Comparator去重**，迭代时以中序遍历的方式迭代。
 
 ### *NavigableMap*
 
@@ -166,13 +177,13 @@
 
 ## LinkedList
 
-双向链表，容量无限，继承自AbstractSequentialList（可顺序访问List），实现了Deque接口，非线程安全。
+双向链表，非线程安全，继承自AbstractSequentialList（表示只支持顺序访问），实现了Deque接口。
 
 ***
 
 ## ArrayDeque
 
-基于数组的Deque，容量无限，非线程安全。可指定初始容量，故在容量固定的场景下不需要扩容效率更高。
+基于数组实现的Deque，非线程安全。可指定初始容量，在不需要扩容的场景下效率更高，因为相比于LinkedList其不需要创建对象。
 
 ***
 
@@ -191,7 +202,7 @@
 
 - sort()：排序数组，如果是基本数据类型使用DualPivotQuicksort，如果是对象则使用ComparableTimSort（Comparable类型）和TimSort（指定Comparator）。
     - DualPivotQuicksort：双指针快速排序，即三向切分快排。
-    - **TimSort**：**稳定的、自适应的、迭代的归并排序，融合了归并算法和二分插入排序算法**。数组长度小于32时，直接使用二分插入排序；将数组分为一个个run，每一个run都是连续上升或下降的子区间；确定出一个minrun（16~32），如果run的大小小于该值时则使用插入排序合并；确定好run后会放入栈内，最终使run的数量刚好为2的幂或稍小于2的幂；之后合并run，合并操作会使用尽量小的内存空间和GALLOP模式来加速合并。
+    - **TimSort**：**稳定的、自适应的、迭代的归并排序，融合了归并算法和二分插入排序算法**。如果数组长度小于32则直接使用二分插入排序；否则将数组分为一个个run，每一个run都是连续上升或下降的子区间；确定出一个minrun（16~32），如果run的大小小于该值时则使用插入排序合并；确定好run后会放入栈内，最终使run的数量刚好为2的幂或稍小于2的幂；之后合并run，合并操作会使用尽量小的内存空间和GALLOP模式来加速合并。
 
 - parallelSort()：并行排序数组，只针对int、long、float、double和对象数组，要求ForkJoinPool的并行度（COMMON_PARALLELISM）大于1，对象数组大小要大于8192，基本数据类型数组大小要大于4096。
 

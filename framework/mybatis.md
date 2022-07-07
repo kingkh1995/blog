@@ -53,3 +53,15 @@ Executor：执行器；StatementHandler：Statement处理；ParameterHandler：�
 - CachingExecutor：是一个Executor接口的装饰器，开启了二级缓存时会包装Executor对象，为Executor对象增加了二级缓存的相关功能，**它的生命周期也在SqlSession中，但是其是从外部查询缓存**。
 
 ***
+
+## 启动
+
+### SqlSessionFactory
+
+用于创建SqlSession
+
+### MapperScannerConfigurer
+
+用于获取MapperFactoryBean
+
+***

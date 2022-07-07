@@ -10,33 +10,6 @@
   public native int hashCode();
   ```
   返回对象的哈希值，与对象地址有一定关联，但并不一定如此，具体取决于运行时库和JVM的具体实现。
-  ```java
-  // Boolean
-  public static int hashCode(boolean value) {
-      return value ? 1231 : 1237;
-  }
-  // Byte、Short、Character
-  public static int hashCode(byte value) {
-      return (int)value;
-  }
-  // Integer
-  public static int hashCode(int value) {
-      return value;
-  }
-  // Long
-  public static int hashCode(long value) {
-      return (int)(value ^ (value >>> 32));
-  }
-  // Float
-  public static int hashCode(float value) {
-      return floatToIntBits(value); // 返回二进制表示 
-  }
-  // Double
-  public static int hashCode(double value) {
-      long bits = doubleToLongBits(value); // 返回二进制表示
-      return (int)(bits ^ (bits >>> 32));
-  }
-  ```
 
 - ```java
   public boolean equals(Object obj) {
@@ -65,7 +38,7 @@
       wait(timeoutMillis); 
   }
 
-  // 最终都是调用该方法
+  // 最终都是调用该本地方法
   public final native void wait(long timeoutMillis) throws InterruptedException;
   ```
   **wait方法必须在同步方法或同步块内使用，调用后线程会释放同步锁**；参数为0L时，Java线程状态转变为WAIT，一直等待直到被唤醒或被打断；大于0L则Java线程状态转变为TIMED_WAITING，等待被唤醒、打断或达到超时时间后被自动唤醒。
@@ -110,6 +83,8 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
 
 ### 构造方法
 
+**只有通过""创建的字符串才会被加入字符串常量池中，而new出来的String对象会存放在堆中。**
+
 - ```java
   public String(String original) {
       this.value = original.value;
@@ -118,16 +93,18 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
   }
   ```
   唯一会复用value数组的构造方法，如果字符串常量池中不存在original，则需要创建两个String对象和一个byte数组。
-    > **只有通过""创建的字符串才会被加入字符串常量池中，而new出来的String对象会存放在堆中。**
 
-- public String(byte bytes[], Charset charset)：将byte数组按给定的编码方式解码为字符串，StandardCharsets类中定义了常用的Charset类型常量。
+- ```java
+  public String(byte[] bytes, int offset, int length, Charset charset) { ... }
+  ```
+  将byte数组按给定的编码方式解码为字符串，StandardCharsets类中定义了常用的Charset类型常量。
 
 ### 实例方法
 
 - ```java
   public native String intern();
   ```
-  如果字符串常量池已经存在和该字符串相等的字符串则返回常量池内的对象，否则将当前字符串对象加入字符串常量池然后返回自身。
+  如果字符串常量池已经存在和当前字符串相等的字符串则返回常量池内的对象，否则将当前字符串对象加入字符串常量池后返回自身。
 
 - ```java
   private int hash; // 哈希值缓存，默认0。
@@ -172,18 +149,30 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
   ```
   需要知道BMP外的字符会占用四个字节，所以返回值并不一定等于字符串的长度。
 
-- public char charAt(int index)：获取BMP内的Unicode字符，所以返回两个字节的char。
+- ```java
+  // 获取BMP内的Unicode字符，故返回值类型为char
+  public char charAt(int index) { ... }
 
-- public int codePointAt(int index)：获取CodePoint，所以返回四个字节的int。
+  // 获取CodePoint，故返回值类型为int
+  public int codePointAt(int index) { ... }
 
-- public IntStream chars()：转换为字符流，会把char扩展为int，因为没有CharStream。
+  // 将字符串转换为字符流，会把char扩展为int，因为没有CharStream
+  public IntStream chars() { ... }
 
-- public IntStream codePoints()：转换为CodePoint流。
+  // 将字符串转换为CodePoint流
+  public IntStream codePoints() { ... }
+  ```
 
-- public byte[] getBytes(Charset charset)：将字符串按指定的编码方式编码为byte数组。
-  > UTF_16编码需要使用额外的两个字节来标识字节序（FEFF或FFFE）。
+- ```java
+  // 将字符串按指定的编码方式编码为byte数组
+  public byte[] getBytes(Charset charset) { ... }
+  ```
+  注意如果是UTF_16编码需要使用额外的两个字节来标识字节序（FEFF或FFFE）。
 
-- public boolean contentEquals(CharSequence cs)：与给定CharSequence进行比较，**如果是StringBuffer类型会加上同步**。
+- ```java
+  public boolean contentEquals(CharSequence cs) { ... }
+  ```
+  当前字符串与给定CharSequence进行比较，**如果cs是StringBuffer类型会加上同步**。
 
 - public int indexOf(int ch, int fromIndex)：ch是单个CodePoint值。
 
@@ -261,6 +250,35 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 
 ## 包装类
 
+- ```java
+  // Boolean
+  public static int hashCode(boolean value) {
+      return value ? 1231 : 1237;
+  }
+  // Byte、Short、Character
+  public static int hashCode(byte/short/char value) {
+      return (int)value;
+  }
+  // Integer
+  public static int hashCode(int value) {
+      return value;
+  }
+  // Long
+  public static int hashCode(long value) {
+      return (int)(value ^ (value >>> 32));
+  }
+  // Float
+  public static int hashCode(float value) {
+      return floatToIntBits(value); // 返回二进制表示 
+  }
+  // Double
+  public static int hashCode(double value) {
+      long bits = doubleToLongBits(value); // 返回二进制表示
+      return (int)(bits ^ (bits >>> 32));
+  }
+  ```
+  包装类均重写了hashcode和equals方法。
+
 - Boolean直接使用常量创建。
 
 - Byte、Short、Integer、Long都有自己的私有缓存内部类，为-128到127的区间预先加载了包装类缓存。
@@ -337,7 +355,37 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
       }
   }
   ```
-  类加载方法，双亲委派模型的保证。
+  类加载方法，双亲委派模型的保证，可以在自定义加载器中重写以破坏双亲委派模型。
+
+- ```java
+  // 为parallelCapable时才会创建
+  private final ConcurrentHashMap<String, Object> parallelLockMap;
+
+  // 非parallelCapable则锁定加载器自身
+  protected Object getClassLoadingLock(String className) {
+      Object lock = this;
+      if (parallelLockMap != null) {
+          Object newLock = new Object();
+          lock = parallelLockMap.putIfAbsent(className, newLock);
+          if (lock == null) {
+              lock = newLock;
+          }
+      }
+      return lock;
+  }
+
+  // 注册为parallelCapable
+  // 要求：1.父类必须是parallelCapable；2.调用时未创建实例。
+  protected static boolean registerAsParallelCapable() {... }
+
+  // 由JVM调用，清理parallelCapable相关的集合。
+  private void resetArchivedStates() {... }
+  ```
+
+- ```java
+  private final native Class<?> findLoadedClass0(String name);
+  ```
+  本地方法，用于获取当前类加载器对象加载过的Class对象，JVM中使用的是**SystemDictonary**，本质上是一个哈希表，key是类加载器对象+类的名字，value是指向klass的地址。
 
 - ```java
   protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -345,6 +393,11 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
   }
   ```
   自定义类加载器需要重写findClass方法。
+
+- ```java
+  protected final Class<?> defineClass(String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError { ... }
+  ```
+  在findClass方法中需要使用defineClass方法将字节码文件转换为Class对象，**每个ClassLoader实例只能转换同一个类一次（类元信息保存到SystemDictonary，全限定名相同视为同一个类）**，除非该类对象已被卸载，但是类卸载是不可控的（Full GC时触发）。
 
 - ```java
   final Class<?> loadClass(Module module, String name) {
@@ -370,29 +423,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
       return null;
   }
   ```
-  在 Class.forName(Module module, String name) 中调用，使用模块的加载器加载类。
-
-- ```java
-  private final ConcurrentHashMap<String, Object> parallelLockMap;
-  // 非parallelCapable则锁定加载器自身
-  protected Object getClassLoadingLock(String className) {
-      Object lock = this;
-      if (parallelLockMap != null) {
-          Object newLock = new Object();
-          lock = parallelLockMap.putIfAbsent(className, newLock);
-          if (lock == null) {
-              lock = newLock;
-          }
-      }
-      return lock;
-  }
-  ```
-  需要调用registerAsParallelCapable方法注册为parallelCapable才会创建parallelLockMap，JVM会执行resetArchivedStates方法清理parallelCapable相关的集合。
-
-- ```java
-  protected final Class<?> defineClass(String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError
-  ```
-  使用defineClass方法将字节码文件转换为Class对象，**每个ClassLoader实例只能转换同一个类（全限定名相同视为同一个类）一次**，除非该类对象已被卸载，但是类卸载是不可控的。
+  在 Class.forName(Module module, String name) 中调用，使用模块的加载器去加载类。
 
 ***
 
@@ -517,7 +548,7 @@ JVM的运行时环境，饿汉式单例模式，**使用Runtime.getRuntime()获�
 
 ### SoftReference
 
-软引用，由垃圾收集器根据内存需求决定回收，在抛出OutOfMemoryError之前，会保证清除所有软引用。
+软引用，由垃圾收集器根据内存需求决定回收，在抛出OutOfMemoryError之前，会保证清除所有软引用。不适合做高频缓存，因为一旦触发大规模回收，将会导致压力极具增大。
 
 ### WeakReference
 

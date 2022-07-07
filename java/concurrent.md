@@ -109,7 +109,7 @@
 
 ### ForwardingNode
 
-扩容节点，表示当前位置的节点已被转移到扩容后的新数组中，hash属性默认为MOVED（-1），持有新数组的引用。
+扩容转发节点，表示当前位置的节点已被转移到扩容后的新数组中，hash属性默认为MOVED（-1），持有新数组的引用。
 
 - find方法：通过nextTable属性定位到新数组中查找节点，调用find方法。
 
@@ -145,7 +145,7 @@
 
 ### ReservationNode
 
-预留节点，表示当前位置已被compute或computeIfAbsent操作预留，hash属性默认为RESERVED（-3）。
+保留加锁节点，表示当前位置已被compute或computeIfAbsent操作预留，hash属性默认为RESERVED（-3）。
 
 - find方法：返回null。
 
