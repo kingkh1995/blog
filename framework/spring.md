@@ -181,7 +181,7 @@ AOP的AbstractAutoProxyCreator为SmartInstantiationAwareBeanPostProcessor类型�
 
 - PlatformTransactionManager：平台事务管理器接口，定义了getTransaction、commit以及rollback操作。
 
-- TransactionDefinition：事务属性，包括隔离级别、传播行为、超时事件、回滚规则以及是否只读。
+- TransactionDefinition：事务定义，包括隔离级别、传播行为、超时时间、回滚规则以及是否只读。
   - PROPAGATION_REQUIRED：**默认**，存在事务则加入，不存在则创建新事务；
   - PROPAGATION_REQUIRES_NEW：创建新事物，挂起外部事务，两者互不影响。
   - PROPAGATION_NESTED：创建新事务，如果存在外部事务则作为其嵌套事务，**外部事务会影响当前事务，但当前事务不会影响外部事务**；

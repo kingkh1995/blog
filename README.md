@@ -3,10 +3,8 @@
 - ★★★ Java
 - ★★★ Spring
 - ★★★ Spring Boot
-- ★★★ Spring Cloud
 - ★★★ Mysql
 - ★★★ Redis
-- ★★★ Netty
 - ★★★ Dubbo
 - ★★☆ Mybatis
 - ★★☆ Spring Data JPA
@@ -14,20 +12,27 @@
 - ★★☆ Kafka
 - ★★☆ Zookeeper
 - ★★☆ Sharding-JDBC
-- ★★☆ Redisson
-- ★☆☆ Curator
+- ★★☆ SpringCloud Gateway
+- ★★☆ Netty
+- ★☆☆ Redisson
+- ★☆☆ Disruptor
 - ★☆☆ ES
 - ★☆☆ Spring Security
 - ★☆☆ Druid
-- ★☆☆ Quartz
+- ★☆☆ Nacos
+- ★☆☆ Seata
 - ★☆☆ Sentinel
 - ★☆☆ Elasticjob
-- ☆☆☆ Seata
+- ★☆☆ SkyWalking
+- ★☆☆ Arthas
+- ★☆☆ Quartz
+- ★☆☆ Tomcat
+- ☆☆☆ Etcd
 - ☆☆☆ Canal
-- ☆☆☆ Tomcat
 - ☆☆☆ ELK
-- ☆☆☆ Skywalking
+- ☆☆☆ Apollo
 - ☆☆☆ Maven
+- ☆☆☆ Gradle
 - ☆☆☆ Nginx
 - ☆☆☆ Docker
 

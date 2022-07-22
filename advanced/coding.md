@@ -91,11 +91,11 @@
 - COUNT(*) & COUNT(1) 效率是完全一样的。
 
 - **不建议做超大偏移量分页**，id自增时可以使用主键索引进行一定优化。
-  1. 使用延迟关联，先使用覆盖索引查出主键范围，然后再关联行。
+  1. 延迟关联，先使用覆盖索引查出主键范围，然后再关联行。
   ``` sql
   SELECT <cols> FROM t INNER JOIN (SELECT id FROM t ORDER BY <cols> LIMIT 10000, 10) USING (id);
   ```
-  2. 使用id限定方式，直接限定id的值范围，效率最高，但是适用场景比较有限。
+  2. 索引范围限定，效率最高，但是适用场景比较有限，需要能确定出索引匹配的范围，可以通过逻辑判断或从上一次查询中取值。
   ``` sql
   SELECT <cols> FROM t WHERE id > 10000 AND <conditions> LIMIT 10;
   ```

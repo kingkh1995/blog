@@ -141,6 +141,21 @@
 - *运行时间与输入无关。*
 - *数据移动是所有算法中最少的。*
 
+```java
+public static void sort(int[] arr) {
+    int length = arr.length;
+    for (int i = 0; i < length; ++i) {
+        int min = i;
+        for (int j = i + 1; j < length; ++j) {
+            if (arr[j] < arr[min]) {
+                min = j;
+            }
+        }
+        swap(arr, i, min);
+    }
+}
+```
+
 ### 二、冒泡排序
 
 从左至右不断交换相邻的逆序元素，每一轮循环都将最大值上浮到右侧，并且如果某一轮循环未发生交换，即代表数组已经有序。
@@ -149,10 +164,11 @@
 public static void sort(int[] arr) {
     int length = arr.length;
     boolean isSorted = false;
-    for (int i = length - 1; !isSorted && i > 0; i--) {
+    for (int i = length - 1; !isSorted && i > 0; --i) {
         isSorted = true;
-        for (int j = 0; j < i; j++) {
-            if(arr[j] > arr[j+1]){
+        for (int j = 0; j < i; ++j) {
+            // 与后一个元素进行比较，如果是逆序则交换。
+            if (arr[j] > arr[j + 1]) {
                 isSorted = false;
                 swap(arr, j, j + 1);
             }
@@ -172,21 +188,21 @@ public static void sort(int[] arr) {
 ```java
 public static void sort(int[] arr) {
     // 从第二个元素开始，将第一个元素视为有序数组
-    for (int i = 1; i < arr.length; i++) {
-        for (int j = i; j > 0 && arr[j] < arr[j - 1]; j--) {
-            // 出现逆序则交换相邻元素
-            swap(arr, j, j - 1);
+    for (int i = 1; i < arr.length; ++i) {
+        for (int j = i; j > 0 && arr[j - 1] > arr[j]; --j) {
+            // 与前一个元素进行比较，如果是逆序则交换。
+            swap(arr, j - 1, j);
         }
     }
 }
 ```
 
 ```java
-// 优化解法：遍历找到应该所处的位置，并将所有大于当前元素的元素后移一格
+// 优化解法：遍历找到应该目标位置，并将所有大于当前元素的元素后移一格。
 public static void sort(int[] arr) {
-    for (int i = 1; i < arr.length; i++) {
+    for (int i = 1; i < arr.length; ++i) {
         int j = i, temp = arr[j];
-        for (; j > 0 && temp < arr[j - 1]; j--) {
+        for (; j > 0 && arr[j - 1] > temp; --j) {
             arr[j] = arr[j - 1];
         }
         arr[j] = temp;
@@ -208,10 +224,10 @@ public static void sort(int[] arr) {
     while (h < length / 3) {
         h = 3 * h + 1;
     }
-    // 每趟排序类似于插入排序，只是间隔逐渐缩小直到为1，则等同于插入排序
+    // 每趟排序类似于插入排序，直到间隔逐渐缩小直到为1，则等同于插入排序。
     for (; h >= 1; h /= 3) { 
         // 将数组变为h有序
-        for (int i = h; i < length; i++) {
+        for (int i = h; i < length; ++i) {
             for (int j = i; j >= h && arr[j] < arr[j - h]; j -= h) {
                 swap(arr, j, j - h);
             }
@@ -229,7 +245,7 @@ public static void sort(int[] arr) {
 
 ```java
 // merge方法 左数组：[lo, mid] 右数组：[mid + 1, hi]
-// 针对merge优化，如果arr[mid] <= arr[mid + 1]，则不需要merge了。
+// 可以针对merge优化，如果arr[mid] <= arr[mid + 1]，则不需要merge了。
 void merge(int[] arr, int lo, int mid, int hi)
 
 // 自顶向下的归并排序（递归实现）
@@ -237,7 +253,7 @@ private void sort(int[] arr, int lo, int hi) {
     if (hi <= lo) {
         return;
     }
-    int mid = lo + (hi - lo) / 2;
+    int mid = lo + ((hi - lo) >> 1);
     sort(arr, lo, mid);
     sort(arr, mid + 1, hi);
 	merge(arr, lo, mid, hi);
@@ -268,7 +284,7 @@ private void sort(int[] arr) {
 ### 1、基本算法
 
 ```java
-private void sort(int[] arr, int lo, int hi) {
+private static void sort(int[] arr, int lo, int hi) {
     if (hi <= lo) {
         return;
     }
@@ -277,7 +293,8 @@ private void sort(int[] arr, int lo, int hi) {
     sort(arr, j + 1, hi);
 }
 
-private int partition(int[] arr, int lo, int hi) {
+// 双指针
+private static int partition1(int[] arr, int lo, int hi) {
     // 默认将lo位置的元素选作切分元素
     int pivot = arr[lo];
     int i = lo, j = hi + 1;
@@ -306,6 +323,19 @@ private int partition(int[] arr, int lo, int hi) {
     swap(arr, lo, j);
     return j;
 }
+
+// 单指针
+private static int partition2(int[] arr, int lo, int hi) {
+    int pivot = arr[lo], ge = hi + 1; // [ge, hi]区间为大于等于pivot的元素
+    // 从右边开始找到所有大于pivot的元素然后交换到[ge, hi]区间
+    for (int i = hi; i > lo; --i) {
+      if (arr[i] > pivot) {
+        swap(arr, i, --ge);
+      }
+    }
+    swap(arr, lo, --ge); // 最后移动pivot
+    return ge;
+}
 ```
 
 ### 2、算法改进
@@ -320,7 +350,8 @@ private int partition(int[] arr, int lo, int hi) {
 > 对于有大量重复元素的数组，将数组切分为三部分，分别是小于、等于和大于切分元素的数组元素，**对有大量重复元素的随机数组排序时间复杂度是线性的**。
 
 ```java
-private static void sort(int[] arr, int lo, int hi){
+// 单指针三向切分
+private static void sort(int[] arr, int lo, int hi) {
     if (hi <= lo){
         return;
     }

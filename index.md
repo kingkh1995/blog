@@ -41,6 +41,7 @@
 * [Feign](project/feign)
 * [HikariCP](project/hikariCP)
 * [Lettuce](project/lettuce)
+* [JCTools](project/jctools)
 
 ## Components & Tools
 

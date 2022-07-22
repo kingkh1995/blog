@@ -50,7 +50,7 @@
   // 唤醒所有在此对象监视器上等待的线程
   public final native void notifyAll();
   ```
-  **必须在同步方法或同步块内使用**，线程被唤醒后Java状态转变为RUNNABLE，尝试竞争锁，如果失败则进入锁等待池，Java线程状态转变为BLOCKED。
+  **必须在同步方法或同步块内使用**，线程被唤醒后Java线程状态转变为RUNNABLE，尝试竞争锁，如果失败则进入锁等待池，Java线程状态转变为BLOCKED。
 
 - ```java
   @Deprecated(since="9")
@@ -74,7 +74,7 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
 
 - ASCII & Latin1：**Latin1是iso-8859-1的别名，Latin1和ASCII都是单字节字符**；ASCII定义了128个字符，只使用了后7位最高位默认为0；Latin1定义了256个字符，使用了全部8位，能完全向下兼容ASCII。
 
-- Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65536个码位（code point），第一个平面称为基本多语言平面（BMP）（含中文），其他平面称为辅助平面。**Unicode字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号**。
+- Unicode字符集：是一种通用字符集，它的编码空间可以划分为17个平面（plane），每个平面包含65536个码位（code point），第一个平面称为基本多语言平面BMP（含中文），其他平面称为辅助平面。**Unicode字符集只是指定了字符的编号，但是却有多种编码方式去表示这个编号**。
 
 - utf-16：Unicode字符集规定的标准编码实现，固定使用两个字节去表示BMP内的字符，BMP之外的字符则需要四个字节去表示。
 
@@ -401,7 +401,8 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 
 - ```java
   final Class<?> loadClass(Module module, String name) {
-      synchronized (getClassLoadingLock(name)) {Class<?> c = findLoadedClass(name);
+      synchronized (getClassLoadingLock(name)) {
+          Class<?> c = findLoadedClass(name);
           // 没有遵守双亲委派模型
           if (c == null) {
               c = findClass(module.getName(), name);
