@@ -218,3 +218,15 @@ AOP的AbstractAutoProxyCreator为SmartInstantiationAwareBeanPostProcessor类型�
 - JpaRepository：标准Jpa操作接口，继承PagingAndSortingRepository和QueryByExampleExecutor。
 
 ***
+
+## SpringBoot
+
+### @SpringBootApplication
+
+@SpringBootConfiguration表示当前类为配置类；@EnableAutoConfiguration开启自动配置，通过AutoConfigurationImportSelector实现；@ComponentScan开启包扫描，扫描指定路劲下的所有类文件。
+
+### AutoConfigurationImportSelector
+
+即spring的SPI机制，使用SpringFactoriesLoader扫描META-INF/spring.factories下配置的所有拓展点。
+
+***

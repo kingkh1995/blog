@@ -174,19 +174,17 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
   ```
   当前字符串与给定CharSequence进行比较，**如果cs是StringBuffer类型会加上同步**。
 
-- public int indexOf(int ch, int fromIndex)：ch是单个CodePoint值。
-
-- public int indexOf(String str, int fromIndex)：没有使用任何算法优化，直接遍历查找。
-
-- public String strip()：JDK11新增，移除首尾的Unicode空白字符，使用Character.isWhitespace()识别。
-  > **trim()只移除空格、tab键、换行符。**
-
-- public boolean isBlank()：JDK11新增，判断是否为空字符串，也是使用Character.isWhitespace()识别Unicode空白字符。
+- ```java
+  // 参数为CodePoint值
+  public int indexOf(int ch) { ... }
+  ```
+  indexOf和lastIndexOf均是直接遍历查找。
 
 - ```java
   public boolean matches(String regex) {
       return Pattern.matches(regex, this);
   }
+
   // Pattern
   public static boolean matches(String regex, CharSequence input) {
       Pattern p = Pattern.compile(regex);
@@ -194,19 +192,35 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
       return m.matches();
   }
   ```
-  不建议使用，因为每次都会使用regex创建一个Pattern对象，同理其他有regex参数的方法也是一样。
+  每次都会使用regex参数创建一个Pattern对象，**同理其他有regex参数的方法也是一样**。
 
-- public String[] split(String regex, int limit)：
-  - 因为参数为regex，即正则表达式的特殊字符如需按普通字符匹配则需要使用\\\\转义；
+- ```java
+  public String[] split(String regex) {
+      return split(regex, 0);
+  }
+
+  public String[] split(String regex, int limit) { ... }
+  ```
+  - regex参数为正则表达式，特殊字符如需按普通字符匹配则需要使用\\\\转义；
   - limit参数如果大于0，则拆分后数组长度不会超过limit；
-  - 因为每次都会编译regex，**故更推荐使用Guava的Splitter工具类**。
+  - 因为每次都会编译regex，**推荐使用Guava的Splitter工具类替代**。
+
+- ```java
+  // 去除首位所有Unicode空白字符
+  public String strip() { ... }
+
+  // 判断是否为空（只包含Unicode空白字符）
+  public boolean isBlank() { ... }
+  ```
+  - JDK11新增，StringUTF16使用Character.isWhitespace()判断Unicode空白字符；
+  - **不应该再使用trim()，它只移除空格、tab键、换行符。**
 
 - ```java
   public String formatted(Object... args) {
       return new Formatter().format(this, args).toString();
   }
   ```
-  JDK15新增，使用自身作为模式字符串生成格式化字符串。不推荐多次调用该方法以及其他静态format方法，不仅每次都会创建一个Formatter对象，且在执行format方法时才会去解析模式字符串。
+  JDK15新增，自身作为模式字符串去格式化字符串。不推荐多次调用该方法以及其他静态format方法，不仅每次都会创建一个Formatter对象，且Formatter对象在执行format方法时才会去解析模式字符串。
 
 ***
 
@@ -218,37 +232,37 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 
 - ```java
   int count; // 记录实际字符（非codePoint）数量
+
   public int length() {
       return count;
   }
   ```
 
-- 执行变更操作时至少要保证容量不能低于所需的最小容量，如果足够则增长为两倍当前容量加2，但value数组的长度也不能超过虚拟机的限制（比Integer.MAX_VALUE略小），若都无法满足则抛出OutOfMemoryError。
-
-### **StringBuilder**
-
-非线程安全，默认容量16，所有方法全是直接调用父类方法。
+- 至少要保证容量不能低于所需的最小容量，**如果足够则增长为两倍当前容量加2**，但value数组的长度也不能超过虚拟机的限制（比Integer.MAX_VALUE略小），若都无法满足则抛出OutOfMemoryError。
 
 ### StringBuffer
 
 线程安全，默认容量16，所有方法全是直接调用父类方法，但都加上了同步，同时toString方法有缓存（使用toStringCache属性）。
+
+### **StringBuilder**
+
+非线程安全，默认容量16，所有方法全是直接调用父类方法。
 
 ### **要点**
 
 1. 除了delete之外的其他变更操作都会尝试压缩字符串（inflate方法）；
 1. append和insert操作如果对象参数为null，则会视作"null"；
 1. 不存在char参数的构造方法，你可以这么写但实际上执行的构造方法是AbstractStringBuilder(int capacity)；
-1. 使用 + 拼接字符串会被优化为使用StringBuilder。
-    ```java
-    // 不应该在循环中使用 + 拼接字符串，因为每次都会new一个StringBuilder对象。
-    for(String s = ""; ; ){
-        s = s + "123";
-    }
-    ```
+2. 使用 + 拼接字符串会被优化为使用StringBuilder，即不应该在循环中使用 + 拼接字符串，因为每次都会new一个StringBuilder对象。
 
 ***
 
 ## 包装类
+
+- ```java
+  public static final Class<Integer> TYPE = (Class<Integer>) Class.getPrimitiveClass("int");
+  ```
+  包装类的TYPE属性为其对应的基本数据类型的Class对象，它不是由类加载机制创建，而是运行时由JVM创建。
 
 - ```java
   // Boolean
@@ -279,152 +293,230 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
   ```
   包装类均重写了hashcode和equals方法。
 
-- Boolean直接使用常量创建。
+- ```java
+  public static Integer valueOf(int i) {
+      // IntegerCache为私有缓存内部类
+      if (i >= IntegerCache.low && i <= IntegerCache.high)
+          return IntegerCache.cache[i + (-IntegerCache.low)];
+      return new Integer(i);
+  }
+  ```
+  - **包装类的构造方法均已被标识为@Deprecated**，Boolean应该直接使用常量，其他则应该使用静态valueOf方法创建，可以利用到缓存；
+  - 整型的缓存区间均为\[-128, 127\]，**但只有Integer可以通过JVM参数调整缓存区间的上限**；
+  - Character的缓存区间为\[0, 127\]，即所有ASCII字符。
 
-- Byte、Short、Integer、Long都有自己的私有缓存内部类，为-128到127的区间预先加载了包装类缓存。
-  > 只有Integer可以通过JVM参数调整缓存区间的上限。
+- ```java
+  public static int parseInt(String s) throws NumberFormatException {
+      return parseInt(s,10);
+  }
+  
+  public static int parseInt(String s, int radix) throws NumberFormatException { ... }
+  ```
+  包装类的静态parse方法用于将字符串转换为对应的基本数据类型，整型还可以按指定的进制解析（radix：基数）。
 
-- Character为ASCII字符添加了缓存，即值区间为0-127。
+- ```java
+  // Long，返回当前值作为无符号整型的字符串表示
+  public static String toUnsignedString(long i) {
+      return toUnsignedString(i, 10); // 默认十进制
+  }
 
-- valueOf方法返回包装类（**推荐使用该静态工厂方法创建包装类**），parse方法返回基本数据类型。
-
-- signum方法用于输出数字的符号，1：正数，0：0，-1：负数。
-
-- toUnsignedString方法用于将整形转化为无符号整形，**无符号整形即二进制表示的最高位不再视为符号位**。
+  public static String toUnsignedString(long i, int radix) { ... }
+  ```
+  Unsigned相关方法为无符号整型操作，**无符号整型即整数的二进制表示中最高位不再视为符号位**。
 
 ***
 
-## BigDecimal
+##  大数
 
-有效数字使用BigInteger保存，使用scale属性记录小数点位，可以指定MathContext（精度和舍入模式），默认MathContext.UNLIMITED（精度0及HALF_UP舍入），精度表示有效数字的最大长度，必须大于等于0，0则表示不限制。
+**为不可变对象，每次变更操作都会返回新对象。**
 
-### 创建对象
+### BigInteger
 
-- **不要使用new BigDecimal(double val)，而是使用BigDecimal valueOf(double val)**。
+- ```java
+  // 符号位，-1：负数，0：0，1：正数。
+  final int signum;
 
-- **float应该转为字符串并使用new BigDecimal(String val)，不能转为double。**。
+  // 数值按32位拆分存储，即每个int都是无符号整型。
+  final int[] mag;
 
-- **整数应该使用valueOf()方法创建，特殊值能利用到缓存。**
+  // 使用除留余数法计算哈希值
+  public int hashCode() {
+      int hashCode = 0;
+      for (int i = 0; i < mag.length; i++)
+          // 使用LONG_MASK转换为long后再参与计算
+          hashCode = (int)(31 * hashCode + (mag[i] & LONG_MASK));
+      return hashCode * signum;
+  }
+  ```
 
-### 方法
+- ```java
+  // 使用除留余数法计算哈希值
+  public int hashCode() {
+      int hashCode = 0;
+      for (int i = 0; i < mag.length; i++)
+          // 因为每个int都是无符号的，故使用LONG_MASK转换为long后再参与计算
+          hashCode = (int)(31 * hashCode + (mag[i] & LONG_MASK));
+      return hashCode * signum;
+  }
+  ```
 
-- stripTrailingZeros()：去除所有尾随零，返回新的对象，可能转为科学计数法表示。
-- toString()：有软缓存，返回MathContext处理过后的格式。
-- toPlainString()：数字原始文本格式。
-- toEngineeringString()：有必要时使用工程计数法格式输出。
+- ```java
+  // 缓存区间为[-16, 16]
+  public static BigInteger valueOf(long val) { ... }
+
+  // 可以指定基数，默认为10。
+  public BigInteger(String val, int radix) { ... }
+  ```
+  应该尽可能的使用静态valueOf方法创建BigInteger。
+
+### MathContext
+
+- ```java
+  // 精度，表示有效数字的长度，0则表示不限制。
+  final int precision;
+
+  // 舍入模式，默认是HALF_UP。
+  final RoundingMode roundingMode;
+  ```
+
+### BigDecimal
+
+#### 实现及构造
+
+- ```java
+  // 有效数字在long能表示的范围内时使用
+  private final transient long intCompact;
+
+  // 有效数字
+  private final BigInteger intVal;
+
+  // 有效数字中小数点的位置，正数表示小数点应该左移，负数表示应该右移。
+  private final int scale;
+
+  // 精度，即有效数字长度，可通过MathContext指定。
+  private transient int precision;
+  ```
+
+- ```java
+  // 使用字符串创建时，MathContext默认为UNLIMITED。
+  public BigDecimal(String val, MathContext mc) { ... }
+
+  // 不应该使用
+  public BigDecimal(double val) {
+      this(val, MathContext.UNLIMITED);
+  }
+
+  // 浮点数应该转为字符串后使用字符串参数的构造方法
+  public static BigDecimal valueOf(double val) {
+      return new BigDecimal(Double.toString(val));
+  }
+
+  // 整型使用，能利用到缓存。
+  public static BigDecimal valueOf(long val) { ... }
+
+  // 尽量使用
+  public static BigDecimal valueOf(long unscaledVal, int scale) { ... }
+  ```
+
+#### 方法
+
+- ```java
+  public BigDecimal setScale(int newScale) {
+      return setScale(newScale, ROUND_UNNECESSARY);
+  }
+
+  public BigDecimal setScale(int newScale, RoundingMode roundingMode) { ... }
+  ```
+  设置有效数字的小数点位，如果需要舍去且舍入模式为UNNECESSARY则会抛出ArithmeticException，**不修改原对象而是返回新对象**。
+
+- ```java
+  // 移除有效数字的所有尾部0，返回新对象。
+  public BigDecimal stripTrailingZeros() { ... }
+  ```
+
+- ```java
+  public BigInteger toBigInteger() {
+      // 直接舍去小数位
+      return this.setScale(0, ROUND_DOWN).inflated();
+  }
+
+  public BigInteger toBigIntegerExact() {
+      // 如果需要舍入则抛出ArithmeticException
+      return this.setScale(0, ROUND_UNNECESSARY).inflated();
+  }
+  ```
+
+- ```java
+  // 有缓存，必要时输出为科学计数法表示。
+  public String toString() {
+      String sc = stringCache;
+      if (sc == null) {
+          stringCache = sc = layoutChars(true);
+      }
+      return sc;
+  }
+
+  // 无缓存，必要时输出为工程计数法表示（10的幂是3的倍数）。
+  public String toEngineeringString() {
+      return layoutChars(false);
+  }
+
+  // 无缓存，输出原始文本格式。
+  public String toPlainString() { ... }
+  ```
 
 ***
 
-## Enum
+## 枚举
 
-所有枚举的基类，是绝对的单例模式，重写了clone方法，不允许被clone，直接抛出CloneNotSupportedException。
+枚举类是由JVM保证的绝对单例模式
 
-**如果valueOf方法找不到枚举值会抛出IllegalArgumentException。**
+```java
+// 使用枚举实现饿汉式单例模式
+public enum Singleton {
+    INSTANCE;
+    
+    ...
+}
+```
 
-***
+### abstract class **Enum**\<E extends **Enum**\<E\>\> implements Constable, Comparable<E>, Serializable
 
-## ClassLoader
+所有枚举类的基类，由编译器添加继承关系，**故枚举类不可继承类，但是可以实现接口**。
 
 - ```java
-  protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-      synchronized (getClassLoadingLock(name)) { // 获取同步锁
-          Class<?> c = findLoadedClass(name); // 首先检查是否已经加载
-          if (c == null) {
-              ...
-              try {
-                  // 父级存在则委托给父级加载，不存在则委托给Bootstrap加载。
-                  if (parent != null) {
-                      c = parent.loadClass(name, false);
-                  } else {
-                      c = findBootstrapClassOrNull(name);
-                  }
-              } catch (ClassNotFoundException e) {
-                  // 直接丢弃异常
-              }
-              // 父类无法加载才由自身尝试加载
-              if (c == null) {
-                  ...
-                  c = findClass(name);
-                  ...
-              }
-          }
-          if (resolve) {
-            resolveClass(c); // 如果未加载成功则抛出NullPointerException
-          }
-          return c;
-      }
+  // 绝对的单例模式，不允许克隆。
+  protected final Object clone() throws CloneNotSupportedException {
+      throw new CloneNotSupportedException();
   }
   ```
-  类加载方法，双亲委派模型的保证，可以在自定义加载器中重写以破坏双亲委派模型。
 
 - ```java
-  // 为parallelCapable时才会创建
-  private final ConcurrentHashMap<String, Object> parallelLockMap;
-
-  // 非parallelCapable则锁定加载器自身
-  protected Object getClassLoadingLock(String className) {
-      Object lock = this;
-      if (parallelLockMap != null) {
-          Object newLock = new Object();
-          lock = parallelLockMap.putIfAbsent(className, newLock);
-          if (lock == null) {
-              lock = newLock;
-          }
-      }
-      return lock;
-  }
-
-  // 注册为parallelCapable
-  // 要求：1.父类必须是parallelCapable；2.调用时未创建实例。
-  protected static boolean registerAsParallelCapable() {... }
-
-  // 由JVM调用，清理parallelCapable相关的集合。
-  private void resetArchivedStates() {... }
-  ```
-
-- ```java
-  private final native Class<?> findLoadedClass0(String name);
-  ```
-  本地方法，用于获取当前类加载器对象加载过的Class对象，JVM中使用的是**SystemDictonary**，本质上是一个哈希表，key是类加载器对象+类的名字，value是指向klass的地址。
-
-- ```java
-  protected Class<?> findClass(String name) throws ClassNotFoundException {
-      throw new ClassNotFoundException(name);
+  public static <T extends Enum<T>> T valueOf(Class<T> enumClass, String name) {
+      T result = enumClass.enumConstantDirectory().get(name);
+      if (result != null)
+          return result;
+      if (name == null)
+          throw new NullPointerException("Name is null");
+      throw new IllegalArgumentException(
+            "No enum constant " + enumClass.getCanonicalName() + "." + name);
   }
   ```
-  自定义类加载器需要重写findClass方法。
+  使用valueOf方法时需要注意，当枚举值不存在时会抛出IllegalArgumentException而不是返回null。
 
 - ```java
-  protected final Class<?> defineClass(String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError { ... }
-  ```
-  在findClass方法中需要使用defineClass方法将字节码文件转换为Class对象，**每个ClassLoader实例只能转换同一个类一次（类元信息保存到SystemDictonary，全限定名相同视为同一个类）**，除非该类对象已被卸载，但是类卸载是不可控的（Full GC时触发）。
+  @java.io.Serial
+  private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException {
+      throw new InvalidObjectException("can't deserialize enum");
+  }
 
-- ```java
-  final Class<?> loadClass(Module module, String name) {
-      synchronized (getClassLoadingLock(name)) {
-          Class<?> c = findLoadedClass(name);
-          // 没有遵守双亲委派模型
-          if (c == null) {
-              c = findClass(module.getName(), name);
-          }
-          if (c != null && c.getModule() == module) {
-              return c;
-          } else {
-              return null;
-          }
-      }
-  }
-  // 属于模块的加载器需要重写该方法
-  protected Class<?> findClass(String moduleName, String name) {
-      if (moduleName == null) {
-          try {
-              return findClass(name);
-          } catch (ClassNotFoundException ignore) { }
-      }
-      return null;
+  @java.io.Serial
+  private void readObjectNoData() throws ObjectStreamException {
+      throw new InvalidObjectException("can't deserialize enum");
   }
   ```
-  在 Class.forName(Module module, String name) 中调用，使用模块的加载器去加载类。
+  为了保证绝对的单例禁用了默认反序列化机制，**反序列化时使用valueOf方法**。
 
 ***
 

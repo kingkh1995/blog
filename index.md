@@ -14,14 +14,14 @@
 
 * [lang](java/lang)
 * [time](java/time)
-* [reflect](java/reflect)
+* [class & reflect](java/class)
+* [io](java/io)
 * [util](java/util)
 * [thread](java/thread)
 * [concurrent](java/concurrent)
 * [aqs](java/aqs)
 * [functoin](java/function)
 * [stream](java/stream)
-* [io](java/io)
 
 ### *JVM*
 
