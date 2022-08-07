@@ -328,7 +328,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 
 ##  大数
 
-**为不可变对象，每次变更操作都会返回新对象。**
+**均为不可变对象，每次变更操作都会返回新对象。**
 
 ### BigInteger
 
@@ -338,15 +338,6 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 
   // 数值按32位拆分存储，即每个int都是无符号整型。
   final int[] mag;
-
-  // 使用除留余数法计算哈希值
-  public int hashCode() {
-      int hashCode = 0;
-      for (int i = 0; i < mag.length; i++)
-          // 使用LONG_MASK转换为long后再参与计算
-          hashCode = (int)(31 * hashCode + (mag[i] & LONG_MASK));
-      return hashCode * signum;
-  }
   ```
 
 - ```java
@@ -372,7 +363,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 ### MathContext
 
 - ```java
-  // 精度，表示有效数字的长度，0则表示不限制。
+  // 精度，限制有效数字的长度，0则表示不限制。
   final int precision;
 
   // 舍入模式，默认是HALF_UP。
@@ -384,21 +375,22 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 #### 实现及构造
 
 - ```java
-  // 有效数字在long能表示的范围内时使用
-  private final transient long intCompact;
-
-  // 有效数字
+  // unscaledValue（有效数字）
   private final BigInteger intVal;
 
-  // 有效数字中小数点的位置，正数表示小数点应该左移，负数表示应该右移。
+  // 正数表示小数点左移，负数表示右移。
   private final int scale;
+
+  // unscaledValue在long能表示的范围内时使用
+  private final transient long intCompact;
 
   // 精度，即有效数字长度，可通过MathContext指定。
   private transient int precision;
   ```
+  **decimal = unscaledValue × 10 ^ -scale**
 
 - ```java
-  // 使用字符串创建时，MathContext默认为UNLIMITED。
+  // 可以指定MathContext，默认为UNLIMITED，即不处理unscaledValue。
   public BigDecimal(String val, MathContext mc) { ... }
 
   // 不应该使用
@@ -421,16 +413,17 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 #### 方法
 
 - ```java
+  // 设置scale为给定值，重新计算unscaledVal。
   public BigDecimal setScale(int newScale) {
       return setScale(newScale, ROUND_UNNECESSARY);
   }
 
+  // 如需要舍入且舍入模式为UNNECESSARY则会抛出ArithmeticException
   public BigDecimal setScale(int newScale, RoundingMode roundingMode) { ... }
   ```
-  设置有效数字的小数点位，如果需要舍去且舍入模式为UNNECESSARY则会抛出ArithmeticException，**不修改原对象而是返回新对象**。
 
 - ```java
-  // 移除有效数字的所有尾部0，返回新对象。
+  // 移除有效数字的所有尾部0
   public BigDecimal stripTrailingZeros() { ... }
   ```
 
@@ -475,7 +468,6 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 // 使用枚举实现饿汉式单例模式
 public enum Singleton {
     INSTANCE;
-    
     ...
 }
 ```
@@ -520,135 +512,71 @@ public enum Singleton {
 
 ***
 
-## Throwable
+## 运行时类
 
-所有Error和Exception的父类，RuntimeException是Exception的子类，**RuntimeException与其子类之外的其他Exception称为受检查异常**，方法如果抛出受检查异常，调用方必须使用try-catch捕获异常或者继续向上抛出。
+### System
 
-***
+**系统工具类**
 
-## System
+- ```java
+  // 获取时间
+  public static native long currentTimeMillis();
 
-- nanoTime()：用来精准计时，不能用于计算时间。**返回从某一固定但任意的时间算起的纳秒数（或许从以后算起，所以该值可能为负）。**
+  // 用于计时
+  public static native long nanoTime();
+  ```
+  **nanoTime方法返回从某一固定但任意的时间算起的纳秒数**，或许从以后算起，所以返回值可能为负。
 
-- identityHashCode()：native方法，返回对象的标识哈希值，即Object的默认hashcode方法计算出的值。
-
-***
-
-## Runtime
-
-JVM的运行时环境，饿汉式单例模式，**使用Runtime.getRuntime()获取实例**。
-
-- availableProcessors()：返回JVM可以使用的处理器数量（逻辑处理器）。
-
-- addShutdownHook(Thread hook)：为JVM添加一个钩子线程，**使用kill -9 pid则钩子线程无法执行**。
-
-- exit(int status)：退出JVM，**如果使用非零的状态码则表示异常终止**。
-
-- gc()：**不要显式调用，因为完全是不可控的。**
-
-***
-
-## Annotation
-
-- **注解实际上是接口，隐式继承自Annotation接口**，故注解无法继承其他接口或注解，但是可以被接口继承以及被类实现；
-- 注解中如果声明了value参数，则使用时可以忽略参数名value，通过default指定参数默认值；
-- 注解中可以定义常量，但是无法定义default方法。
-
-### 元注解
-
-负责注解其他注解，元注解本身也都有被元注解注解。
-
-```java
-// 元注解上注解的元注解
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.ANNOTATION_TYPE)
-```
-
-- @Documented：表示注解会被包含在javadoc中。
-
-- @Target：指定注解的使用范围，值为ElementType枚举，如果注解上不存在该元注解，则注解可以用于任何元素上。
-  - TYPE：注解可以被使用在类、接口、注解以及枚举上；
-  - TYPE_PARAMETER：注解可以被使用在类型变量上；
-  - TYPE_USE：注解可以被使用在使用了类型的任何位置（如jakarta注解）。
-
-- @Retention：指定注解的保留级别，值为RetentionPolicy枚举，如果注解上不存在该元注解，则注解保留级别默认为CLASS。
-  - SOURCE：注解会被编译器丢弃；
-  - CALSS：注解会被编译器记录在class文件中，但虚拟机运行时不保留。
-  - RUNTIME：注解会被编译器记录，同时虚拟机运行时也会保留，所以可以通过反射机制读取到注解信息。
-
-- @Inherited：表示子类可以从父类中继承此注解。**仅仅意味着子类class对象可以通过getAnnotation方法获取到父类的此注解**。
-
-- @Repeatable：表示此注解可以在同一个元素上使用多次，需要一个容器注解配合实现。
-
-  ```java
-  @Retention(RetentionPolicy.RUNTIME)
-  @Target({ElementType.TYPE, ElementType.FIELD})
-  @Repeatable(RepeatableAnnoCol.class)
-  public @interface RepeatableAnno {
-  }
-
-  // 容器注解的Target必须是可重复注解Target的子集
-  @Retention(RetentionPolicy.RUNTIME)
-  @Target(ElementType.TYPE)
-  public @interface RepeatableAnnoCol {
-      RepeatableAnno[] value();
-  }
-
-  //通过原注解，使用了多次则无法获取
-  RepeatableAnno annotation = XXX.class.getAnnotation(RepeatableAnno.class);
-  //通过容器注解，只使用了一次则无法获取
-  RepeatableAnnoCol annotationCol = XXX.class.getAnnotation(RepeatableAnnoCol.class);
-  //推荐获取方式
-  RepeatableAnno[] annotations = XXX.class.getAnnotationsByType(RepeatableAnno.class);
+- ```java
+  // 返回对象的标识哈希码，即hashcode方法的默认值。
+  public static native int identityHashCode(Object x);
   ```
 
-### **SpringBoot注解**
+- ```java
+  public static void exit(int status) {
+      Runtime.getRuntime().exit(status);
+  }
+  ```
+  部分方法均是直接引用Runtime。
 
-- AnnotationUtils的findAnnotation方法：SpringBoot内部使用，功能远比getAnnotation方法强大，能从类自身、父类、接口以及注解上获取注解信息（**lang包下的注解除外，如@FunctionalInterface**），无需@Inherited元注解。
+### Runtime
 
-- @Validated、@RequestMapping等：只要能通过AnnotationUtils.findAnnotation方法获取注解到即开启注解相应功能。
+**JVM的运行时环境类**，为饿汉式单例模式。
 
-- @Component等DI注解：需要直接或间接（注解在注解上）的方式注解在类上才能被IOC容器管理，即无法继承，这是SpringBoot自身设计考量。
+- ```java
+  private static final Runtime currentRuntime = new Runtime();
 
-***
+  public static Runtime getRuntime() {
+      return currentRuntime;
+  }
 
-## Reference
+  private Runtime() {}
+  ```
+  
+- ```java
+  // 退出JVM，status非0时表示异常退出，不会执行钩子线程。
+  public void exit(int status) {
+      ...
+      Shutdown.exit(status);
+  }
 
-引用对象类型的基类，用于创造一个对象的引用对象，与垃圾回收机制息息相关，**只有当对象非强可达时，对象才可能被回收**。
+  // 添加钩子线程，用于优雅退出。
+  public void addShutdownHook(Thread hook) {
+      ...
+      // 为同步方法
+      ApplicationShutdownHooks.add(hook);
+  }
+  ```
+  **状态码非0或使用【kill -9 \<pid\>】时均不会执行钩子线程。**
 
-### 生命周期
+- ```java
+  // 返回JVM可以使用的处理器（逻辑处理器）数量
+  public native int availableProcessors();
+  ```
 
-创建完成后状态为active，当被引用对象变为不可达后，如果指定了ReferenceQueue会转变成pending，然后被加入pending list，等待ReferenceHandler处理，处理完成后状态变为enqueued，如未指定ReferenceQueue或被移出后，状态转变为最终态inactive，等待变为不可达后被GC回收。
-
-### 属性
-
-- T referent：被引用的对象，可以为null（**不建议**）。
-
-- volatile ReferenceQueue<? super T> queue：如未指定或已被移出ReferenceQueue则为常量值NULL，如已入队则更新为常量值ENQUEUED。
-
-- volatile Reference next：ReferenceQueue中下一个Reference。
-
-- Reference<?> discovered：active状态时，是由GC维护的引用链；pending状态时，是等待入ReferenceQueue的pending list；inactive状态时，为null。
-
-### ReferenceQueue
-
-被引用对象已经被回收的Reference队列，由Reference中的next指针连接而成的。**如果创建Reference时指定了ReferenceQueue，则被引用对象被回收后Reference将会被添加到队列中**。
-
-### ReferenceHandler
-
-高优先级的**daemon**线程，用于处理pending list，执行清理工作和入队ReferenceQueue。
-
-### SoftReference
-
-软引用，由垃圾收集器根据内存需求决定回收，在抛出OutOfMemoryError之前，会保证清除所有软引用。不适合做高频缓存，因为一旦触发大规模回收，将会导致压力极具增大。
-
-### WeakReference
-
-弱引用，每次执行GC时，弱引用都可以被回收。
-
-### PhantomReference
-
-虚引用，用于跟踪GC的回收活动，每次执行GC时，虚引用都可以被回收。创建时必须指定ReferenceQueue，get方法永远返回null。
+- ```java
+  // 执行垃圾回收，并不保证立即执行。
+  public native void gc();
+  ```
 
 ***

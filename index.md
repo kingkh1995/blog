@@ -13,8 +13,10 @@
 ### *JDK*
 
 * [lang](java/lang)
+* [annotation](java/annotation)
+* [ref](java/ref)
+* [class](java/class)
 * [time](java/time)
-* [class & reflect](java/class)
 * [io](java/io)
 * [util](java/util)
 * [thread](java/thread)
@@ -22,6 +24,7 @@
 * [aqs](java/aqs)
 * [functoin](java/function)
 * [stream](java/stream)
+* [sql](java/sql)
 
 ### *JVM*
 
