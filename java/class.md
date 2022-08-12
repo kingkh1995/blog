@@ -30,7 +30,7 @@
               }
           }
           if (resolve) {
-            resolveClass(c); // 解析class对象，默认判断其为null时抛出NullPointerException
+            resolveClass(c); // 解析Class对象，默认判断其为null时抛出NullPointerException
           }
           return c;
       }

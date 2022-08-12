@@ -4,26 +4,77 @@
 
 ***
 
+## 枚举
+
+枚举类是由JVM保证的绝对单例模式
+
+```java
+// 使用枚举实现饿汉式单例模式
+public enum Singleton {
+    INSTANCE;
+    ...
+}
+```
+
+### abstract class **Enum**\<E extends **Enum**\<E\>\> implements Constable, Comparable<E>, Serializable
+
+所有枚举类的基类，由编译器添加继承关系，**故枚举类不可继承类，但是可以实现接口**。
+
+- ```java
+  // 绝对的单例模式，不允许克隆。
+  protected final Object clone() throws CloneNotSupportedException {
+      throw new CloneNotSupportedException();
+  }
+  ```
+
+- ```java
+  public static <T extends Enum<T>> T valueOf(Class<T> enumClass, String name) {
+      T result = enumClass.enumConstantDirectory().get(name);
+      if (result != null)
+          return result;
+      if (name == null)
+          throw new NullPointerException("Name is null");
+      throw new IllegalArgumentException(
+            "No enum constant " + enumClass.getCanonicalName() + "." + name);
+  }
+  ```
+  使用valueOf方法时需要注意，当枚举值不存在时会抛出IllegalArgumentException而不是返回null。
+
+- ```java
+  @java.io.Serial
+  private void readObject(ObjectInputStream in) throws IOException,
+        ClassNotFoundException {
+      throw new InvalidObjectException("can't deserialize enum");
+  }
+
+  @java.io.Serial
+  private void readObjectNoData() throws ObjectStreamException {
+      throw new InvalidObjectException("can't deserialize enum");
+  }
+  ```
+  为了保证绝对的单例禁用了默认反序列化机制，**反序列化时使用valueOf方法**。
+
+***
+
 ## 注解
 
 **注解即是特殊的接口。**
 
 1. 可以声明在其他注解上；
 2. 无继承列表；
-3. 只能定义无参方法，方法名作为属性名，返回值作为属性类型，使用default关键字指定属性默认值；
-4. 在声明注解时，如只指定了一个value属性则可以省略掉属性名；
-5. 可以定义常量。
+3. 只能定义无参方法，方法名作为属性名，返回值作为属性类型，使用default关键字指定属性默认值，在声明注解时若省略了属性名则默认为value属性；
+4. 可以定义常量。
 
 ***
 
 ## interface **Annotation**
 
-为所有注释的父接口，由编译器添加继承关系。
+为所有注解的父接口，由编译器添加继承关系。
 
 ### annotationType() & getClass()
 
 ```java
-// 由编译器实现，返回注解接口的class对象。
+// 由编译器实现，返回注解接口的Class对象。
 Class<? extends Annotation> annotationType();
 ```
 
@@ -131,7 +182,7 @@ RepeatableAnnoCol annotationCol = A.class.getAnnotation(RepeatableAnnoCol.class)
 
 ***
 
-### **Spring注解 (TODO)**
+## **Spring注解 (TODO)**
 
 - AnnotationUtils：
   - findAnnotation方法：能从类自身、父类、接口以及注解上获取注解信息（**lang包下的注解除外，如@FunctionalInterface**），且无需@Inherited元注解。

@@ -460,58 +460,6 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 
 ***
 
-## 枚举
-
-枚举类是由JVM保证的绝对单例模式
-
-```java
-// 使用枚举实现饿汉式单例模式
-public enum Singleton {
-    INSTANCE;
-    ...
-}
-```
-
-### abstract class **Enum**\<E extends **Enum**\<E\>\> implements Constable, Comparable<E>, Serializable
-
-所有枚举类的基类，由编译器添加继承关系，**故枚举类不可继承类，但是可以实现接口**。
-
-- ```java
-  // 绝对的单例模式，不允许克隆。
-  protected final Object clone() throws CloneNotSupportedException {
-      throw new CloneNotSupportedException();
-  }
-  ```
-
-- ```java
-  public static <T extends Enum<T>> T valueOf(Class<T> enumClass, String name) {
-      T result = enumClass.enumConstantDirectory().get(name);
-      if (result != null)
-          return result;
-      if (name == null)
-          throw new NullPointerException("Name is null");
-      throw new IllegalArgumentException(
-            "No enum constant " + enumClass.getCanonicalName() + "." + name);
-  }
-  ```
-  使用valueOf方法时需要注意，当枚举值不存在时会抛出IllegalArgumentException而不是返回null。
-
-- ```java
-  @java.io.Serial
-  private void readObject(ObjectInputStream in) throws IOException,
-        ClassNotFoundException {
-      throw new InvalidObjectException("can't deserialize enum");
-  }
-
-  @java.io.Serial
-  private void readObjectNoData() throws ObjectStreamException {
-      throw new InvalidObjectException("can't deserialize enum");
-  }
-  ```
-  为了保证绝对的单例禁用了默认反序列化机制，**反序列化时使用valueOf方法**。
-
-***
-
 ## 运行时类
 
 ### System

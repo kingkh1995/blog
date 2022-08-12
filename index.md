@@ -7,24 +7,28 @@
 ## Fundamentals
 
 * [算法基础](fundamentals/algs)
-* [算法进阶](fundamentals/advanced)
-* [计算机基础](fundamentals/cs)
+* [数据结构](fundamentals/ds)
+* [计算机网络](fundamentals/net)
+* [操作系统](fundamentals/os)
+* [数据库](fundamentals/db)
 
 ### *JDK*
 
 * [lang](java/lang)
-* [annotation](java/annotation)
+* [enum & annotation](java/annotation)
 * [ref](java/ref)
-* [class](java/class)
+* [class & reflect](java/class)
 * [time](java/time)
-* [io](java/io)
 * [util](java/util)
 * [thread](java/thread)
 * [concurrent](java/concurrent)
 * [aqs](java/aqs)
-* [functoin](java/function)
+* [function](java/function)
 * [stream](java/stream)
 * [sql](java/sql)
+* [io](java/io)
+* [nio](java/nio)
+* [aio](java/aio)
 
 ### *JVM*
 
@@ -55,10 +59,12 @@
 
 ## Frameworks
 
-* [Shiro](framework/shiro)
-* [Spring](framework/spring)
 * [MyBatis](framework/mybatis)
+* [Redisson](framework/redisson)
+* [Spring](framework/spring)
 * [Spring Cloud Alibaba](framework/spali)
+* [gRPC](framework/grpc)
+* [Shiro](framework/shiro)
 
 ## Advanced
 
