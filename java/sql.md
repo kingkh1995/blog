@@ -4,11 +4,21 @@
 
 ***
 
-## DataSource
+## DriverManager
+
+JDBC 1.0 API，
 
 ***
 
-## DriverManager
+## DataSource
+
+JDBC 2.0 API，
+
+***
+
+## JDBCTemplate
+
+Spring对JDBC的封装。
 
 ***
 

@@ -39,7 +39,7 @@
 
 ## Temporal Object（时间对象）
 
-**java.time包下所有日期时间类均实现了Temporal、TemporalAdjuster、Comparable和Serializable，均是不可变的，即线程安全的。**
+**java.time包下所有日期时间类均实现了Temporal、TemporalAdjuster、Comparable和Serializable，均是不可变的，也即线程安全的，这也意味着所有修改操作均会返回新对象，所以要尽量合并修改操作以减少不必要的对象创建。**
 
 ### TemporalField
 
@@ -258,7 +258,7 @@ public static Period between(LocalDate startDateInclusive, LocalDate endDateExcl
 
 ### abstract class ZoneId implements Serializable
 
-国际上使用的时区信息，无法直接创建对象。
+时区信息，抽象父类。
 
 - ```java
     public static final Map<String, String> SHORT_IDS = Map.ofEntries( ... );
@@ -290,7 +290,7 @@ public static Period between(LocalDate startDateInclusive, LocalDate endDateExcl
 - ```java
     public static ZoneOffset of(String offsetId) { ... }
     ```
-    不同于ZoneId的of方法（参数为时区ID），参数要求是偏移量，Z（UTC）、+h、-hh、+hh:mm、+hh:mm:ss等。
+    覆盖了ZoneId的of方法（同样支持返回ZoneOffset），参数要求是偏移量，Z（UTC）、+h、-hh、+hh:mm、+hh:mm:ss等。
 
 - ```java
     public static ZoneOffset ofTotalSeconds(int totalSeconds) { ... }
@@ -366,16 +366,38 @@ private final ZoneId zone; // 时区信息
 
 ## local
 
-### LocalTime
+LocalDate包含年、月、日；LocalTime包含时、分、秒、纳秒；LocalDateTime包含LocalDate和LocalTime。
 
-### LocalDate
+```java
+// LocalDate转LocalDateTime
+public LocalDateTime atStartOfDay() {
+    return LocalDateTime.of(this, LocalTime.MIDNIGHT);
+}
 
-### LocalDateTime
+// LocalDate转ZonedDateTime
+public ZonedDateTime atStartOfDay(ZoneId zone) {
+    LocalDateTime ldt = atTime(LocalTime.MIDNIGHT);
+    ...
+    return ZonedDateTime.of(ldt, zone);
+}
 
-- 查询： 使用时间日期类对应的 getXXX() 方法以及 int get(TemporalField field)。
+// LocalDateTime转ZonedDateTime
+public ZonedDateTime atZone(ZoneId zone) {
+    return ZonedDateTime.of(this, zone);
+}
+```
+- Instant -> Local: ofInstant(instant, zone);
+- Local -> Instant: atZone(zone).toInstant();
 
-- 增减： 使用时间日期类对应的 plusXXX()方法和minusXXX() 以及参数为 TemporalAmount 类型的 minus 和 plus 方法。
+***
 
-- 调整：使用时间日期类对应的 withXXX() 方法、 with(TemporalAdjuster adjuster)方法和 with(TemporalField field, long newValue)方法。
+## final class DateTimeFormatter
 
-- **注意：增减或调整方法均会返回一个新的对象，所以要减少调用次数。***
+```
+ISO_LOCAL_DATE; // 【2011-12-03】LocalDate默认
+ISO_LOCAL_TIME; // 【10:15:30】LocalTime默认
+ISO_LOCAL_DATE_TIME; // 【2011-12-03T10:15:30】LocalDateTime默认
+BASIC_ISO_DATE; // 【20111203】
+```
+
+***

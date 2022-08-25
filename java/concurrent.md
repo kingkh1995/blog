@@ -174,7 +174,7 @@
 
 ## **BlockingQueue extends Queue**
 
-阻塞队列，线程安全的队列，主要用于生产者-消费者模式，不允许接受null元素。有四种操作模式，抛出异常和立即返回结果来自于Queue接口，**put和take操作为阻塞等待，带参数的offer和poll操作为等待指定时间后返回结果**。
+阻塞队列，线程安全的队列，主要用于生产者-消费者模式，不允许接受null元素。有四种操作模式，抛出异常和立即返回结果来自于Queue接口，**提供了可阻塞的put和take，以及支持定时的offer和poll**。
 
 ### ArrayBlockingQueue
 

@@ -38,7 +38,7 @@
     ```
 
 - toList()：JDK16增加的默认方法，中断操作，收集为List，使用toArray方法返回的数组创建ArrayList然后包装成unmodifiableList。
-    > **Collectors.toList()收集为ArrayList，toList()比其多了一次数组复制。**
+    > **相比Collectors.toList()性能更高。**
 
 ### 静态方法
 

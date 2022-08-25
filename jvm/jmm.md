@@ -70,3 +70,39 @@
 - StoreLoad：万能屏障，包括前面三种。
 
 ***
+
+## 安全发布
+
+
+### 不正确的发布
+```java
+public Holder holder;
+
+public void init() {
+    holder = new Holder(42);
+}
+
+public class Holder {
+    private int n;
+
+    pulic Holder(int n) { 
+        this.n = n; 
+    }
+
+    public void assert() {
+        if (n != n) {
+            throw new AssertError();
+        }
+    }
+}
+```
+多线程执行assert方法时可能抛出异常，因为域 n 不是 final 的，在Object的构造函数中会先将默认值0写入 n 中。
+
+### 安全发布对象的方式
+
+- 在静态初始化函数中初始化对象；
+- 将对象的的引用保存在volatile类型的域或AtomicRefrence对象内；
+- 将对象的引用保存在final类型域中；
+- 将对象的引用保存到一个由锁保护的域中。
+
+***

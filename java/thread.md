@@ -4,71 +4,226 @@
 
 ***
 
-## Thread implements Runnable
+## public class Thread implements Runnable
 
-### 线程状态
+### **线程状态**
 
-- **操作系统主要线程状态**：
+- 操作系统的主要线程状态：
     - ready：就绪状态，线程正在等待使用CPU，经调度程序调用之后可进入running状态；
     - running：执行状态，线程正在使用CPU；
     - waiting：等待状态，线程经过等待事件的调用或者正在等待其他资源（如I/O）。
 
-- **java线程状态**：
-    - NEW：线程创建成功，还未调用start方法；
+- **JAVA线程状态**：
+    - NEW：线程对象创建成功，还未调用start方法，即还未关联到操作系统；
 
     - RUNNABLE：线程在jvm中运行，**包含了操作系统的ready和running两个状态**；
-
+  
     - BLOCKED：阻塞状态，线程正在等待锁的释放以进入同步区；
-        > 线程在RUNNABLE如果无法获取到锁则转变为BLOCKED状态，竞争到锁之后则转变回RUNNABLE状态。
+        > **线程在RUNNABLE状态时，如果无法获取到锁则转变为BLOCKED状态，竞争到锁之后再转变回RUNNABLE状态。**
 
-    - WAITING：等待状态，需要被唤醒才能进入RUNNABLE状态，**等待状态也可以被中断，但中断后仍然需要获取到锁才能继续执行**；
+    - WAITING：等待状态，线程需要被唤醒（或中断）才能进入RUNNABLE状态；
         > Object的wait()、Thread的join()和LockSupport.park()会使线程进入此状态。
 
-    - TIMED_WAITING：超时等待状态，与WAITING不同的是线程在等待一个具体的时间后会被自动唤醒；
+    - TIMED_WAITING：超时等待状态，与WAITING状态不同的是线程在等待一个具体的时间后会被自动唤醒；
         > Thread.sleep()以及带参数的wait、join、park会使线程进入此状态。
 
     - TERMINATED：终止状态，线程执行完毕，由RUNNABLE转变为TERMINATED。
 
+### 属性及方法
+
+-   ```java
+    private Runnable target;
+
+    @Override
+    public void run() {
+        if (target != null) {
+            target.run();
+        }
+    }
+    ```
+
+-   ```java
+    // 0 for NEW, write by VM.
+    private volatile int threadStatus;
+    ```
+
+-   ```java
+    private boolean daemon = false;
+    ```
+    是否为守护线程，所有守护线程会在JVM正常退出时被直接抛弃，**也不会执行finally代码**，故使用守护线程执行I/O操作是危险的行为。
+
+-   ```java
+    private ThreadGroup group;
+    ```
+    每个线程必然存在属于一个线程组，默认为其父线程所属的线程组；在调用start方法后线程才会被加入线程组，同时结束后会被移除；ThreadGroup是一个标准的向下引用的树状结构，能防止"上级"线程被"下级"线程引用而无法有效地被GC回收。
+
+-   ```java
+    private int priority;
+
+    public final void setPriority(int newPriority) {
+        ThreadGroup g;
+        checkAccess();
+        // 数值范围为[1, 10]
+        if (newPriority > MAX_PRIORITY || newPriority < MIN_PRIORITY) {
+            throw new IllegalArgumentException();
+        }
+        // 线程优先级不能大于其所在线程组的最大优先级
+        if((g = getThreadGroup()) != null) {
+            if (newPriority > g.getMaxPriority()) {
+                newPriority = g.getMaxPriority();
+            }
+            // 通过本地方法修改线程优先级
+            setPriority0(priority = newPriority); 
+        }
+    }
+    ```
+    线程优先级，可以指定为1~10，默认为5，但最终还是由操作系统决定，只是高优先级的线程会有更高的几率得到执行。
+
+-   ```java
+    private final long tid;
+
+    private static long threadSeqNumber;
+
+    // 用于生成tid
+    private static synchronized long nextThreadID() {
+        return ++threadSeqNumber;
+    }
+    ```
+
+-   ```java
+    private ClassLoader contextClassLoader;
+    ```
+    上下文类加载器，用于ServiceLoader。
+
+-   ```java
+    ThreadLocal.ThreadLocalMap threadLocals = null;
+
+    ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;
+    ```
+    ThreadLocal及InheritableThreadLocal支持。
+    
+-   ```java
+    // 中断标识
+    private volatile boolean interrupted;
+
+    // 不会中断线程，也不会让线程抛出InterruptedException，只是设置线程的中断标识为true。
+    public void interrupt() {
+        ...
+        interrupted = true;
+        interrupt0();
+    }
+
+    // 获取线程的中断标识
+    public boolean isInterrupted() {
+        return interrupted;
+    }
+
+    // 静态方法，获取当前线程的中断标识，并清除其中断标识，是唯一能清除中断标识的方法。
+    public static boolean interrupted() {
+        Thread t = currentThread();
+        boolean interrupted = t.interrupted;
+        if (interrupted) {
+            t.interrupted = false;
+            clearInterruptEvent();
+        }
+        return interrupted;
+    }
+    ```
+    如果某个方法抛出InterruptedException，表示它可以被中断，用户程序必须对其进行捕获或继续向上抛出；表示线程执行该方法时如果检测到中断标识为true，会立即抛出InterruptedException，**并会清除中断标识**，交由用户程序处理；捕获InterruptedException后，最好的做法是执行当前线程的interrupt方法以恢复中断标识，交由调用方处理；**不要使用stop方法终止线程，而是应该主动检查中断标识以自行终止线程执行**。
+
 ### 静态方法
 
-- nextThreadID()：用于生成线程ID，**并没有使用原子类型而是使用同步**，通过静态long类型属性threadSeqNumber自增实现。
+-   ```java
+    public static native void yield();
+    ```
+    静态本地方法，表示当前线程愿意让出对当前CPU的占用，重新进入竞争CPU的状态。
+    > **线程状态仍然是RUNNABLE，但操作系统线程状态从running变为ready。**
 
-- currentThread()：静态本地方法，获取当前运行的线程对象的引用。
+-   ```java
+    public static native void sleep(long millis) throws InterruptedException;
+    ```
+    静态本地方法，让当前线程停止执行并让出对CPU的占用，进入TIMED_WAITING状态，不会释放同步锁。
+    > 注意：与Object的wait方法不同，sleep(0)并不是一直睡眠。
 
-- yield()：静态本地方法，表示当前线程愿意让出对当前CPU的占用，重新进入竞争CPU的状态。
-    > ***线程状态仍然是RUNNABLE，但是操作系统线程状态从running变为ready。***
+-   ```java
+    // since 9
+    public static void onSpinWait() {}
 
-- sleep()：静态本地方法，让当前线程停止执行并让出对CPU的占用，进入TIMED_WAITING状态，**不会释放同步锁**。
-    > 睡眠期间如果被打断会抛出InterruptedException异常使线程提前苏醒。
-
-- interrupted()：**返回当前线程的中断标识并清除标识。**
+    // 用于提高忙等待效率
+    while (!match) {
+        Thread.onSpinWait();
+    }
+    ```
 
 ### 实例方法
 
-- start()：同步方法，用于启动线程，线程状态转变为RUNNABLE，获取到CPU资源后JVM会执行线程的run方法。
-    > 只允许被调用一次，再次调用会抛出IllegalThreadStateException异常。
+-   ```java
+    public synchronized void start() {
+        // 必须是NEW状态，即只能执行一次。
+        if (threadStatus != 0)
+            throw new IllegalThreadStateException();
+        // 添加到线程组内
+        group.add(this);
+        boolean started = false;
+        try {
+            // 本地方法，关联到操作系统，会修改threadStatus。
+            start0();
+            started = true;
+        } finally {
+            try {
+                if (!started) {
+                    group.threadStartFailed(this);
+                }
+            } catch (Throwable ignore) {}
+        }
+    }
+    ```
+    启动线程，线程状态转变为RUNNABLE，获取到CPU资源后，JVM会执行线程的run方法。
 
-- join()：同步方法，在当前线程中调用另一个线程的join方法后，当前线程会进入等待状态，直到另一个线程死亡才继续执行，要求另一个线程必须已启动。
-    > **当前线程循环调用另一个线程对象的wait方法使当前线程一直等待，直到另一个线程对象的isAlive方法返回false才退出循环，当前线程才能继续执行**。
+-   ```java
+    public final native boolean isAlive();
+    ```
+    判断线程是否是存活的，即已被启动且还没死亡。
 
-- interrupt()：并不是打断线程的执行，只是将线程的中断标识设置为true。
-    > **只有处于等待状态的线程才会检查其中断标识，如果为true会抛出InterruptedException异常，使线程进入运行状态并清除中断标识，而运行状态的线程只能通过主动检查中断标识以自行终止执行。**
+-   ```java
+    public final void join() throws InterruptedException {
+        join(0);
+    }
 
-- isInterrupted()：获取线程的中断标识。
-
-### ThreadGroup
-
-- 每个Thread必然存在于一个ThreadGroup中，ThreadGroup是一个标准的向下引用的树状结构，是防止"上级"线程被"下级"线程引用而无法有效地被GC回收；
-
-- 可以指定1~10的优先级，java中默认为5，线程的优先级最终还是由操作系统决定，高优先级的线程会有更高的几率得到执行，线程优先级不能大于其所在线程组的最大优先级。
+    public final synchronized void join(final long millis) throws InterruptedException {
+        if (millis > 0) { // 大于0则等待指定时间
+            if (isAlive()) {
+                final long startTime = System.nanoTime();
+                long delay = millis;
+                do {
+                    wait(delay);
+                } while (isAlive() && (delay = millis -
+                        TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime)) > 0);
+            }
+        } else if (millis == 0) { // 等于0则表示一直等待
+            while (isAlive()) {
+                wait(0);
+            }
+        } else {
+            throw new IllegalArgumentException("timeout value is negative");
+        }
+    }
+    ```
+    在当前线程中调用另一个线程的join方法后，当前线程会进入等待状态，直到另一个线程死亡才会退出等待；使用wait实现，故必须是同步方法，会一直循环调用，直到isAlive方法返回false或达到指定时间。
 
 ***
 
-## ThreadPool
+## Callable
 
-### **AbstractExecutorService**
+```java
+@FunctionalInterface
+public interface Callable<V> {
+    V call() throws Exception;
+}
+```
+不是继承自Runnable，能返回结果或者抛出异常。
 
-ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包装任务并提交给execute方法后返回。
+***
 
 ### **FutureTask\<V> implements RunnableFuture\<V>**
 
@@ -81,6 +236,16 @@ ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包�
   - NEW -> COMPLETING -> EXCEPTIONAL
   - NEW -> CANCELLED
   - NEW -> INTERRUPTING -> INTERRUPTED
+
+***
+
+## ThreadPool
+
+**有界线程池的问题是，如果任务之间是有依赖性的，则可能造成线程池死锁。**
+
+### **AbstractExecutorService**
+
+ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包装任务并提交给execute方法后返回。
 
 ### **ThreadPoolExecutor extends AbstractExecutorService**
 
@@ -162,7 +327,7 @@ ExecutorService默认抽象实现。sumbit方法的实现为使用FutureTask包�
 
 ### Executors
 
-- newCachedThreadPool()：new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>())，适合执行大量的短时间任务。
+- newCachedThreadPool()：new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>())，无界的线程池，适合执行大量的短时间任务。
 
 - newFixedThreadPool(int nThreads)：corePoolSize = maximumPoolSize = nThreadsnew，使用无界的LinkedBlockingQueue，只会创建核心线程，适合处理负载较重的场景。
 
