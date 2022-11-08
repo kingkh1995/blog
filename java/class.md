@@ -56,10 +56,10 @@
   }
   
   // 将当前类加载器类注册为parallelCapable，要求：1.父类必须是parallelCapable；2.调用时未创建实例。
-  protected static boolean registerAsParallelCapable() {... }
+  protected static boolean registerAsParallelCapable() { ... }
 
   // 由JVM调用，清理parallelCapable相关的集合。
-  private void resetArchivedStates() {... }
+  private void resetArchivedStates() { ... }
   ```
 
 - ```java

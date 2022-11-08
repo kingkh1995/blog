@@ -71,8 +71,35 @@
 
 ***
 
-## 安全发布
+## 既然CPU有缓存一致性协议（MESI），为什么JMM还需要volatile关键字？
 
+MESI协议是用来保证多核CPU的cache一致性，但CPU并没有严格遵守，因为会降低执行效率；而volatile是Java语言的保证，用来防止指令重排，无论是单核还是多核都需要。
+
+```java
+public class Demo {
+    private static boolean running = true;
+    private static int count = 0;
+
+    public static void main(String[] args) throws InterruptedException {
+        Thread t1 = new Thread(() -> {
+            while (running) {
+                count++;
+            }
+        });
+        Thread t2 = new Thread(() -> running = false);
+        t1.start();
+        Thread.sleep(1000);
+        t2.start();
+        t1.join();
+        t2.join();
+    }
+}
+```
+此代码运行结果是t1线程会进入死循环无法退出，解决方案是使用volatile修饰running；**但并不是因为可见性的原因导致**，而是由于JIT优化，t2线程修改running值前，t1线程已经运行了1秒中，t1中的代码会被判断热点代码，进而直接将running替换为true，导致代码进入死循环；如果关闭掉JIT优化或者注释掉sleep代码，由于CPU缓存一致性协议，最终t1仍会读取到最新的running值并退出循环。
+
+***
+
+## 安全发布
 
 ### 不正确的发布
 ```java

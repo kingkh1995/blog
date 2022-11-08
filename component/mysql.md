@@ -350,3 +350,14 @@ and
 )
 order by t1.id;
 ```
+
+### 树节点
+
+```sql
+select id, 
+case when t.id=(select t1.id from tree t1 where t1.p_id is null) then 'Root'
+when t.id in (select p_id from tree t2) then 'Inner'
+else 'Leaf' end
+as type
+from tree t;
+```
