@@ -213,523 +213,272 @@
 
 ***
 
-## Callable
+## ThreadLocal
+
+线程局部变量，并不实际存储值，而是使用ThreadLocalMap，**建议使用static修饰**。
+
+### 哈希值
 
 ```java
-@FunctionalInterface
-public interface Callable<V> {
-    V call() throws Exception;
+private final int threadLocalHashCode = nextHashCode();
+private static AtomicInteger nextHashCode = new AtomicInteger();
+private static final int HASH_INCREMENT = 0x61c88647;
+private static int nextHashCode() {
+    return nextHashCode.getAndAdd(HASH_INCREMENT);
 }
 ```
-不是继承自Runnable，能返回结果或者抛出异常。
+不使用Object默认哈希值，而是使用**魔数0x61c88647**作为增长步幅生成固定的哈希值，能均匀的分布在2的N次方的数组里，原理是斐波那契散列法。
 
-***
-
-## public interface RunnableFuture<V> extends Runnable, Future<V>
-
-RunnableFuture同时继承了Runnable和Future，用于包装任务，将自身作为Runable提交，之后再作为Future使用。
-
-***
-
-## public class FutureTask<V> implements RunnableFuture<V>
+### 方法
 
 -   ```java
-    private volatile int state;
+    // Thread类
+    ThreadLocal.ThreadLocalMap threadLocals = null;
 
-    private Callable<V> callable;
+    // 从线程中获取ThreadLocalMap
+    ThreadLocalMap getMap(Thread t) {
+        return t.threadLocals;
+    }
 
-    private volatile Thread runner;
-
-    // 保存执行结果或执行时异常，异常会被包装为ExecutionException
-    private Object outcome; // non-volatile, protected by state reads/writes
+    // 为线程初始化ThreadLocalMap并设置ThreadLocal的初始值
+    void createMap(Thread t, T firstValue) {
+        t.threadLocals = new ThreadLocalMap(this, firstValue);
+    }
     ```
+    值实际上保存于Thread类的ThreadLocalMap类型的threadLocals属性中。
 
 -   ```java
-    public void run() {
-        // 要求当前状态为NEW，并且使用VarHandle设置当前线程到runner属性成功。
-        if (state != NEW || !RUNNER.compareAndSet(this, null, Thread.currentThread()))
-            return;
-        try {
-            Callable<V> c = callable;
-            if (c != null && state == NEW) { // CAS成功后，再次判断状态。
-                V result;
-                boolean ran;
-                try {
-                    result = c.call(); // 在执行过程中状态仍然为NEW
-                    ran = true;
-                } catch (Throwable ex) {
-                    result = null;
-                    ran = false;
-                    // NEW -> COMPLETING -> NORMAL
-                    setException(ex);
-                }
-                // NEW -> COMPLETING -> EXCEPTIONAL
-                if (ran)
-                    set(result);
+    public void set(T value) {
+        Thread t = Thread.currentThread(); // 获取当前线程
+        ThreadLocalMap map = getMap(t); // 获取当前线程的ThreadLocalMap
+        if (map != null) {
+            map.set(this, value); // map存在则设置值
+        } else {
+            createMap(t, value); // map不存在则创建map并设置值
+        }
+    }
+    
+    public T get() {
+        Thread t = Thread.currentThread(); // 获取当前线程
+        ThreadLocalMap map = getMap(t); // 获取当前线程的ThreadLocalMap
+        if (map != null) {
+            ThreadLocalMap.Entry e = map.getEntry(this); // 使用ThreadLocal作为键查找ThreadLocalMap中对应的值
+            if (e != null) {
+                T result = (T)e.value;
+                return result;
             }
-        } finally {
-            runner = null;
-            int s = state;
-            // 如果被cancel操作中断，yield直到操作完成。
-            if (s >= INTERRUPTING)
-                handlePossibleCancellationInterrupt(s);
+        }
+        return setInitialValue(); // 不存在则设置初始化值
+    }
+
+    public void remove() {
+        ThreadLocalMap m = getMap(Thread.currentThread());
+        if (m != null) { 
+            m.remove(this); // 从map中移除ThreadLocal作为键的Entry
         }
     }
     ```
-
--   ```java
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        // mayInterruptIfRunning = false: NEW -> CANCELLED
-        if (!(state == NEW && STATE.compareAndSet
-                (this, NEW, mayInterruptIfRunning ? INTERRUPTING : CANCELLED)))
-            return false;
-        try {    // in case call to interrupt throws exception
-            if (mayInterruptIfRunning) {
-                try {
-                    Thread t = runner;
-                    if (t != null)
-                        t.interrupt();
-                } finally { // final state
-                    // mayInterruptIfRunning = true: NEW -> INTERRUPTING -> INTERRUPTED
-                    STATE.setRelease(this, INTERRUPTED);
-                }
-            }
-        } finally {
-            finishCompletion();
-        }
-        return true;
-    }
-    ```
-    **NEW状态只表示任务未执行完成**，mayInterruptIfRunning为true时，会执行运行线程的interrupt方法尝试打断。
+    set、get、remove都是以ThreadLocal对象作为键操作Thread对象的持有的ThreadLocalMap对象。
 
 ***
 
-## public abstract class AbstractExecutorService implements ExecutorService
+## ThreadLocalMap
 
-ExecutorService的抽象实现，默认将提交给线程池的任务包装为FutureTask。
-
-***
-
-## public class ThreadPoolExecutor extends AbstractExecutorService
-
-- 有界与无界：无界线程池的问题是可能会导致内存溢出，而有界线程池的问题是如果任务之间是有依赖性的，则可能造成线程池死锁。
-- 最佳线程数：CPU密集型应用建议为N+1，N是为了减少线程的切换，+1是为了防止线程意外终止，而导致CPU资源被浪费；IO密集型应用，则需要结合实际场景进行设置，即要防止创建过多线程，也要保证应用的处理能力。
-
-### 属性
-
-#### 构造方法属性
+### 结构
 
 ```java
-// 核心线程数
-private volatile int corePoolSize;
+static class Entry extends WeakReference<ThreadLocal<?>> {
 
-// 最大线程数，必须大于corePoolSize。
-private volatile int maximumPoolSize;
+    Object value; // ThreadLocal关联的值
 
-// 阻塞队列，无法被修改。
-private final BlockingQueue<Runnable> workQueue;
+    Entry(ThreadLocal<?> k, Object v) {
+        super(k);
+        value = v;
+    }
+}
 
-// 空闲线程存活时间，单位纳秒。
-private volatile long keepAliveTime;
+private Entry[] table; // Entry数组，初始容量16，且要求为2的次方。
 
-// 线程工厂，默认Executors.defaultThreadFactory()。
-private volatile ThreadFactory threadFactory;
+private int size = 0; // Entry数量
 
-// 拒绝策略，默认AbortPolicy。
-private volatile RejectedExecutionHandler handler;
+private int threshold; // rehash阈值，为2/3容量，而resize阈值为1/2容量。
 ```
+ThreadLocal真正的核心，**为线性探测法实现的Map**，Entry弱引用了ThreadLocal，但value为强引用，当ThreadLocal对象被回收后，视为Entry过期，需要对Entry进行清理。
 
-#### 其他属性
-
+### 方法
+    
 -   ```java
-    // 高3位表示线程池状态，低29位表示worker数。
-    private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
+    // 线性探测法删除键
+    // 1、删除当前位置的键；
+    // 2、遍历处理所属键簇剩余所有键（until null），过期键直接删除，未过期键重新插入（必然不会在原位置之后）；
+    // 3、返回清理完成后当前键簇之后第一个空槽位的索引。
+    private int expungeStaleEntry(int staleSlot) { ... }
 
-    // 前三位为0，后29位为1，通过&运算获取runState和workerCount值。
-    private static final int COUNT_MASK = (1 << COUNT_BITS) - 1;
-
-    // 使用runState和workerCount计算ctl值
-    private static int ctlOf(int rs, int wc) { return rs | wc; }
+    // 线性探测法删除全部过期键，遍历数组，对每个位置的过期键调用expungeStaleEntry方法。
+    private void expungeStaleEntries() { ... }
     ```
-    使用ctl记录状态和工作线程数，能保证原子性，状态判断只需要比较值，修改工作线程数则直接加减。
-    - **RUNNING**：-1，线程池创建后处于RUNNING状态；
-    - **SHUTDOWN**：0，调用线程池**shutdown方法**后处于SHUTDOWN状态，不再接受新的任务，执行中及阻塞队列内的任务会被执行完成；
-    - **STOP**：1，调用线程池**shutdownNow方法**后处于STOP状态，不再接受新的任务，并会中断所有worker，丢弃阻塞队列内所有任务；
-    - **TIDYING**：2，SHUTDOWN及STOP状态下，当worker数为0时线程池会转变为TIDYING状态，然后执行**terminated方法**；
-    - **TERMINATED**：3，TIDYING状态下，执行完**terminated方法**后，线程池转变为TERMINATED状态，为终态。
+    线性探测法删除键后，需要重新插入所属键簇剩余所有键。
 
 -   ```java
-    // 全局锁，主要用于维护workers集合。
-    private final ReentrantLock mainLock = new ReentrantLock();
-
-    // 用于awaitTermination
-    private final Condition termination = mainLock.newCondition();
-
-    // 记录线程池达到过的最大线程数，通过mainLock访问。
-    private int largestPoolSize;
-
-    // 线程池完成的任务总数，通过mainLock访问。
-    private long completedTaskCount;
-    ```
-
--   ```java
-    private final HashSet<Worker> workers = new HashSet<>();
-    ```
-    Worker集合，使用mainLock保证其线程安全性。
-
--   ```java
-    private volatile boolean allowCoreThreadTimeOut;
-    ```
-    是否允许空闲核心线程超时终止，**默认false**，只能通过allowCoreThreadTimeOut方法修改。
-    > 适合只在特定时间段处理任务的线程池，可节约机器资源。
-
-### interface RejectedExecutionHandler
-
-```java
-void rejectedExecution(Runnable r, ThreadPoolExecutor executor);
-```
-
--   ```java
-    public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-        throw new RejectedExecutionException(...);
+    private Entry getEntry(ThreadLocal<?> key) {
+        int i = key.threadLocalHashCode & (table.length - 1); // 使用&操作快速确定槽位
+        Entry e = table[i];
+        if (e != null && e.refersTo(key)) // 判断当前位置找到
+            return e;
+        else
+            return getEntryAfterMiss(key, i, e); // 线性探测查找
     }
-    ```
-    AbortPolicy：默认策略
 
--   ```java
-    public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-        if (!e.isShutdown()) {
-            r.run(); // 提交任务的线程执行run方法
+    private Entry getEntryAfterMiss(ThreadLocal<?> key, int i, Entry e) {
+        Entry[] tab = table;
+        int len = tab.length;
+        while (e != null) { // 遍历当前键簇查找
+            if (e.refersTo(key))
+                return e;
+            if (e.refersTo(null)) // 清理过期键
+                expungeStaleEntry(i); // i不加一，因为清理完成后，当前位置会更新。
+            else
+                i = nextIndex(i, len);
+            e = tab[i];
         }
+        return null;
     }
+
+    // 确定到槽位，线性探测，找到则使用expungeStaleEntry方法移除键。
+    private void remove(ThreadLocal<?> key) { ... }
     ```
-    CallerRunsPolicy: 提交任务的线程执行任务
+    get操作和remove操作会执行少量过期键清理工作。
 
 -   ```java
-    public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-        if (!e.isShutdown()) {
-            e.getQueue().poll();
-            e.execute(r); // 可能再次触发reject
-        }
-    }
-    ```
-    DiscardOldestPolicy: 丢弃队首任务
-
--   ```java
-    public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-    }
-    ```
-    DiscardPolicy: 丢弃任务
-
-### private final class **Worker** extends AbstractQueuedSynchronizer implements Runnable
-
--   ```java
-    // 工作线程
-    final Thread thread;
-
-    // 创建时提交的任务，可能为null。
-    Runnable firstTask;
-
-    Worker(Runnable firstTask) {
-        setState(-1); // inhibit interrupts until runWorker
-        this.firstTask = firstTask;
-        this.thread = getThreadFactory().newThread(this);
-    }
-
-    public void run() {
-        runWorker(this);
-    }
-    ```
-    工作线程运行时执行ThreadPoolExecutor的runWorker方法。
-
--   ```java
-    public void lock()        { acquire(1); }
-
-    public boolean tryLock()  { return tryAcquire(1); }
-
-    protected boolean tryAcquire(int unused) {
-        // state = 0时才能成功
-        if (compareAndSetState(0, 1)) {
-            setExclusiveOwnerThread(Thread.currentThread());
-            return true;
-        }
-        return false;
-    }
-    ```
-    **只是使用了AQS状态管理的功能**，0表示未锁，-1（初始态）和1表示锁定；lock方法只在runWorker方法中调用，而runWorker方法是Worker的run方法调用，即只会是单线程场景。
-
-### 实例方法
-
--   ```java
-    private boolean addWorker(Runnable firstTask, boolean core) {
-        retry: // 标记外层循环
-        for (int c = ctl.get();;) {
-            // 允许的场景：1、RUNNING；2、SHUTDOWN且队列非空允许添加空任务worker。
-            if (runStateAtLeast(c, SHUTDOWN)
-                && (runStateAtLeast(c, STOP) || firstTask != null || workQueue.isEmpty()))
-                return false;
-            for (;;) { // 内层循环
-                // 添加核心worker则worker数不能超过corePoolSize，非核心worker则不能超过maximumPoolSize。
-                if (workerCountOf(c)
-                    >= ((core ? corePoolSize : maximumPoolSize) & COUNT_MASK))
-                    return false;
-                if (compareAndIncrementWorkerCount(c))
-                    break retry; // CAS增加worker数成功则退出外层循环
-                c = ctl.get();  // Re-read ctl
-                if (runStateAtLeast(c, SHUTDOWN))
-                    continue retry; // 非RUNNING则跳出内层循环进入外层循环再次判断是否允许添加worker
-                // CAS失败且状态仍为RUNNING则重试内层循环
+    private void set(ThreadLocal<?> key, Object value) {
+        Entry[] tab = table;
+        int len = tab.length;
+        int i = key.threadLocalHashCode & (len-1); // 使用&操作快速确定槽位
+        for (Entry e = tab[i];
+                e != null;
+                e = tab[i = nextIndex(i, len)]) { // 遍历当前键簇查找
+            if (e.refersTo(key)) { // 查找到则直接替换值
+                e.value = value;
+                return;
+            }
+            if (e.refersTo(null)) { // 查找到过期键则替换Entry
+                replaceStaleEntry(key, value, i);
+                return;
             }
         }
-        // CAS增加woker数成功后创建woker
-        boolean workerStarted = false;
-        boolean workerAdded = false;
-        Worker w = null;
-        try {
-            w = new Worker(firstTask);
-            final Thread t = w.thread;
-            if (t != null) {
-                final ReentrantLock mainLock = this.mainLock;
-                mainLock.lock(); // 阻塞加锁
-                try {
-                    int c = ctl.get();
-                    // 再次校验：1、RUNNING；2、SHUTDOWN且添加空任务worker
-                    if (isRunning(c) ||
-                        (runStateLessThan(c, STOP) && firstTask == null)) {
-                        if (t.getState() != Thread.State.NEW) // 校验线程状态
-                            throw new IllegalThreadStateException();
-                        workers.add(w); // 添加到workers集合
-                        workerAdded = true;
-                        ...
-                    }
-                } finally {
-                    mainLock.unlock();
-                }
-                if (workerAdded) {
-                    t.start(); // 启动worker，最终执行runWorker方法。
-                    workerStarted = true;
-                }
+        tab[i] = new Entry(key, value); // 当前键簇找不到则插入到键簇后的第一个位置
+        int sz = ++size;
+        if (!cleanSomeSlots(i, sz) && sz >= threshold) // 清理工作，超过阈值则rehash。
+            rehash();
+    }
+
+    // 替换过期键并清理整个键簇所有的过期键
+    private void replaceStaleEntry(ThreadLocal<?> key, Object value, int staleSlot) {
+        Entry[] tab = table;
+        int len = tab.length;
+        Entry e;
+        int slotToExpunge = staleSlot;
+        // 1、向前找到当前键簇中第一个过期键的位置，记录为过期键清除的起点slotToExpunge；
+        for (int i = prevIndex(staleSlot, len);
+                (e = tab[i]) != null;
+                i = prevIndex(i, len))
+            if (e.refersTo(null))
+                slotToExpunge = i;
+        // 2、从要替换的位置继续往后查找键；
+        for (int i = nextIndex(staleSlot, len);
+                (e = tab[i]) != null;
+                i = nextIndex(i, len)) {
+            if (e.refersTo(key)) { // 如果能找到键，则替换到目标位置。
+                e.value = value;
+                tab[i] = tab[staleSlot];
+                tab[staleSlot] = e;
+                if (slotToExpunge == staleSlot) // 表示前半段都不存在过期键，只需从i位置开始清理即可。
+                    slotToExpunge = i; 
+                // 3、执行一次expungeStaleEntry，目的是清理整个键簇所有的过期键；
+                cleanSomeSlots(expungeStaleEntry(slotToExpunge), len);
+                return;
             }
-        } finally {
-            // 若启动失败抛出异常，则在finally中减少worker数并移除worker
-            if (! workerStarted)
-                addWorkerFailed(w);
+            // 如果slotToExpunge == staleSlot，表示前半段不存在过期键，将后半段找到的第一个过期键的位置设置为slotToExpunge。
+            if (e.refersTo(null) && slotToExpunge == staleSlot)
+                slotToExpunge = i;
         }
-        return workerStarted;
+        // 整个键簇都找不到键则直接设置到目标位置
+        tab[staleSlot].value = null;
+        tab[staleSlot] = new Entry(key, value);
+        if (slotToExpunge != staleSlot) // 表示整个键簇还存在其他过期
+            // 3、执行一次expungeStaleEntry，目的是清理整个键簇所有的过期键；
+            // 4、再执行一次cleanSomeSlots。
+            cleanSomeSlots(expungeStaleEntry(slotToExpunge), len);
+    }
+
+    // 从i开始尝试使用expungeStaleEntry方法清理几个槽位，时间复杂度为O(n)。
+    private boolean cleanSomeSlots(int i, int n) { ... }
+
+    private void rehash() {
+        expungeStaleEntries(); // 清理所有过期键
+        // 清理完成后仍超过1/2容量则扩容为两倍大小
+        if (size >= threshold - threshold / 4)
+            resize();
     }
     ```
-    用于创建worker，若线程启动失败会抛出异常。
-
--   ```java
-    final void runWorker(Worker w) {
-        Thread wt = Thread.currentThread();
-        Runnable task = w.firstTask;
-        w.firstTask = null;
-        w.unlock(); // 将worker状态从-1修改为0，允许被打断。
-        boolean completedAbruptly = true; // 表示worker是否因为异常退出
-        try {
-            // 无限循环，先执行firstTask，再通过getTask()获取任务执行。
-            while (task != null || (task = getTask()) != null) {
-                w.lock(); // 阻塞加锁
-                // STOP状态以上保证设置worker的线程中断标识为true
-                if ((runStateAtLeast(ctl.get(), STOP) ||
-                     (Thread.interrupted() && runStateAtLeast(ctl.get(), STOP))) 
-                     && !wt.isInterrupted())
-                    wt.interrupt();
-                try {
-                    beforeExecute(wt, task); // 可以自定义的执行前钩子方法
-                    try {
-                        task.run();
-                        afterExecute(task, null); // 可以自定义的执行后钩子方法
-                    } catch (Throwable ex) {
-                        afterExecute(task, ex); // 可以自定义的执行后钩子方法
-                        throw ex;
-                    }
-                } finally {
-                    task = null;
-                    w.unlock();
-                }
-            }
-            // 退出循环，getTask方法未返回任务，线程的run方法结束，线程退出。
-            completedAbruptly = false;
-        } finally {
-            // 执行worker销毁工作
-            processWorkerExit(w, completedAbruptly);
-        }
-    }
-
-    // 获取任务，返回null则表示worker退出。
-    private Runnable getTask() {
-        boolean timedOut = false; // Did the last poll() time out?
-        for (;;) {
-            int c = ctl.get();
-            // 所有worker退出的场景：1、SHUTDOWN且队列为空；2、STOP以上。
-            if (runStateAtLeast(c, SHUTDOWN)
-                && (runStateAtLeast(c, STOP) || workQueue.isEmpty())) {
-                decrementWorkerCount(); // worker正常结束worker数减一
-                return null;
-            }
-            int wc = workerCountOf(c);
-            // 当前worker允许退出条件：allowCoreThreadTimeOut为true或worker数大于corePoolSize
-            boolean timed = allowCoreThreadTimeOut || wc > corePoolSize;
-            // 退出判断：1、worker数大于maximumPoolSize；2、允许退出且空闲超时。
-            if ((wc > maximumPoolSize || (timed && timedOut))
-                && (wc > 1 || workQueue.isEmpty())) {
-                if (compareAndDecrementWorkerCount(c))
-                    return null;
-                continue; // CAS更新worker数失败则重试循环
-            }
-            // 不需要退出时从阻塞队列获取任务
-            try {
-                // 当前worker允许退出则使用带超时时间的poll方法，不允许退出则使用阻塞的take方法。
-                Runnable r = timed ?
-                    workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :
-                    workQueue.take();
-                if (r != null)
-                    return r; // 获取到任务则return
-                timedOut = true; // 未获取到任务则设置当前worker空闲超时
-            } catch (InterruptedException retry) {
-                timedOut = false;
-            }
-        }
-    }
-
-    // 执行worker退出
-    private void processWorkerExit(Worker w, boolean completedAbruptly) {
-        if (completedAbruptly) // 如异常退出worker数减一，正常退出在getTask方法中减一。
-            decrementWorkerCount();
-        ... // 移除worker，执行清理工作。
-        int c = ctl.get();
-        if (runStateLessThan(c, STOP)) {
-            // 正常退出判断是否需要添加worker
-            if (!completedAbruptly) {
-                // allowCoreThreadTimeOut为false时，worker数至少为corePoolSize。
-                int min = allowCoreThreadTimeOut ? 0 : corePoolSize;
-                // workQueue非空时至少要存在一个worker
-                if (min == 0 && ! workQueue.isEmpty())
-                    min = 1;
-                if (workerCountOf(c) >= min)
-                    return; // replacement not needed
-            }
-            // 异常退出时必然再次添加worker
-            addWorker(null, false);
-        }
-    }
-    ```
-    worker启动后执行。
-
--   ```java
-    private void interruptIdleWorkers(boolean onlyOne) {
-        final ReentrantLock mainLock = this.mainLock;
-        mainLock.lock(); // 阻塞加锁
-        try {
-            for (Worker w : workers) {
-                Thread t = w.thread;
-                if (!t.isInterrupted() && w.tryLock()) {
-                    try {
-                        t.interrupt(); // 打断
-                    } catch (SecurityException ignore) {
-                    } finally {
-                        w.unlock();
-                    }
-                }
-                if (onlyOne) // 为true时仅尝试一次
-                    break;
-            }
-        } finally {
-            mainLock.unlock();
-        }
-    }
-    ```
-    用于打断worker，tryTerminate方法中调用时onlyOne为true。
-
-### **ExecutorService方法实现**
-
-- execute(Runnable command)：
-    1. 如果当前worker数小于corePoolSize，则调用addWorker方法创建核心worker，成功则直接返回。
-    2. 线程池为RUNNING状态，才允许提交任务到阻塞队列，等待被worker获取；**如果入队成功则重新检查clt值，如线程池已不再是RUNNING状态则尝试回滚，从队列中移除任务并执行拒绝策略；如果此时线程池worker数为0（可能是回滚失败或状态未变不需要回滚），则使用addWorker方法添加一个空的非核心的worker，用以处理已入队的任务**。
-    3. 任务入队失败，则尝试使用addWorker方法创建非核心worker，失败则执行拒绝策略。
-
-- shutdown()：获取全局锁，修改状态为SHUTDOWN，使用interruptIdleWorkers方法打断所有worker，释放锁，最后执行一次tryTerminate方法。**interruptIdleWorkers方法对worker加锁成功才打断其线程，即会等待worker执行完当前任务，但runWorker方法会清除中断标识，意味着worker会继续从阻塞队列中获取任务并执行。**
-
-- shutdownNow()：获取全局锁，修改状态为STOP，使用interruptWorkers方法打断所有worker，释放锁，最后执行一次tryTerminate方法，最后返回阻塞队列中剩余未被执行任务。**interruptWorkers方法不获取全局锁，也不对worker加锁，即会直接打断所有worker，然后在runWorker方法中所有worker都会终止。**
-
-- awaitTermination(long timeout, TimeUnit unit)：获取全局锁，等待线程池状态变为TERMINATED后，被termination条件唤醒（来自tryTerminate方法），或达到超时时间。
-
-#### **Worker extends AbstractQueuedSynchronizer implements Runnable**
-
-工作线程，使用AQS独占模式，**0表示未锁，1表示锁定**。创建成功后先设置state为-1，表示此阶段不允许被打断，直到执行runWorker方法时，通过unlock方法将state设置为0。run方法实现为使用自身作为参数调用ThreadPoolExecutor的runWorker方法。
-
-### Executors
-
-- newCachedThreadPool()：new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>())，无界的线程池，适合执行大量的短时间任务。
-
-- newFixedThreadPool(int nThreads)：corePoolSize = maximumPoolSize = nThreadsnew，使用无界的LinkedBlockingQueue，只会创建核心线程，适合处理负载较重的场景。
-
-- newScheduledThreadPool(int corePoolSize)：使用DelayedWorkQueue，只会创建核心线程，用于执行延时任务。
-
-- newWorkStealingPool(int parallelism)：返回ForkJoinPool，默认并发度为处理器个数，**适合计算密集型场景，不要用于执行阻塞型任务**。
+    **set操作则会执行更多的清理工作，同时可能触发resize操作。**
 
 ***
 
-## [ThreadLocal](/blog/adtl)
+## class InheritableThreadLocal\<T\> extends ThreadLocal\<T\>
 
-***
+可继承的ThreadLocal，基于ThreadLocal，解决父子线程之间上下文传递的问题。
 
-## **Fork/Join(TODO)**
+-   ```java
+    // Thread类
+    ThreadLocal.ThreadLocalMap inheritableThreadLocals = null;
 
-## **ForkJoinPool**
+    ThreadLocalMap getMap(Thread t) {
+       return t.inheritableThreadLocals;
+    }
 
-继承自AbstractExecutorService，工作窃取线程池，即当某个线程执行完自己的任务后，从另一个线程的双端队列中窃取任务来执行。
+    void createMap(Thread t, T firstValue) {
+        t.inheritableThreadLocals = new ThreadLocalMap(this, firstValue);
+    }
+    ```
+    InheritableThreadLocal的值，保存于Thread类的ThreadLocalMap类型的**inheritableThreadLocals**属性中。
 
-### 构造方法
+-   ```java
+    // Thread构造方法，inheritThreadLocals默认为true。
+    private Thread(ThreadGroup g, Runnable target, String name,
+                   long stackSize, AccessControlContext acc,
+                   boolean inheritThreadLocals) { // 默认为true
+        ...
+        if (inheritThreadLocals && parent.inheritableThreadLocals != null)
+            this.inheritableThreadLocals =
+                ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);
+        ...
+    }
 
-- int parallelism：并行度，默认值为CPU逻辑处理器个数（**公共池为N-1**），并不表示worker最大值；
-- ForkJoinWorkerThreadFactory factory：worker创建工厂；
-- boolean asyncMode：实际上是工作队列执行模式，true为FIFO（队列），false为LIFO（栈），默认false；
-- corePoolSize：核心线程数，通常情况下等于并行度。
-- maximumPoolSize：允许的最大线程数量，最大为32567（**公共池为256**）；
-- maximumPoolSize：最小线程数，可以为0（**公共池为1**）。
+    static ThreadLocalMap createInheritedMap(ThreadLocalMap parentMap) {
+        return new ThreadLocalMap(parentMap);
+    }
 
-### **属性**
+    private ThreadLocalMap(ThreadLocalMap parentMap) {
+        ...
+        table = new Entry[len];
+        for (Entry e : parentTable) {
+            if (e != null) {
+                ThreadLocal<Object> key = (ThreadLocal<Object>) e.get();
+                if (key != null) {
+                    // 使用childValue方法复制值，默认为浅拷贝。
+                    Object value = key.childValue(e.value);
+                    Entry c = new Entry(key, value);
+                    ...
+                }
+            }
+        }
+    }
 
-- volatile int mode：记录并行度、运行状态和队列模式。
-
-- WorkQueue[] queues：工作队列数组。
-
-- volatile long ctl：分为四段记录，RC：没有入队的worker数量减去目标并行度；TC：总worker数量减去目标并行度；SS：队首等待的线程的版本计数和状态；ID：阻塞栈栈顶的poolIndex。
-
-### **任务提交**
-
-调用externalSubmit方法，如果线程为当前线程池的ForkJoinWorkerThread则直接push到非共享模式的队列中，否则使用externalPush，根据线程探针哈希值找到工作队列数组中未绑定ForkJoinWorkerThread的工作队列加入，最后都会调用signalWork方法通知ForkJoinWorkerThread执行，如果数量不足则创建ForkJoinWorkerThread。
-
-### **调度过程**
-
-工作队列数组大小为2的幂，初始化时为空数组，任务提交后在偶数槽添加一个没有绑定工作线程的工作队列，然后创建工作线程，将其工作队列放置在奇数槽上，然后扫描工作队列数组，找到一个可以窃取的工作队列，获取到ForkJoinTask后执行，而ForkJoinTask的fork方法又会将任务添加到当前工作线程的工作队列中，最终ForkJoinTask中的join方法又会导致当前工作线程阻塞等待结果，因为可能被其他工作线程窃取走了任务。
-
-### **WorkQueue**
-
-工作队列，为ForkJoinTask数组，由ForkJoinWorkerThread持有。
-
-### **ForkJoinWorkerThread**
-
-ForkJoinPool中的worker，持有ForkJoinPool和WorkQueue，run方法将WorkQueue注册到ForkJoinPool，再调用ForkJoinPool执行WorkQueue的任务。
-
-## **ForkJoinTask**
-
-抽象类，Fork/Join框架的核心，一般需要继承其抽象子类RecursiveAction和RecursiveTask，然后实现compute方法。核心是将任务拆分为小任务，然后小任务通过fork方法提交到ForkJoinPool异步执行，最后使用join方法等待小任务执行完成后合并计算结果。
-
-- volatile int status：状态，0初始化，负数DONE，正数为未完成状态，高16位标识ABNORMAL和THROWN，低16位由子类自定义（用来表示并行度）。
-- volatile Aux aux：等待完成或抛出了异常的节点。
-
-- fork()：异步提交任务，如果当前线程为ForkJoinWorkerThread则提交到其workQueue，否则提交任务到公共ForkJoinPool的externalQueue。
-
-- join()：非完成状态时，等待所有任务完成，不会抛出受检查异常。
-
-- get()：等待所有任务完成，会抛出受检查异常。
-
-- invoke()：执行所有任务，同步等待执行完成。
-
-- **innt awaitDone(ForkJoinPool pool, boolean ran, boolean interruptible, boolean timed, long nanos)**：核心方法，用于join、get、invoke，帮助and或or的waits完成。
+    protected T childValue(T parentValue) {
+        return parentValue;
+    }
+    ```
+    创建子线程时将父线程的inheritableThreadLocals复制到子线程中，**线程池中不会生效**，因为线程池中的线程并不都是提交任务时创建的，故无法继承来自父线程的上下文。
 
 ***
