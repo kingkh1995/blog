@@ -21,6 +21,7 @@
 * [thread](java/thread)
 * [thread-pool](java/threadpool)
 * [fork/join](java/forkjoin)
+* [hashmap & c13map](java/hashmap)
 * [util](java/util)
 * [concurrent](java/concurrent)
 * [aqs](java/aqs)

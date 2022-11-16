@@ -4,7 +4,7 @@
 
 ***
 
-## public class Thread implements Runnable
+## public class **Thread** implements Runnable
 
 ### **线程状态**
 
@@ -213,7 +213,7 @@
 
 ***
 
-## ThreadLocal
+## **ThreadLocal**
 
 线程局部变量，并不实际存储值，而是使用ThreadLocalMap，**建议使用static修饰**。
 
@@ -282,7 +282,7 @@ private static int nextHashCode() {
 
 ***
 
-## ThreadLocalMap
+## **ThreadLocalMap**
 
 ### 结构
 
@@ -425,7 +425,7 @@ ThreadLocal真正的核心，**为线性探测法实现的Map**，Entry弱引用
 
 ***
 
-## class InheritableThreadLocal\<T\> extends ThreadLocal\<T\>
+## class **InheritableThreadLocal**\<T\> extends ThreadLocal\<T\>
 
 可继承的ThreadLocal，基于ThreadLocal，解决父子线程之间上下文传递的问题。
 

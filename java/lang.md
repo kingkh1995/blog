@@ -479,6 +479,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
   // 返回对象的标识哈希码，即hashcode方法的默认值。
   public static native int identityHashCode(Object x);
   ```
+  返回结果是与内存地址相关的，但是因为返回值为int，故不同对象的返回值可能是相同的。
 
 - ```java
   public static void exit(int status) {

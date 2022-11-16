@@ -4,7 +4,7 @@
 
 ***
 
-## Callable
+## **Callable**
 
 ```java
 @FunctionalInterface
@@ -16,13 +16,13 @@ public interface Callable<V> {
 
 ***
 
-## public interface RunnableFuture<V> extends Runnable, Future<V>
+## interface **RunnableFuture**\<V\> extends Runnable, Future\<V\>
 
 RunnableFuture同时继承了Runnable和Future，用于包装任务，将自身作为Runable提交，之后再作为Future使用。
 
 ***
 
-## public class FutureTask<V> implements RunnableFuture<V>
+## class **FutureTask**\<V\> implements RunnableFuture\<V\>
 
 -   ```java
     private volatile int state;
@@ -95,13 +95,13 @@ RunnableFuture同时继承了Runnable和Future，用于包装任务，将自身�
 
 ***
 
-## public abstract class AbstractExecutorService implements ExecutorService
+## abstract class **AbstractExecutorService** implements ExecutorService
 
 ExecutorService的抽象实现，默认将提交给线程池的任务包装为FutureTask。
 
 ***
 
-## public class ThreadPoolExecutor extends AbstractExecutorService
+## class **ThreadPoolExecutor** extends AbstractExecutorService
 
 - 有界与无界：无界线程池的问题是可能会导致内存溢出，而有界线程池的问题是如果任务之间是有依赖性的，则可能造成线程池死锁。
 - 最佳线程数：CPU密集型应用建议为N+1，N是为了减少线程的切换，+1是为了防止线程意外终止，而导致CPU资源被浪费；IO密集型应用，则需要结合实际场景进行设置，即要防止创建过多线程，也要保证应用的处理能力。
@@ -175,7 +175,7 @@ private volatile RejectedExecutionHandler handler;
     是否允许空闲核心线程超时终止，**默认false**，只能通过allowCoreThreadTimeOut方法修改。
     > 适合只在特定时间段处理任务的线程池，可节约机器资源。
 
-### interface RejectedExecutionHandler
+### interface **RejectedExecutionHandler**
 
 ```java
 void rejectedExecution(Runnable r, ThreadPoolExecutor executor);
@@ -501,7 +501,7 @@ void rejectedExecution(Runnable r, ThreadPoolExecutor executor);
 
 ***
 
-## Executors
+## **Executors**
 
 -   ```java
     public static ExecutorService newFixedThreadPool(int nThreads) {
@@ -546,13 +546,13 @@ void rejectedExecution(Runnable r, ThreadPoolExecutor executor);
     ```
     ScheduledThreadPool: 固定长度线程池，使用DelayedWorkQueue，用于处理定时及周期性任务。
 
-### ScheduledThreadPoolExecutor
+### **ScheduledThreadPoolExecutor**
 
-#### private class ScheduledFutureTask\<V\> extends FutureTask\<V\> implements RunnableScheduledFuture<V>
+#### class **ScheduledFutureTask**\<V\> extends FutureTask\<V\> implements RunnableScheduledFuture<V>
 
 ScheduledThreadPoolExecutor使用的FutureTask，使用heapIndex记录了task在DelayedWorkQueue中的索引，**将查找效率从O(logn)提高到O(1)**。
 
-#### class DelayedWorkQueue extends AbstractQueue\<Runnable\> implements BlockingQueue\<Runnable\>
+#### class **DelayedWorkQueue** extends AbstractQueue\<Runnable\> implements BlockingQueue\<Runnable\>
 
 ScheduledThreadPoolExecutor使用的BlockingQueue，**为基于延时时间的优先队列（实现类似DelayQueue）**，存储任务使用RunnableScheduledFuture<?>[]（非PriorityQueue），故查找效率为O(1)。
 
