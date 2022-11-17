@@ -50,7 +50,7 @@
         return v;
     }
     ```
-
+    
 -   ```java
     public final void set(V value) {
         if (value != InternalThreadLocalMap.UNSET) {
@@ -61,18 +61,20 @@
             remove(); // 值为UNSET时移除
         }
     }
-
+    ```
+    
+-   ```java
     public final void remove() {
-        remove(InternalThreadLocalMap.getIfSet());
+      remove(InternalThreadLocalMap.getIfSet());
     }
-
+    
     public final void remove(InternalThreadLocalMap threadLocalMap) {
-        if (threadLocalMap == null) {
-            return;
-        }
-        Object v = threadLocalMap.removeIndexedVariable(index); // 从InternalThreadLocalMap的index位置移除并返回值
-        removeFromVariablesToRemove(threadLocalMap, this); // 从variablesToRemove集合移除FastThreadLocal
-        ...
+      if (threadLocalMap == null) {
+          return;
+      }
+      Object v = threadLocalMap.removeIndexedVariable(index); // 从InternalThreadLocalMap的index位置移除并返回值
+      removeFromVariablesToRemove(threadLocalMap, this); // 从variablesToRemove集合移除FastThreadLocal
+      ...
     }
     ```
 
