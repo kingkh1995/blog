@@ -17,7 +17,7 @@
 * [lang](java/lang)
 * [enum & annotation](java/annotation)
 * [ref](java/ref)
-* [class & reflect](java/class)
+* [reflect](java/reflect)
 * [thread](java/thread)
 * [thread-pool](java/threadpool)
 * [fork/join](java/forkjoin)

@@ -149,6 +149,10 @@ HashSet(int initialCapacity, float loadFactor, boolean dummy) {
 
 ***
 
+## final class **ServiceLoader**\<S\> implements Iterable\<S\>
+
+***
+
 ## RandomGenerator
 
 JDK17新增，随机数生成器的公共接口，新增了一系列生成随机数流的方法，以及of(String name)工厂方法（使用SPI的方式加载随机数生成器的实现）。
