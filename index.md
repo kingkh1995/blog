@@ -80,6 +80,7 @@
 * [消息队列](advanced/mq)
 * [海量数据处理](advanced/bigdata)
 * [RESTful](advanced/restful)
+* [SPI](advanced/spi)
 
 ## System Architecture
 

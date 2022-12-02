@@ -223,10 +223,10 @@ AOP的AbstractAutoProxyCreator为SmartInstantiationAwareBeanPostProcessor类型�
 
 ### @SpringBootApplication
 
-@SpringBootConfiguration表示当前类为配置类；@EnableAutoConfiguration开启自动配置，通过AutoConfigurationImportSelector实现；@ComponentScan开启包扫描，扫描指定路劲下的所有类文件。
+**@SpringBootConfiguration**表示当前类为配置类；**@EnableAutoConfiguration**开启自动配置，通过【@Import(AutoConfigurationImportSelector.class)】实现；**@ComponentScan**开启包扫描，默认路劲为当前类所在的包。
 
 ### AutoConfigurationImportSelector
 
-即spring的SPI机制，使用SpringFactoriesLoader扫描META-INF/spring.factories下配置的所有拓展点。
+即Spring的SPI机制，使用SpringFactoriesLoader扫描META-INF/spring.factories下配置的所有拓展点，并加载到IOC容器。
 
 ***

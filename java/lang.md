@@ -517,6 +517,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
   // 由JVM调用，清理parallelCapable相关的集合。
   private void resetArchivedStates() { ... }
   ```
+  并发加载支持。
 
 - ```java
   private final native Class<?> findLoadedClass0(String name);
@@ -528,7 +529,7 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
       throw new ClassNotFoundException(name);
   }
   ```
-  自定义类加载器时需要重写findClass方法，重写逻辑为，先获取到类的二进制流，再调用defineClass方法创建Class文件。
+  自定义类加载器时需要重写findClass方法，重写逻辑为：先获取到类的二进制流，再调用defineClass方法创建Class对象。
 
 - ```java
   protected final Class<?> defineClass(String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError { ... }
