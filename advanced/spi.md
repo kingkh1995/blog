@@ -38,6 +38,8 @@
     ```java
     List<SPI> spis= SpringFactoriesLoader.loadFactories(SPI.class, Thread.currentThread().getContextClassLoader());
     ```
+   
+### **SpringFactoriesLoader**
 
 ***
 
@@ -58,6 +60,23 @@
     SPI a = spis.getExtension("a");
     SPI b = spis.getExtension("b");
     ```
+
+#### @Adaptive
+
+自适应扩展实现类，可以修饰类（接口，枚举）和方法，优先级高于@SPI，**使用时要求方法入参必须包含org.apache.dubbo.common.URL**。
+
+```java
+@SPI("impl1")
+public interface SimpleExt {
+    @Adaptive({"key1", "key2"})
+    String yell(URL url, String s);
+}
+```
+先判断URL种的key1参数，不存在则判断key2，均不存在则使用impl1对应的默认实现。
+
+#### @Activate
+
+自动激活扩展类，优先级最高，使用在实现类上，包含group、value、before、after、order五个参数。
 
 ### **ExtensionLoader**
 

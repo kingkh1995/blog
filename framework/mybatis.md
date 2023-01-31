@@ -21,7 +21,7 @@ namespace为对应的Mapper接口的全限定名，每个sql语句都会被解�
 
 ### Interceptor
 
-- Object intercept(Invocation invocation)：需要实现拦截逻辑，invocation为拦截的方法调用对象。
+- Object intercept(Invocation invocation)：需要实现拦截逻辑，invocation为被代理方法的封装对象。
 - Object plugin(Object target)：确定拦截范围，一般选择通过注解定义，默认实现即是从类注解上获取拦截信息，所以不需要重写。
 - setProperties(Properties properties)：如果拦截器需要读取配置文件则重写，properties为配置文件，一般不需要，直接使用Spring框架注入即可。
 - @Intercepts：拦截器注解，value属性为@Signature数组。
@@ -29,7 +29,7 @@ namespace为对应的Mapper接口的全限定名，每个sql语句都会被解�
 
 ### 拦截对象
 
-Executor：执行器；StatementHandler：Statement处理；ParameterHandler：参数处理；ResultSetHandler：结果集处理。
+【Executor】：执行器；【StatementHandler】：Statement处理；【ParameterHandler】：参数处理；【ResultSetHandler】：结果集处理。
 
 执行顺序：Executor->StatementHandler->ParameterHandler->TypeHandler->ResultSetHandler->StatementHandler->Executor
 
@@ -52,16 +52,12 @@ Executor：执行器；StatementHandler：Statement处理；ParameterHandler：�
 - BatchExecutor：批处理执行器，执行update（没有select，JDBC批处理不支持select），将所有sql都添加到批处理中（addBatch()），等待统一执行（executeBatch()），它缓存了多个Statement对象，每个Statement对象都是addBatch()完毕后，等待逐一执行executeBatch()批处理，与JDBC批处理相同。
 - CachingExecutor：是一个Executor接口的装饰器，开启了二级缓存时会包装Executor对象，为Executor对象增加了二级缓存的相关功能，**它的生命周期也在SqlSession中，但是其是从外部查询缓存**。
 
-***
+## SqlSessionFactory
 
-## 启动
+用于创建SqlSession，SqlSession会从Configuration对象中获取对应MappedStatement，交给Executor执行。
 
-### SqlSessionFactory
+## MapperScannerConfigurer
 
-用于创建SqlSession
-
-### MapperScannerConfigurer
-
-用于获取MapperFactoryBean
+用于获取MapperFactoryBean，然后为mapper接口创建代理。
 
 ***
