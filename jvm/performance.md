@@ -4,8 +4,19 @@
 
 ***
 
-## 常用JVM参数
+## GC调优核心指标
 
+- 延迟：即最大停顿时间，为垃圾收集过程中一次STW的最长时间，越短越好，一定程度上可以接受GC频次的增大。
+
+- 吞吐量：应用系统的生命周期内，由于GC线程会占用可用的CPU时钟周期，吞吐量即为应用程序有效花费的时间占系统总运行时间的百分比。
+
+**一般要求，一次停顿的时间不超过应用服务的 TP9999，GC 的吞吐量不小于 99.99%。同时对于IO密集型应用（即绝大部分的应用），对象存活时间级基本都不会超过 TP9999 的时间，此时应该尽可能的增大新生代的空间。**
+
+***
+
+## JVM参数
+
+### 通用 
 - -Xms：初始堆大小，一般设置为等于Xmx，即不支持堆内存动态调整；
 - -Xmx：最大堆大小；
 - -Xss：每个线程的堆栈大小，默认值为0，表示使用系统默认值，64位系统中为1M；
@@ -14,26 +25,27 @@
 - -XX:PermSize：永久代初始大小，已废弃；
 - -XX:MaxPermSize：永久代最大值，已废弃；
 - -XX:MetaspaceSize：元空间的初始空间大小，达到该值就会触发Full GC进行类型卸载，同时收集器会对该值进行调整；
-- -XX:MaxMetaspaceSize：设置元空间最大值，默认是 -1，表示不限制；
+- -XX:MaxMetaspaceSize：设置元空间最大值，默认是 -1，表示不限制，如果有大量生成动态类的需求则应该提高该值。；
 - -XX:MaxTenuringThreshold：生存区对象的最大年龄；
 - -XX:PretenureSizeThreshold：任何超过该阈值的对象都不会尝试在新生代进行分配而是直接进入老年代；
-- -XX:SoftRefLRUPolicyMSPerMB=：能够忍受的软引用存在的最大时间。
-
-***
-
-## 性能调优（G1）
-
-优化的目标就是避免触发Full GC，尽量不要让对象进入老年代，减少Survivor区触发动态年龄判断。
-
-- -XX:MaxGCPauseMillis：修改预期GC暂停事件，太小会跟不上分配内存的速度，太大会使得暂停时间过长。**要结合系统可以接收的请求响应时间和GC的收集时间修改，默认200ms一般不建议修改**。
-- -XX:ParallelGCThreads: stw 阶段工作的 GC 线程数，一般设置为 CPU 核心数 -1。
-- -XX:ConcGCThreads：非 stw 阶段工作的 GC 线程数，会影响系统的吞吐量，**系统如果是计算密集型建议是 CPU 核数的 1/4 ~ 1/3，iO 密集型建议是 1/2**。
-- -XX:G1ReservePercent：G1为老年代预留的空间比例，默认是10%，如果新生代晋升失败会触发 Old GC，**如果经常出现晋升失败场景则应该提高该比例**。
-- -XX:MaxMetaspaceSize：元空间最大大小，如果有大量生成动态类的需求则应该提高该值。
+- -XX:+HeapDumpOnOutOfMemoryError：JVM会在遇到OutOfMemoryError时拍摄一个堆转储快照，并将其保存在一个文件中。
 - -XX:TraceClassLoading / -XX:TraceClassUnloading：
 开启追踪类加载和类卸载，可以在Tomcat的catalina.out 日志文件中查看，用于排查问题。
 - -XX:SoftRefLRUPolicyMSPerMB：JVM可以忍受多久软引用不被回收，如果是0则每次都会把软引用回收掉释放内存，**这个参数不代表软引用能存在的最大时间**，需要根据自身需求调整，建议这个参数设置2000 - 5000ms。
   - 使用【clock - timestamp <= freespace * SoftRefLRUPolicyMSPerMB】判断每个软引用对象如果满足则不回收，clock为上次垃圾回收的时间，timestamp为上次被调用的时间，故会至少经历1次GC而不被回收，为负数表示刚才被使用过，这个公式表示空闲空间越小，能够忍耐的软引用对象空闲的时间会越短。
+- -XX:ParallelGCThreads: stw 阶段工作的 GC 线程数，一般设置为 CPU 核心数 -1。
+- -XX:ConcGCThreads：非 stw 阶段工作的 GC 线程数，会影响系统的吞吐量，**系统如果是计算密集型建议是 CPU 核数的 1/4 ~ 1/3，iO 密集型建议是 1/2**。
+- -XX：+DisableExplicitGC: 关闭显示的调用System.gc()，System.gc()是触发类似 full gc 的操作。
+
+### G1参数
+
+性能调优的目标就是避免触发G1的Full GC，尽量不要让对象进入老年代，减少Survivor区触发动态年龄判断的次数。
+
+- -XX:MaxGCPauseMillis：每次YGC/MixedGC的期望最长停顿时间，**默认200ms一般不建议修改**，太小会导致系统跟不上分配内存的速度，以致于频繁触发GC降低系统吞吐量，太大则会影响请求响应时间。
+- -XX:G1NewSizePercent：G1新生代初始占比，一般不用修改，因为空间占用是慢慢增加的。
+- -XX:G1MaxNewSizePercent：G1新生代最多占用堆内存的比例，默认值60%。
+- -XX:G1ReservePercent：G1为老年代预留的空间比例，默认是10%，如果新生代晋升失败会触发 Old GC，**建议在加大内存大小的同时适当的额提高该比例以避免触发fgc**。
+- -XX:InitiatingHeapOccupancyPercent：mixedGC触发阈值，默认值45%，意思是如果老年代在堆内存空间占比超过阈值则会尝试触发一个新生代+老年代一起回收的混合回收。
 
 ***
 
@@ -120,7 +132,7 @@ jhat [option] [dumpfile]
 
 - -port \<port\>: HTTP服务器端口，默认是7000，启动一个web服务器用于访问。
 
-### jcmd
+### jcmd（功能整合类终端）
 
 ```
 jcmd <pid> [option]
@@ -133,6 +145,10 @@ jcmd <pid> [option]
 - GC.class_histogram：类加载行为统计；
 - GC.heap_dump \[file\]：堆信息dump；
 - VM.native_memory：本地内存追踪，可用于分析内存泄漏。
+
+### 其他终端
+
+命令行推荐Arthas，可视化界面推荐JProfiler。
 
 ***
 
