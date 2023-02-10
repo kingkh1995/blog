@@ -172,6 +172,8 @@ Base Available、（基本可用）Sofe state（软状态）、Eventually consis
 
 ## 分布式协调服务
 
+### ZooKeeper
+
 #### 使用场景
 
 - 系统A发送消息后，在ZooKeeper指定节点上注册监听器，当消息被系统B消费后，系统B修改节点的值，ZooKeeper通知到系统A。

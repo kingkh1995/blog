@@ -21,7 +21,7 @@ Redis服务器是一个事件驱动程序，需要处理两类事件：文件事
 
 ## 数据结构
 
-- string：int（整型）、embstr（小于等于39个字节）、raw
+- string：int（整型）、embstr（小于等于44个字节）、raw
 - hash：ziplist、hashtable
 - list：quicklist
 - set：intset（整数集合）、hashtable。
@@ -134,7 +134,7 @@ Redis服务器的统计值为mem_fragmentation_ratio，一般不要大于1.5。
 
 ### 内存优化
 
-- 编码优化，如放宽使用ziplist编码的条件，字符串尽量在39个字节以下以使用embstr编码；
+- 编码优化，如放宽使用ziplist编码的条件，字符串尽量在44个字节以下以使用embstr编码；
 - 缩减键值对象，在能满足业务场景的前提下，尽可能的缩短键和值的长度；
 - 尽量不要对字符串使用修改操作，SDS会预分配空间造成内存浪费；
 - 字符串重构，string类型改为hash类型；

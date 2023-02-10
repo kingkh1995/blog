@@ -71,17 +71,15 @@ public enum Singleton {
 
 为所有注解的父接口，由编译器添加继承关系。
 
-### annotationType() & getClass()
+### annotationType()
 
 ```java
 // 由编译器实现，返回注解接口的Class对象。
 Class<? extends Annotation> annotationType();
 ```
+用于获取注解的类对象，**使用getClass()则不行，其返回值类型为Class<? extends A>**。
 
-**因为注解为接口而不是类，故通过反射获取到的注解对象是JDK的代理对象，getClass()返回的类对象为JDK代理类的类对象。**
-
-- getClass()返回类型为Class<? extends **A**>，可以直接向上转型为Class<? extends Annotation>；
-- 想要获取到注解上的注解信息，只能使用annotationType()返回的Class对象。
+- 因为注解为接口，故通过反射获取到的注解对象为JDK的代理对象，则对代理对象调用getClass()返回的类对象为**注释的JDK代理类**的类对象。
 
 ***
 

@@ -32,13 +32,17 @@ RPC（Remote Procedure Call） 即远程过程调用，是为了让调用远程�
 3. 服务统计，资源调度治理；
 4. 服务降级；
 
+### **调用过程**
+
+调用代码 -> Proxy -> Invoker -> TCP/IP -> Exporter -> Invoker -> 服务实现
+
 ### 架构
 
 - serivce：接口层，服务提供者和消费者自行实现；
-- config：配置层，Dubbo相关的配置，以 ServiceConfig、ReferenceConfig为中心；
+- config：配置层，Dubbo相关的配置，以 ServiceConfig、ReferenceConfig为中心，通过ServiceConfig.export实例化服务提供者，ReferenceConfig.get实例化服务消费者对象；
 - proxy：服务代理层，真实调用过程依赖代理类，代理类之间网络通信，以 ServiceProxy为中心；
 - registry：注册中心层，封装服务地址的注册与发现；
-- cluster：路由层，封装多个提供者的路由及负载均衡，并桥接注册中心，以Invoker为中心；
+- cluster：路由层，封装多个提供者的路由及负载均衡为Invoker，并桥接注册中心；
 - monitor：监控层，以 Statistics 为中心；
 - protocol：远程调用层，封装RPC调用，以Invocation、Result为中心。
 - exchange：信息交换层，封装请求响应模式，同步转异步，以Request、Response为中心；
@@ -69,7 +73,7 @@ RPC（Remote Procedure Call） 即远程过程调用，是为了让调用远程�
 - Broadcast：广播模式，会逐个调用所有提供者，一个失败则视作失败，适合集群通知操作，如全局更新缓存等。
 
 ### 服务暴露
-1. Spring容器刷新完成后，首先完成初始化，装配ServiceConfig对象；
+1. Spring容器刷新完成后，首先完成初始化装配ServiceConfig对象；
 2. 检查及更新ServiceConfig对象，如果没有设置延迟暴露则开始暴露服务；
 3. 向注册中心注册服务，同时也会注册到本地ServiceRepository；
 4. 解析需要暴露的服务和协议然后构建URL，默认情况下会同时暴露到本地和远程；
