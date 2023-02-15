@@ -229,4 +229,16 @@ AOP的AbstractAutoProxyCreator为SmartInstantiationAwareBeanPostProcessor类型�
 
 即Spring的SPI机制，使用SpringFactoriesLoader扫描META-INF/spring.factories下配置的所有拓展点，并加载到IOC容器。
 
+#### 启动流程
+
+通过SpringApplication.run()方法启动，步骤为：
+1. 启动监听器；
+2. 环境构建；
+3. 创建容器；
+4. 前置处理；
+5. **刷新容器（启动Spring IOC容器）**
+6. 后置处理；
+7. 发出事件；
+8. 执行Runner。
+
 ***

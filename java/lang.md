@@ -41,7 +41,7 @@
   // 最终都是调用该本地方法
   public final native void wait(long timeoutMillis) throws InterruptedException;
   ```
-  **wait方法必须在同步方法或同步块内使用，调用后线程会释放同步锁**；参数为0L时，Java线程状态转变为WAIT，一直等待直到被唤醒或被打断；大于0L则Java线程状态转变为TIMED_WAITING，等待被唤醒、打断或达到超时时间后被自动唤醒。
+  **wait方法必须在同步方法或同步块内使用（否则会抛出IllegalMonitorStateException），调用后线程会释放同步锁**；参数为0L时，Java线程状态转变为WAIT，一直等待直到被唤醒或被打断；大于0L则Java线程状态转变为TIMED_WAITING，等待被唤醒、打断或达到超时时间后被自动唤醒。
 
 - ```java
   // 唤醒任意一个在此对象监视器上等待的线程（非公平）
