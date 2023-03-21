@@ -121,9 +121,17 @@ MQ接收到消息，首先使用顺序IO的方式保存到commitlog文件，之�
 
 **不支持任意时间的延时，只支持几个固定的延时等级**，所有的延迟消息由producer发出之后，都会存放到同一个topic下（SCHEDULE_TOPIC_XXXX），不同的延迟级别会对应不同的队列序号，每个队列对应一个定时线程，定时处理到期的消息并重新投递到真正指定的topic下，此时消息才对于consumer端可见。
 
+### 消费模式
+
+- 集群模式：每条消息只能被同一个consumer组内一个consumer消费。
+- 广播模式：每个consumer都会消费消息一次。
+
 ### pull & push
 
 RocketMQ并没有真正实现Push模式，而是对Pull模式进行一层包装，通过Pull不断轮询Broker获取消息，当不存在新消息时，Broker会挂起请求，直到有新消息产生，取消挂起，返回新消息。
+
+- 为什么不支持Push?
+因为broker段不知道consumer的实际消费能力，如果集群消费模式下，push大量消息到某个consumer，而该consumer无法消费，则会导致消息堆积，所以应该是consumer去主动pull。
 
 ***
 

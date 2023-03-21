@@ -242,3 +242,17 @@ AOP的AbstractAutoProxyCreator为SmartInstantiationAwareBeanPostProcessor类型�
 8. 执行Runner。
 
 ***
+
+## 使用的设计模式
+
+- 单例：singleton作用域的bean，**类并不是单例模式**，只是IOC容器中每个名称的bean只能存在一个。
+- 工厂：BeanFactory，ApplicationContext；
+- 代理：AOP；
+- 模板方法：BeanPostProcessor、TransactionManager；
+- 观察者：ApplicationEvent；
+- 适配器：HandlerAdapter；
+- 装饰器：ServletRequestWrapper、TransactionAwareCacheDecorator；
+- 责任链：intercptor、filter；
+- 策略：ResourceLoader。
+
+***

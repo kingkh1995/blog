@@ -210,10 +210,18 @@ jcmd <pid> [option]
    > Full GC (Metadata GC Threshold)
 2. 定位到内存碎片化现象
    > Metaspace used 30000k, capacity 50000k, committed 50000k....
-3. 分析：元空间以chunk进行预分配，一个类加载器会独占整个chunk，used与capacity表示出现了碎片化，要判断是否创建了大量类加载器；
+3. 分析：元空间以chunk进行预分配，**一个类加载器会独占整个chunk**，used与capacity表示出现了碎片化，要判断是否创建了大量类加载器；
 4. jmap下载dump文件分析堆对象，发现大量**DelegatingClassLoader委派类加载器**。
    > 反射膨胀机制：反射首先使用JNI的方式获取类信息，如果调用超过一定频次会创建字节码，使用DelegatingClassLoader。
 5. 首先调大metaspace的大小尽快恢复，或者通过设置-Dsun.reflect.inflationThreshold=0即永远不适用字节码存取器获取类信息；
-6. 定位代码问题，底层对象转换等，大量使用了BeanUtils.copyProperties，全部改成MapStruct。
+6. 定位代码问题，底层对象转换等，大量使用了BeanUtils.copyProperties，触发反射膨胀机制后，NativeMethodAccessorImpl类它针对每个类的每个属性的Getter及Setter方法都会生成一个DelegatingClassLoader，并将这些DelegatingClassLoader缓存提高，全部改成MapStruct。
+
+### 优化案例：线程大小分配太大
+
+线程栈大小没有改设置，默认1M，后面改成了256k。
+
+### 优化案例：大数组创建太多
+
+导出百万条数据，虽然我们是循环操作，拆分为很多文件，查数据阶段也是循环查询，但是全部查出来然后放到List，这就导致创建了大数组，引发FullGC。
 
 ***
