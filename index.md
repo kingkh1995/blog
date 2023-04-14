@@ -37,8 +37,8 @@
 ### *JVM*
 
 * [基础知识](jvm)
+* [垃圾收集](jvm/gc)
 * [JMM](jvm/jmm)
-* [GC](jvm/gc)
 * [调优&监控](jvm/performance)
 
 ## Open Source Projects
