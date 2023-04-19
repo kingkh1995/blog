@@ -38,8 +38,8 @@
 
 * [基础知识](jvm)
 * [垃圾收集](jvm/gc)
-* [JMM](jvm/jmm)
-* [调优&监控](jvm/performance)
+* [监控&调优](jvm/performance)
+* [内存模型](jvm/jmm)
 
 ## Open Source Projects
 

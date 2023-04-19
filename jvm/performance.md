@@ -1,168 +1,182 @@
 # [首页](/blog/)
 
-> 调优及监控
+> 监控&调优
 
 ***
 
-## GC调优核心指标
+## **JVM通用参数**
 
-
-### 延迟与吞吐量
-
-- 延迟：即最大停顿时间，为垃圾收集过程中一次STW的最长时间，越短越好，一定程度上可以接受GC频次的增大。
-
-- 吞吐量：应用系统的生命周期内，由于GC线程会占用可用的CPU时钟周期，吞吐量即为应用程序有效花费的时间占系统总运行时间的百分比。
-
-**一般要求，一次停顿的时间不超过应用服务的 TP9999，GC 的吞吐量不小于 99.99%。同时对于IO密集型应用（即绝大部分的应用），对象存活时间级基本都不会超过 TP9999 的时间，此时应该尽可能的增大新生代的空间。**
-
-### 核心指标
-
-- jvm.gc.time: 每次GC的耗时，一般500ms以内；
-- jvm.gc.meantime: 每次YGC的耗时，一般应在50ms以内；
-- jvm.fullgc.count: fgc多久发生一次，一般应在24小时一次；
-- jvm.fullgc.time: 每次FGC耗时，一般应在1s以内。
-
-### 垃圾回收器比对
-
-选择最合适的而不是最好的，parNew + CMS最成熟，以最低的停顿时间为目标；G1则是能充分利用多核性能，对停顿时间可预测；ZGC理论上能支持TB级别内存，并且停顿时间少于10ms，但是会造成吞吐量下降，同时也并不稳定。
-
-***
-
-## JVM参数
-
-### 通用 
-- -Xms：初始堆大小，一般设置为等于Xmx，即不支持堆内存动态调整；
-- -Xmx：最大堆大小；
-- -Xss：每个线程的堆栈大小，默认值为0，表示使用系统默认值，64位系统中为1M；
-- -Xmn：新生代大小，官方推荐配置为整个堆大小的3/8；
-- -XX:SurvivorRatio=：新生代中Eden区域与Survivor区域的容量比值，默认值为8，即8:1:1；
-- -XX:PermSize：永久代初始大小，已废弃；
-- -XX:MaxPermSize：永久代最大值，已废弃；
+- -Xms：初始堆大小；
+- -Xmx：最大堆大小，一般设置为等于Xms，即不支持堆内存动态调整；
+- -Xmn：新生代的内存大小；
+- -Xss：每个线程的堆栈大小，默认值为0，表示使用系统默认值，64位系统中默认值为1M；
 - -XX:MetaspaceSize：元空间的初始空间大小，达到该值就会触发Full GC进行类型卸载，同时收集器会对该值进行调整；
-- -XX:MaxMetaspaceSize：设置元空间最大值，默认是 -1，表示不限制，如果有大量生成动态类的需求则应该提高该值。；
-- -XX:MaxTenuringThreshold：生存区对象的最大年龄；
-- -XX:PretenureSizeThreshold：任何超过该阈值的对象都不会尝试在新生代进行分配而是直接进入老年代；
-- -XX:+HeapDumpOnOutOfMemoryError：JVM会在遇到OutOfMemoryError时拍摄一个堆转储快照，并将其保存在一个文件中。
-- -XX:TraceClassLoading / -XX:TraceClassUnloading：
-开启追踪类加载和类卸载，可以在Tomcat的catalina.out 日志文件中查看，用于排查问题。
-- -XX:SoftRefLRUPolicyMSPerMB：JVM可以忍受多久软引用不被回收，如果是0则每次都会把软引用回收掉释放内存，**这个参数不代表软引用能存在的最大时间**，需要根据自身需求调整，建议这个参数设置2000 - 5000ms。
-  - 使用【clock - timestamp <= freespace * SoftRefLRUPolicyMSPerMB】判断每个软引用对象如果满足则不回收，clock为上次垃圾回收的时间，timestamp为上次被调用的时间，故会至少经历1次GC而不被回收，为负数表示刚才被使用过，这个公式表示空闲空间越小，能够忍耐的软引用对象空闲的时间会越短。
-- -XX:ParallelGCThreads: stw 阶段工作的 GC 线程数，一般设置为 CPU 核心数 -1。
-- -XX:ConcGCThreads：非 stw 阶段工作的 GC 线程数，会影响系统的吞吐量，**系统如果是计算密集型建议是 CPU 核数的 1/4 ~ 1/3，iO 密集型建议是 1/2**。
-- -XX：+DisableExplicitGC: 关闭显示的调用System.gc()，System.gc()是触发类似 full gc 的操作。
+- -XX:MaxMetaspaceSize：设置元空间最大值，默认值为-1，表示不限制；
+- -XX:SoftRefLRUPolicyMSPerMB：表示JVM可以忍受多久软引用不被回收，**这个参数不代表软引用能存在的最大时间**，建议设置为2000 - 5000ms。如果是0则每次都会把软引用回收掉释放内存，使用公式（clock - timestamp <= freespace * SoftRefLRUPolicyMSPerMB）判断每个软引用对象是否可以不回收，clock为上次垃圾回收的时间，timestamp为软引用对象上次被调用的时间，**这个公式表示空闲空间越小能够忍耐的软引用对象空闲的时间会越短**。
 
-### G1参数
-
-性能调优的目标就是避免触发G1的Full GC，尽量不要让对象进入老年代，减少Survivor区触发动态年龄判断的次数。
-
-- -XX:MaxGCPauseMillis：每次YGC/MixedGC的期望最长停顿时间，**默认200ms一般不建议修改**，太小会导致系统跟不上分配内存的速度，以致于频繁触发GC降低系统吞吐量，太大则会影响请求响应时间。
-- -XX:G1NewSizePercent：G1新生代初始占比，一般不用修改，因为空间占用是慢慢增加的。
-- -XX:G1MaxNewSizePercent：G1新生代最多占用堆内存的比例，默认值60%。
-- -XX:G1ReservePercent：G1为老年代预留的空间比例，默认是10%，如果新生代晋升失败会触发 Old GC，**建议在加大内存大小的同时适当的额提高该比例以避免触发fgc**。
-- -XX:InitiatingHeapOccupancyPercent：mixedGC触发阈值，默认值45%，意思是如果老年代在堆内存空间占比超过阈值则会尝试触发一个新生代+老年代一起回收的混合回收。
 
 ***
 
-##  JVM监控命令
+## **垃圾收集器参数**
 
-### jps
+|参数|描述|
+|:--|:--|
+|**UseConcMarkSweepGC**|使用ParNew + CMS + Serial Old的收集器组合|
+|SurvivorRatio|新生代中Eden区域与Survivor区域的容量比值，默认值为8，即8:1:1|
+|PretenureSizeThreshold|直接进入老年代的对象大小|
+|MaxTenuringThreshold|晋升到老年代的对象年龄|
+|HandlePromotionFailure|是否允许空间分配担保失败|
+|CMSInitiatingOccupancyFration|设置CMS在老年代空间使用多少后触发垃圾收集，默认68%|
+|**UseG1GC**|使用G1收集器，JDK9之后服务端模式的默认值|
+|G1HeapRegionSize|设置Region大小，非最终值|
+|MaxGCPauseMills|设置G1收集过程目标时间，默认200ms，非硬性条件|
+|MaxTenuringThreshold|晋升到老年代的对象年龄|
+|MaxTenuringThreshold|晋升到老年代的对象年龄|
+|G1NewSizePercent|G1新生代最小值，默认5%|
+|G1MaxNewSizePercent|G1新生代最大值，默认60%|
+|G1MaxNewSizePercent|G1新生代最大值，默认60%|
+|G1ReservePercent|G1老年代为分配担保预留的空间比例，默认10%|
+|InitiatingHeapOccupancyPercent|设置触发全局并发标记的老年代在Java堆占用率阈值，默认值45%|
+|**ParallelGCThreads**|用户线程冻结期间（STW阶段）并行执行的收集器线程数，默认值是CPU核心数|
+|**ConGCThreads**|并发整理、并发标记（非STW阶段）的执行线程数，默认值由ParallelGCThread计算得出，且小于其值|
 
-查看java进程及其相关的信息
+***
 
-- -l：输出主类全名或jar路径
-- -q：只输出PID
-- -m：输出JVM启动时传递给main方法的参数
-- -v：输出JVM启动时指定的JVM参数
+## **垃圾收集器日志参数**
 
-### jinfo
+**JDK9之后日志相关参数全部归纳到“-Xlog”上，垃圾收集器的标签为gc。**
 
-```
-jinfo [option] <pid>
-```
-用来查看JVM参数和动态修改部分JVM参数。
+|描述|JDK9之前参数|JDK9之后参数|
+|:--|:--|:--|
+|查看GC基本信息|-XX:+PrintGC|-Xlog:gc|
+|查看GC详细信息|-XX:+PrintGCDetails|-Xlog:gc*|
+|查看GC前后的堆、方法区可用高容量变化|-XX:+PrintHeapAtGC|-Xlog:gc+heap=debug|
+|查看GC过程中用户线程并发时间|-XX:+PrintGCApplicationConcurrentTime|-Xlog:safepoint|
+|查看GC过程中用户线程停顿时间|-XX:+PrintGCApplicationStoppedTime|-Xlog:safepoint|
+|查看收集器Ergonomics机制自动调节的相关信息|-XX:+PrintAdaptiveSizePolicy|-Xlog:gc+ergo*=trace|
+|查看熬过收集后剩余对象的年龄分布信息|-XX:+PrintTenuringDistribution|-Xlog:gc+age=trace|
 
-- -flag \<name\>：打印指定名称的参数
-- -flag [+|-]\<name\>：打开或关闭参数
-- -flag \<name\>=\<value\>：设置参数
-- flags：打印所有JVM参数
-- -sysprops：打印所有系统配置
+***
 
-### jstat
+## **故障处理工具**
 
-```
-jstat [option] <pid> [interval] [count]
-```
-查看JVM运行时的状态信息，包括内存状态、垃圾回收等，interval是打印间隔时间（毫秒），count是打印次数（默认一直打印）。
+### **jps**
 
-- -class：类加载行为统计
-- -compiler：HotSpt的JIT编译器行为统计
-- -printcompilation：HotSpot编译方法统计
-
-#### **GC相关**
-- -gc：垃圾回收行为统计，**输出实际的值**；
-- -gcnew：新生代行为统计；
-- -gcold：年老代行为统计；
-- -gcutil：垃圾回收行为统计，**输出使用百分比**；
-- -gccause：同-gcutil，并附加最近两次垃圾回收事件的原因；
-- -gccapacity：各个垃圾回收代容量和空间统计，包含new、old、meta；
-- -gcnewcapacity：新生代与其相应的内存空间的统计；
-- -gcoldcapacity：年老代与其相应的内存空间的统计；
-- -gcmetacapacity：元空间统计。
-
-### jstack
-
-```
-jstack [option] <pid>
-```
-用来查看JVM线程快照（包含java线程和本地线程）
-
-- -l：额外显示锁信息。
-
-### jmap
+列出正在运行的虚拟机进程，并显示虚拟机执行主类名称，以及这些进程的**本地虚拟机唯一ID**（LVMID）。
 
 ```
-jmap [option] <pid>
+jps [options] [hostid]
 ```
-生成堆dump文件和查看堆相关的各类信息
 
-- -clstats：打印类加载器统计信息；
-- -heap：打印堆的概要信息；
-- -histo\[:live\]：打印堆中对象的统计信息，指定live表示只统计存活对象；
-- **-dump**：
-    ```
-    -dump:[live]format=b,file=<fileName>,parallel=<number>
-    ```
-    - live：如果指定则只包括存活的对象；
-    - format：b表示打印为二进制文件；
-    - file：文件名
-    - parallel：并行遍历堆的线程数，0表示使用默认的线程数。
+|选项|作用|
+|:--|:--|
+|-q|只输出LMVID，省略主类的名称|
+|-m|输出虚拟机进程启动时传递给主类main()函数的参数|
+|-l|输出主类的全名，如果进程执行的是JAR包，则输出其路径|
+|-v|输出虚拟机进程启动时的JVM参数|
 
-### jhat
+### **jstat**
+
+监视虚拟机各种运行状态信息，可以显示虚拟机进程中的类加载、内存、垃圾收集、即时编译等运行时数据。
 
 ```
-jhat [option] [dumpfile]
+jstat [ option vmid [interval [count]] ]
+# interval和count代表查询间隔和次数，如果省略这两个参数则表示只查询一次。
 ```
-用来分析dump文件，更推荐使用图形化分析工具（自带的jvisualvm、mat、visualVM等）。
 
-- -port \<port\>: HTTP服务器端口，默认是7000，启动一个web服务器用于访问。
+|选项|作用|
+|:--|:--|
+|-class|监视类加载、卸载数量、总空间、类装载耗时等|
+|-compiler|输出即时编译器的行为信息|
+|-printcompilation|输出已被即时编译的方法|
+|-gc|监视Java堆状况，包括各区容量、已用空间、垃圾收集时间等|
+|-gccapacity|与-gc基本相同，但输出主要关注Java堆各个区域使用到的**最大、最小空间**|
+|-gcutil|与-gc基本相同，但输出主要关注已使用空间占总空间的**百分比**|
+|-gccause|与-gcutil一样，但是会额外输出**导致上一次垃圾收集产生的原因**|
+|-gcnew|监视新生代的垃圾收集情况|
+|-gcnewcapacity|与-gcnew基本相同，但输出关注使用到的最大、最小空间|
+|-gcold|监视老年代的垃圾收集情况|
+|-gcoldcapacity|与-gcold基本相同，但输出关注使用到的最大、最小空间|
+|-gcmetacapacity|输出元空间使用到的最大、最小空间|
 
-### jcmd（功能整合类终端）
+### **jinfo**
+
+实时查看和调整虚拟机各项参数。
 
 ```
-jcmd <pid> [option]
+jinfo [option] pid
 ```
-包含了jps、jmap、jstack等的功能
 
-- VM.version：虚拟机版本信息；
-- VM.flags：虚拟机参数；
-- Thread.print：打印线程堆栈信息；
-- GC.class_histogram：类加载行为统计；
-- GC.heap_dump \[file\]：堆信息dump；
-- VM.native_memory：本地内存追踪，可用于分析内存泄漏。
+- -flag \<name\>：查询指定名称的参数；
+- -flag [+|-]\<name\>：打开或关闭指定参数；
+- -flag \<name\>=\<value\>：设置指定参数；
+- -flags：打印所有参数；
+- -sysprops：打印虚拟机进程的System.getProperties()的内容。
 
-### 其他终端
+### **jstack**
 
-命令行推荐Arthas，可视化界面推荐JProfiler。
+用于生成虚拟机当前时刻的线程快照，即每一条线程正在执行的方法堆栈的集合。用于定位线程出现长时间停顿的原因，如线程间死锁、死循环、请求外部资源导致的长时间挂起等。
+
+```
+jstack [option] vmid
+```
+
+|选项|作用|
+|:--|:--|
+|-F|强制输出线程堆栈|
+|-l|额外输出锁的相关信息|
+|-m|如果调用到本地方法，可以显示C/C++的堆栈|
+
+### **jmap**
+
+用于生成堆转储快照（dump文件），也可以查询Java堆相关的各类信息。dump文件可以使用jhat、Visual VM等图形化工具进行分析。
+
+```
+jmap [option] vmid
+```
+
+|选项|作用|
+|:--|:--|
+|-heap|显示堆详细信息，如使用的收集器、参数配置、分代状况等|
+|-histo|显示队中对象统计信息，包括类、实例数量、合计容量|
+|-clstats|显示元空间中类加载器的统计信息|
+|-dump|生成dump文件|
+|-F|强制生成dump快照，不支持live参数|
+
+```
+#dump命令格式，live参数表示只dump存活对象，parallel参数表示并行遍历堆的线程数。
+-dump:[live,]format=b,file=<fileName>,[parallel=<number>]
+```
+
+### **jcmd**（功能整合类终端）
+
+JDK7开始提供，是集成式多功能工具箱。
+
+|基础工具|JCMD|
+|:--|:--|
+|jsp -lm|jcmd|
+|jmap -dump \<pid\>|jcmd \<pid\> GC.heap_dump|
+|jmap -histo \<pid\>|jcmd \<pid\> GC.class_histogram|
+|jstack \<pid\>|jcmd \<pid\> Thread.print|
+|jinfo -sysprops \<pid\>|jcmd \<pid\> VM.system_properties|
+|jinfo -flags \<pid\>|jcmd \<pid\> VM.flags|
+
+***
+
+## **调优**
+
+### **收集器选择**
+
+确定应用程序关注的重点，吞吐量、停顿时间、内存占用、基础设施、JDK版本等，选择最合适的垃圾收集器。
+
+### **核心指标**
+
+- jvm.gc.time: 每次GC的耗时，一般应在500ms以内；
+- jvm.gc.meantime: 每次YGC的耗时，一般应在50ms以内；
+- jvm.fullgc.count: FGC多久发生一次，一般24小时内只应该发生一次；
+- jvm.fullgc.time: 每次FGC的耗时，一般应在1s以内。
+
+### **优化案例**
 
 ***
 
