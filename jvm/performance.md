@@ -12,7 +12,7 @@
 - -Xss：每个线程的堆栈大小，默认值为0，表示使用系统默认值，64位系统中默认值为1M；
 - -XX:MetaspaceSize：元空间的初始空间大小，达到该值就会触发Full GC进行类型卸载，同时收集器会对该值进行调整；
 - -XX:MaxMetaspaceSize：设置元空间最大值，默认值为-1，表示不限制；
-- -XX:SoftRefLRUPolicyMSPerMB：表示JVM可以忍受多久软引用不被回收，**这个参数不代表软引用能存在的最大时间**，建议设置为2000 - 5000ms。如果是0则每次都会把软引用回收掉释放内存，使用公式（clock - timestamp <= freespace * SoftRefLRUPolicyMSPerMB）判断每个软引用对象是否可以不回收，clock为上次垃圾回收的时间，timestamp为软引用对象上次被调用的时间，**这个公式表示空闲空间越小能够忍耐的软引用对象空闲的时间会越短**。
+- -XX:SoftRefLRUPolicyMSPerMB：表示虚拟机可以忍受多久软引用不被回收，**这个参数不代表软引用能存在的最大时间**。建议设置为2000 - 5000ms，如果是0则每次都会把软引用回收掉，使用公式（clock - timestamp <= freespace * SoftRefLRUPolicyMSPerMB）判断每个软引用对象是否可以不回收，clock为上次垃圾回收的时间，timestamp为软引用对象上次被调用的时间，**这个公式表示空闲空间越小能够忍耐的软引用对象空闲的时间会越短**。
 
 
 ***
@@ -108,7 +108,7 @@ jinfo [option] pid
 ```
 
 - -flag \<name\>：查询指定名称的参数；
-- -flag [+|-]\<name\>：打开或关闭指定参数；
+- -flag \[+|-\]\<name\>：打开或关闭指定参数；
 - -flag \<name\>=\<value\>：设置指定参数；
 - -flags：打印所有参数；
 - -sysprops：打印虚拟机进程的System.getProperties()的内容。
@@ -144,13 +144,13 @@ jmap [option] vmid
 |-F|强制生成dump快照，不支持live参数|
 
 ```
-#dump命令格式，live参数表示只dump存活对象，parallel参数表示并行遍历堆的线程数。
 -dump:[live,]format=b,file=<fileName>,[parallel=<number>]
+#dump命令格式，live参数表示只dump存活对象，parallel参数表示并行遍历堆的线程数。
 ```
 
-### **jcmd**（功能整合类终端）
+### **jcmd**
 
-JDK7开始提供，是集成式多功能工具箱。
+JDK7开始提供，是集成式的多功能工具箱。
 
 |基础工具|JCMD|
 |:--|:--|
@@ -178,64 +178,46 @@ JDK7开始提供，是集成式多功能工具箱。
 
 ### **优化案例**
 
+#### 大内存硬件上的文档服务
+
+- 原因：因为文件序列化产生的大对象都是直接进入老年代，只能通过Full GC进行清理，当内存增大后，反而造成停顿的时间更长。
+- 方案一：不分代收集，使用Shenandoah或ZGC；
+- 方案二：建立逻辑集群来利用硬件资源，减少每个Java虚拟机使用的内存，使用注重延迟时间的CMS收集器。
+
+#### 定时大文件数据分析导致停顿时间变长
+
+- 原因：定时加载超大的数据文件到内存中，导致内存占用过大频繁触发Minor GC，由于新生代的大对象仍然存活，复制算法导致垃圾收集暂停时间明显变长。
+- 方案：直接去掉Survivor空间（副作用也会很大），这样大对象经过一次Minor GC后会直接进入老年代，不会导致后续的Minor GC停顿时间变长。
+
+#### safepoint导致长时间停顿
+
+- 分析过程：
+  1. 先查看GC日志，real值符合预期，而user、sys值较大，表示是因为用户线程停顿花费了太多时间；
+  2. 使用-XX:+PrintSafepointStatistics和-XX:PrintSafepointStatisticsCount=1查看安全点日志，查看垃圾收集线程自旋时间（spin值），显示花费大量时间自旋等待全部用户线程进入安全点；
+  3. 添加-XX:+SafepointTimeout和-XX:SafepointTimeoutDelay=2000参数，找出进入安全点超时的线程，并进行优化。
+- 方案：**可数循环（循环索引使用int或更小的类型）默认不会设置安全点**，虽然循环次数较少但是单次循环执行时间较长，导致可数循环也可能耗费很长时间，**将循环索引的数据类型改为long即可**。
+
+### 反射膨胀机制导致频繁Full GC
+
+- *反射膨胀机制：Java虚拟机有两种方法获取被反射的类的信息，默认会使用JNI存取器，当使用JNI存取器访问同一个类超过一定次数（通过参数-Dsun.reflect.inflationThreshold设置，默认15），会改为使用字节码存取器，会生成代理类GeneratedMethodAccessorXXX，这些类是通过DelegatingClassLoader加载。*
+- 原因：由于使用大量使用了BeanUtils，当触发反射膨胀机制后，每个类的每个属性的Getter及Setter方法都会生成对应的GeneratedMethodAccessorXXX类，导致元空间内存不足，并频繁触发Full GC。
+- 方案：牺牲一定的性能，关闭反射膨胀机制，或者改成非反射的对象处理工具类。
+
 ***
 
-## 故障排查
+## **CPU飙升排查**
 
-### CPU飙升
+常见原因包括：while死循环、频繁创建对象、超多线程调度、外部系统命令调用。
 
 1. 使用【top】命令找出占用CPU高的进程；
 2. 再使用【top -Hp \[PID\]】命令找到该进程中CPU占用最高的线程；
 3. 使用【printf "%x" \<TID\>】将十进制的TID转换为16进制的；
 4. 使用【jstack \<PID\> | grep \<TID\>】查看堆栈快照信息或下载到文件中；
 
-常见原因包括：while死循环、频繁创建对象、超多线程调度。
-
-### 内存问题排查
-
-- 内存溢出的情况可以通过配置【-XX:+HeapDumpOnOutOfMemoryError】，java程序在内存溢出时自动输出dump文件。
-- 垃圾回收频繁，使用jstat命令查看垃圾回收情况；
-- 内存分析，使用jmap或jcmd获取堆dump文件。
-
 ***
 
-## 常规优化思路
+## **系统优化**
 
-### 系统优化
-
-确定系统瓶颈，如果是数据库瓶颈，则判断是否需要优化索引、是否需要引入缓存、最后才考虑分库分表；如果确实是硬件瓶颈了则需要考虑机器扩容了；扩容前还得先尝试优化，首先从应用层面优化，快速失败、填谷削峰、算法优化、使用缓存等，然后对JVM调优以提高吞吐量，最后尝试从网络和操作系统排查。
-
-### JVM优化
-
-1. CPU指标观察：top、jps、jstack等
-2. JVM内存指标观察：jmap；
-3. JVM　GC指标：查看GC日志。
-   1. -XX:+PrintGCDetails // GC详情
-   2. -XX:+PrintHeapAtGC // GC前后堆栈
-4. 制定优化目标：具体指标；
-5. 制定优化方案：
-6. 对比前后指标：
-7. 持续观察跟踪对比效果。
-
-
-### 优化案例：元空间导致频繁FullGC
-
-1. 查看GC日志：
-   > Full GC (Metadata GC Threshold)
-2. 定位到内存碎片化现象
-   > Metaspace used 30000k, capacity 50000k, committed 50000k....
-3. 分析：元空间以chunk进行预分配，**一个类加载器会独占整个chunk**，used与capacity表示出现了碎片化，要判断是否创建了大量类加载器；
-4. jmap下载dump文件分析堆对象，发现大量**DelegatingClassLoader委派类加载器**。
-   > 反射膨胀机制：反射首先使用JNI的方式获取类信息，如果调用超过一定频次会创建字节码，使用DelegatingClassLoader。
-5. 首先调大metaspace的大小尽快恢复，或者通过设置-Dsun.reflect.inflationThreshold=0即永远不适用字节码存取器获取类信息；
-6. 定位代码问题，底层对象转换等，大量使用了BeanUtils.copyProperties，触发反射膨胀机制后，NativeMethodAccessorImpl类它针对每个类的每个属性的Getter及Setter方法都会生成一个DelegatingClassLoader，并将这些DelegatingClassLoader缓存提高，全部改成MapStruct。
-
-### 优化案例：线程大小分配太大
-
-线程栈大小没有改设置，默认1M，后面改成了256k。
-
-### 优化案例：大数组创建太多
-
-导出百万条数据，虽然我们是循环操作，拆分为很多文件，查数据阶段也是循环查询，但是全部查出来然后放到List，这就导致创建了大数组，引发FullGC。
+通过链路追踪工具确定系统的瓶颈所在，如果是数据库瓶颈，则判断是否需要优化索引、是否需要引入缓存、是否需要分库分表；如果确实是硬件瓶颈了则需要考虑机器扩容；扩容前还得先尝试优化，首先从应用层面优化，快速失败、填谷削峰、算法优化、使用缓存等，然后对JVM调优以提高吞吐量，最后尝试从网络和操作系统排查。
 
 ***

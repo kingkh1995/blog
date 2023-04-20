@@ -39,6 +39,7 @@
 * [基础知识](jvm)
 * [垃圾收集](jvm/gc)
 * [监控&调优](jvm/performance)
+* [类型加载](jvm/classload)
 * [内存模型](jvm/jmm)
 
 ## Open Source Projects
