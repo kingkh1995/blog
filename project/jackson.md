@@ -8,6 +8,13 @@
 
 ### Annotations
 
+- @JsonInclude：类、属性、get方法注解，指定属性序列化的策略，包括：
+  - ALWAYS：缺省值，即固定序列化；
+  - NON_NULL：null值不序列化；
+  - NON_ABSENT：包含NON_NULL，Optional引用值为空也不序列化；
+  - NON_EMPTY：包含NON_ABSENT，空集合空数组也不序列化；
+  - NON_DEFAULT：保留默认值的属性不序列化。
+
 - @JsonAlias：属性注解，指定反序列化时属性的别名。
 
 - @JsonUnwrapped：扁平化对象，将对象拆分为属性。
@@ -44,7 +51,7 @@
 
 - @JsonRawValue：序列化时原样输出，适用于属性已经是一个JSON字符串的情况，不会加上转义符和多余的引号。
 
-- @JsonTypeInfo：用于多态场景
+- @JsonTypeInfo：用于多态场景（***会有安全性问题***）
     - use：类型信息，JsonTypeInfo.Id枚举值
         - NONE：无
         - CLASS、MINIMAL_CLASS、NAME：全限定类名，最小类型

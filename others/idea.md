@@ -6,10 +6,10 @@
 
 ## 配置
 - 自动优化import：编辑器-常规-自动导入-Java
-- 代码提示不区分大小写：编辑器-常规-代码完成-区分大小写
-- 自定义文档注释：编辑器-常规-文件和代码模板-Includes-File Header
-- 设置文件编码：编辑器-常规-文件编码 ~ 设置UTF-8不含BOM
-- 编辑器选项卡设置：编辑器-常规-编辑器选项卡
+- 代码提示不区分大小写：编辑器-常规-代码补全-区分大小写
+- 自定义文档注释：编辑器-文件和代码模板-Include-File Header
+- 设置文件编码：编辑器-文件编码 ~ 设置UTF-8不含BOM
+- 编辑器标签页设置：编辑器-常规-编辑器标签页
 - 配置Maven自动下载：Maven-正在导入-自动下载
 - IDEA内存设置：帮助-更改内存设置
 - 构建时堆内存设置：构建、执行、部署-编译器
@@ -35,7 +35,7 @@
 ```
 - Mapstruct Support
 - Rainbow Brackets
-- Free Mybatis plugin
+- Free Mybatis Tool
 - SequenceDiagram
 - Maven Helper
 - Grep Console

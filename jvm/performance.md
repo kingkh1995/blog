@@ -108,7 +108,7 @@ jinfo [option] pid
 ```
 
 - -flag \<name\>：查询指定名称的参数；
-- -flag \[+|-\]\<name\>：打开或关闭指定参数；
+- -flag \[+\|-\]\<name\>：打开或关闭指定参数；
 - -flag \<name\>=\<value\>：设置指定参数；
 - -flags：打印所有参数；
 - -sysprops：打印虚拟机进程的System.getProperties()的内容。
@@ -147,6 +147,19 @@ jmap [option] vmid
 -dump:[live,]format=b,file=<fileName>,[parallel=<number>]
 #dump命令格式，live参数表示只dump存活对象，parallel参数表示并行遍历堆的线程数。
 ```
+
+### **jhat**
+
+jdk内置工具（JDK9后移除），用于分析堆转储文件，执行jhat命令会启动一个web服务器，默认端口为7000。
+
+```
+jhat [option] <file>
+```
+- -J\<flag\>：设置server的启动参数，如-J-Xmx512m，设置堆大小用于分析较大的dump文件。
+
+### **jvisualvm**
+
+Java自带的JVM监控工具（JDK14后移除），也可用于分析堆转储文件。
 
 ### **jcmd**
 
@@ -199,9 +212,10 @@ JDK7开始提供，是集成式的多功能工具箱。
 
 ### 反射膨胀机制导致频繁Full GC
 
-- *反射膨胀机制：Java虚拟机有两种方法获取被反射的类的信息，默认会使用JNI存取器，当使用JNI存取器访问同一个类超过一定次数（通过参数-Dsun.reflect.inflationThreshold设置，默认15），会改为使用字节码存取器，会生成代理类GeneratedMethodAccessorXXX，这些类是通过DelegatingClassLoader加载。*
 - 原因：由于使用大量使用了BeanUtils，当触发反射膨胀机制后，每个类的每个属性的Getter及Setter方法都会生成对应的GeneratedMethodAccessorXXX类，导致元空间内存不足，并频繁触发Full GC。
 - 方案：牺牲一定的性能，关闭反射膨胀机制，或者改成非反射的对象处理工具类。
+
+- **反射膨胀机制**：Java虚拟机有两种方法获取被反射的类的信息，默认会使用JNI存取器，当使用JNI存取器访问同一个类超过一定次数（通过参数-Dsun.reflect.inflationThreshold设置，默认15），会改为使用字节码存取器，会生成代理类GeneratedMethodAccessorXXX，这些类是通过DelegatingClassLoader加载。
 
 ***
 
@@ -210,9 +224,9 @@ JDK7开始提供，是集成式的多功能工具箱。
 常见原因包括：while死循环、频繁创建对象、超多线程调度、外部系统命令调用。
 
 1. 使用【top】命令找出占用CPU高的进程；
-2. 再使用【top -Hp \[PID\]】命令找到该进程中CPU占用最高的线程；
-3. 使用【printf "%x" \<TID\>】将十进制的TID转换为16进制的；
-4. 使用【jstack \<PID\> | grep \<TID\>】查看堆栈快照信息或下载到文件中；
+2. 使用【top -Hp \[PID\]】命令找到该进程中CPU占用最高的线程；
+3. 使用【printf "%x" \<TID\>】将十进制的TID转换为16进制；
+4. 使用【jstack \<PID\> \| grep \<TID\>】查看堆栈快照信息。
 
 ***
 

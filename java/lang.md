@@ -206,6 +206,21 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
   - 因为每次都会编译regex，**推荐使用Guava的Splitter工具类替代**。
 
 - ```java
+  public String replace(char oldChar, char newChar) { ... }
+
+  public String replace(CharSequence target, CharSequence replacement) { ... }
+
+  public String replaceAll(String regex, String replacement) {
+      return Pattern.compile(regex).matcher(this).replaceAll(replacement);
+  }
+
+  public String replaceFirst(String regex, String replacement) {
+      return Pattern.compile(regex).matcher(this).replaceFirst(replacement);
+  }
+  ```
+  replace仅按字符匹配，而replaceAll、replaceFirst按正则表达式匹配，并且每次都会编译regex。
+
+- ```java
   // 去除首位所有Unicode空白字符
   public String strip() { ... }
 
@@ -632,5 +647,19 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
   // 执行垃圾回收，并不保证立即执行。
   public native void gc();
   ```
+
+- ```java
+  public Process exec(String[] cmdarray, String[] envp, File dir) throws IOException {
+      return new ProcessBuilder(cmdarray)
+          .environment(envp)
+          .directory(dir)
+          .start();
+  }
+  ```
+  执行命令，创建一个本机进程，注意防止命令注入。
+
+### public abstract class Process
+
+可通过ProcessBuilder.start()和Runtime.exec()创建一个本机进程，包含一个输入流、一个输出流以及一个错误流。
 
 ***

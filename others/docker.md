@@ -4,11 +4,20 @@
 
 ## 命令
 
-```
-创建网络 docker network create mynet
-查看容器信息 docker inspect [id]
-清空无用卷 docker volume prune
-```
+- docker ps: 查看运行中的docker容器
+  - -a: 历史运行过的容器也输出
+- docker exec -it (id) /bin/bash: 开启新终端进入容器，退出不影响运行中的容器
+- docker attach (id): 进入正在运行的终端，退出时原容器关闭。
+- docker network: 网络相关操作
+  - create (name) (driver): 创建网络，默认使用Bridge模式
+  - inspect (driver): 查看指定模式的所有网络及网络内的容器
+- docker inspect (id): 查看容器信息
+- docker volume prune: 清除所有无用卷
+- docker top (id) (ps options): 查看容器中运行的进程信息，支持ps命令参数
+- docker logs (id): 查看容器日志
+  - -f：跟踪日志输出
+  - --tail (n): 只输出最新几条
+- docker stats: 显示容器资源的使用情况
 
 ***
 
@@ -157,7 +166,7 @@ docker run -d --name kafka --network mynet --network-alias kafka -p 9092:9092 -e
 
 ## skywalking
 
-- docker-compose部署（h2数据库）
+- docker-compose部署（h2数据库）（**links不推荐使用**）
 ```yaml
 version: '3.8'
 services:

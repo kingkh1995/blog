@@ -64,6 +64,7 @@
 
 ## Frameworks
 
+* [Netty](framework/netty)
 * [MyBatis](framework/mybatis)
 * [Redisson](framework/redisson)
 * [Spring](framework/spring)

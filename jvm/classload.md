@@ -78,14 +78,14 @@
 从虚拟机的角度只存在启动类加载器（C++语言实现，属于虚拟机的一部分）和其他类加载器（Java语言实现，继承自java.lang.ClassLoader）。双亲委派模型要求除了启动类加载器，其余的类加载器都应有自己的父类加载器。
 
 - **启动类加载器（Bootstrap Class Loader）**：负责加载lib目录下且能够被Java虚拟机识别的类库；无法被Java程序直接引用，如果需要将加载请求委派给启动类加载器处理需要使用null。
-- *~~**拓展类加载器（Extension Class Loader）**~~：由Java代码实现，属于Java系统类库的拓展机制，复杂加载\lib\ext目录下的类库。*
+- *~~**拓展类加载器（Extension Class Loader）**~~：由Java代码实现，属于Java系统类库的拓展机制，负责加载\lib\ext目录下的类库。*
 - **平台类加载器（Platform Class Loader）**：**JDK9引入模块化之后替代了拓展类加载器**，用于加载拓展的系统类。
 - **应用程序类加载器（Application Class Loader）**：负责加载用户路径上的所有类库；也称为**系统类加载器**，为ClassLoader.getSystemClassLoader()的放回值。
 - **线程上下文类加载器（Thread Context Class Loader）**：通过java.lang.Thread类的setContextClassLoader()设置，默认返回应用程序类加载器。
 
 ### **双亲委派模型的工作过程**
 
-如果一个类类加载器收到了类加载的请求，它首先不会自己去尝试加载，而是把请求委派给父类加载器去完成，每一个层次的类加载器都是如此，只有当父类加载器无法完成加载请求时，子加载器才会尝试自己去完成加载。它是用来保证Java程序运行所需要的核心类被篡改和重复加载，JDK1.2中引入，**在ClassLoader类的loadClass()方法中实现**。
+如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载，而是把请求委派给父类加载器去完成，每一个层次的类加载器都是如此，只有当父类加载器无法完成加载请求时，子加载器才会尝试自己去完成加载。它是用来保证Java程序运行所需要的核心类被篡改和重复加载，JDK1.2中引入，**在ClassLoader类的loadClass()方法中实现**。
 
 ### **破坏双亲委派模型**
 
@@ -93,8 +93,8 @@
 2. Java中SPI的加载，如JNDI、JDBC等，ServiceLoader使用线程上下文类加载器来加载用户的具体实现；
 3. Java模块化、热部署技术。
 
-### **jdk.internal.loader.BuiltinClassLoader**
+### **模块化**
 
-实现了JDK9中模块化架构下的类加载的逻辑，作为新增加的BootClassLoader、PlatformClassLoader、AppClassLoader的父类；**三个类加载器各自负责加载不同的模块，平台及应用程序类加载器收到类加载请求后，会优先委派给该类归属模块的类加载器完成加载**。
+jdk.internal.loader.BuiltinClassLoader实现了JDK9中模块化架构下的类加载的逻辑，作为新增加的BootClassLoader、PlatformClassLoader、AppClassLoader的父类；**三个类加载器各自负责加载不同的模块，平台及应用程序类加载器收到类加载请求后，会优先委派给该类归属模块的类加载器完成加载**。
 
 ***
