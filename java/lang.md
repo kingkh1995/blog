@@ -237,6 +237,10 @@ JDK9开始支持字符压缩，即如果字符全部在Latin1能表示的范围�
   ```
   JDK15新增，自身作为模式字符串去格式化字符串。不推荐多次调用该方法以及其他静态format方法，不仅每次都会创建一个Formatter对象，且Formatter对象在执行format方法时才会去解析模式字符串。
 
+### **字符串拼接优化**
+1. 如果是字符串常量拼接，会被合并为一个长字符串，属于**常量折叠优化**；
+2. 如果是字符串对象拼接，会创建一个StringBuilder对象进行拼接。
+
 ***
 
 ## 可变字符串
@@ -268,7 +272,6 @@ StringBuilder和StringBuffer的基类，内部实现与String基本相同。
 1. 除了delete之外的其他变更操作都会尝试压缩字符串（inflate方法）；
 1. append和insert操作如果对象参数为null，则会视作"null"；
 1. 不存在char参数的构造方法，你可以这么写但实际上执行的构造方法是AbstractStringBuilder(int capacity)；
-2. 使用 + 拼接字符串会被优化为使用StringBuilder，即不应该在循环中使用 + 拼接字符串，因为每次都会new一个StringBuilder对象。
 
 ***
 

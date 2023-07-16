@@ -61,6 +61,11 @@
 * [Redis](component/redis)
 * [Maven](component/maven)
 * [Gradle](component/gradle)
+* [Seata](component/seata) 
+* [Kafka](component/kafka)
+* [RocketMQ](component/rocketmq)
+* [Pulsar](component/pulsar)
+* [Arthas](component/arthas)
 
 ## Frameworks
 
@@ -69,7 +74,11 @@
 * [Redisson](framework/redisson)
 * [Spring](framework/spring)
 * [Spring Cloud Alibaba](framework/spali)
+* [Disruptor](framework/disruptor)
+* [Dubbo](framework/dubbo)
 * [gRPC](framework/grpc)
+* [slf4j/logback/log4j2](framework/logging)
+* [JUnit/Mockito](framework/test)
 * [Shiro](framework/shiro)
 
 ## Advanced

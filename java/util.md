@@ -126,7 +126,8 @@ HashSet(int initialCapacity, float loadFactor, boolean dummy) {
 
 ## **Arrays**
 
-- asList()：数组转List，返回私有内部类ArrayList，**直接将数组代理为List**，支持set和replace，不支持add和remove。
+- asList()：数组转List，返回私有内部类ArrayList，**实现为直接装饰数组为List**，支持set和replace，不支持add和remove。
+  > **基本类型数组无法使用，会将数组视为一个参数。**
 
 - hash()：使用除留余数法计算数组哈希值。
 
