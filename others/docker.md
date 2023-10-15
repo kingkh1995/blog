@@ -89,7 +89,7 @@ redis-cli --cluster create x.x.x.x:6371 x.x.x.x:6372 x.x.x.x:6373 x.x.x.x:6374 x
 
 - 单机部署
 ```
-docker run -it --name zookeeper  --network mynet --network-alias zookeeper -p 2188:2181 --restart always  -d zookeeper
+docker run -it --name zookeeper  --network mynet --network-alias zookeeper -p 6181:2181 --restart always  -d zookeeper
 ```
 
 - 集群部署

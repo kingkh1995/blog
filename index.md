@@ -66,6 +66,7 @@
 * [RocketMQ](component/rocketmq)
 * [Pulsar](component/pulsar)
 * [Arthas](component/arthas)
+* [ElaticJob](component/elasticjob)
 
 ## Frameworks
 
@@ -80,6 +81,11 @@
 * [slf4j/logback/log4j2](framework/logging)
 * [JUnit/Mockito](framework/test)
 * [Shiro](framework/shiro)
+
+## Spring Guides
+
+* [Spring Boot 3](spring/sb3)
+* [Spring Modulith](spring/modulith)
 
 ## Advanced
 
