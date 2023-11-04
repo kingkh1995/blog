@@ -111,7 +111,7 @@ Safepoint，HotSpot只有在安全点才会生成OopMap，因为**只有当前�
 
 Serial的老年代版本，单线程工作，采用标记-整理算法。**作为CMS收集器并发收集发生Concurrent Mode Failure时使用**。
 
-- **-XX:UseSerialGC**：虚拟机运行在客户端模式下的默认值，使用Serial + Serial Old的收集器组合。
+- **-XX:+UseSerialGC**：虚拟机运行在客户端模式下的默认值，使用Serial + Serial Old的收集器组合。
 
 ### **ParNew**
 
@@ -122,15 +122,15 @@ Serial的多线程并行版本，单核心处理器场景下效率不如Serial�
 新生代垃圾收集器、基于标记-复制算法、**并行**收集，**关注提高吞吐量**（吞吐量即处理器用于运行用户代码与处理器总消耗时间的比值）。支持的参数有：
 - -XX:MaxGCPauseMills：最大停顿时间，会尽力保证不超过该值；
 - -XX:GCTimeRatio：设置吞吐量大小，默认99，最大允许1%（即1/1(1+99)）；
-- -XX:UseAdpativeSizePolicy：开关参数，**自适应调节策略**，区别于ParNew的重要特性。无须人工指定垃圾收集的细节参数，只需设置基本内存参数（堆大小等）及优化目标（最大停顿时间或最大吞吐量），具体细节参数会由虚拟机根据运行情况动态调整。
+- -XX:+UseAdpativeSizePolicy：开关参数，默认开启，**自适应调节策略**，区别于ParNew的重要特性。无须人工指定垃圾收集的细节参数，只需设置基本内存参数（堆大小等）及优化目标（最大停顿时间或最大吞吐量），具体细节参数会由虚拟机根据运行情况动态调整。
 
-- **-XX:ParallelGC**：JDK9之前虚拟机运行在服务端模式下的默认值，使用Parallel Scavenge + Serial Old的收集器组合。
+- **-XX:+UseParallelGC**：JDK9之前虚拟机运行在服务端模式下的默认值，使用Parallel Scavenge + Serial Old的收集器组合。
 
 ### **Parallel Old**
 
 Parallel Scavenge的老年代版本，**并行**收集，基于标记-整理算法，与Parallel Scavenge配合使用，适用于“吞吐量优先”场景。
 
-- **-XX:ParallelOldGC**：JDK9之前虚拟机运行在服务端模式下的默认值，使用Parallel Scavenge + Parallel Old的收集器组合。
+- **-XX:+UseParallelOldGC**：JDK9之前虚拟机运行在服务端模式下的默认值，使用Parallel Scavenge + Parallel Old的收集器组合。
 
 ### **CMS**
 

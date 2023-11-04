@@ -29,3 +29,7 @@
 ### spring boot maven plugin
 
 > repackge插件会绑定到生命周期的package阶段，在原始打包形成的jar包基础上进行重新打包，新形成的jar包不但包含应用类文件和配置文件，而且还会包含应用所依赖的jar包以及Springboot启动相关类，以此来满足Springboot独立应用的特性，原始的包会被修改为jar.original
+
+### provided与optional的区别
+
+他们的效果是一样的，都不会被直接的打入包中，不会进行依赖传递，但是二者的语义不同；provided表示该依赖是**必选的**，但是应该由系统或者容器提供；optional表示该依赖是**可选的**，即使不提供也不会有影响。

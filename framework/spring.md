@@ -48,7 +48,7 @@
 
 1. Bean容器（通常是ApplicationContext）先创建所有的PostProcessor实例；
 2. 找到bean的定义，通过配置文件或扫描类文件；
-3. 使用反射创建Bean实例，并注入属性；
+3. 使用反射创建Bean实例，如果是通过构造器注入，递归创建并注入属性；
 4. 如果实现了BeanNameAware等Aware接口则调用对应方法；
 5. 如果容器内存在BeanPostProcessor，则执行对应的postProcessBeforeInitialization()方法；
 6. 如果bean实现了InitializingBean，则执行afterPropertiesSet()方法；
@@ -60,6 +60,14 @@
 11. 执行Bean配置的destroy方法。
 
 - *@PostConstruct和@PreDestroy是jdk规范，在**InitDestroyAnnotationBeanPostProcessor**的BeforeInitialization和BeforeDestruction阶段执行。*
+- MergedBeanDefinitionPostProcessor：BeanPostProcessor处理完成之后，实例化所有MergedBeanDefinitionPostProcessor，每次bean创建完后执行，合并Bean定义（postProcessMergedBeanDefinition）先于postProcessBeforeInitialization执行。
+- BeanDefinitionRegistryPostProcessor：继承BeanFactoryPostProcessor，用于注册及处理BeanDefinition，**实现该接口会导致类被提前加载**。
+  - postProcessBeanDefinitionRegistry：在BeanDefinition创建完成后，合并Bean定义之前（因为MergedBeanDefinitionPostProcessor属于BeanPostProcessor），实例化阶段之前执行，用于注册BeanDefinition，此时未完成属性注入。
+  - postProcessBeanFactory：实例化阶段之前执行，ConfigurableListableBeanFactory创建之后触发，用于修改ConfigurableListableBeanFactory，也可以使用registerSingleton注册bean，**会直接注册单例bean**，不经过BeanPostProcessor处理。
+- ConfigurationPropertiesBeanRegistrar：用于注册所有配置类的BeanDefinition，最终会创建配置类，但不会注入。
+- ConfigurationPropertiesBindingPostProcessor：BeanPostProcessor，在postProcessBeforeInitialization阶段进行配置类属性注入。
+- AutowiredAnnotationBeanPostProcessor：用于注解注入及通过setter方法注入，在postProcessProperties方法中注入，执行阶段在合并bean定义之后。
+- InitializingBean和SmartInitializingSingleton：InitializingBean执行更早，**会在实例化之后执行**，实例化的时间决定了执行时间，如果BeanPostProcesser则会在所有Bean实例化之前；SmartInitializingSingleton则默认是在所有单例bean全部实例化完成后才会执行，所有如果是后置处理，应该使用SmartInitializingSingleton。
 
 ***
 

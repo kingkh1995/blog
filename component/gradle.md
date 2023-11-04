@@ -47,23 +47,20 @@ include('app', 'list', 'utilities') // 子模块
 
 ```Groovy
 plugins {
-    // spring boot插件，需要java或war插件，表示打包方式。
+    // spring boot插件，需要java或war插件，指定打包方式
+    // 添加了bootJar/bootRun任务，等同于spring-boot-maven-plugin插件
     id 'java'
-    id 'org.springframework.boot' version '2.7.2'
+    id 'org.springframework.boot' version 'xxx'
+    id 'maven-publish' // maven发布插件，publishToMavenLocal任务等同install，publish任务等同deploy。
 }
 
-// 指定spring boot的主类
+// 指定spring boot的主类（可选）
 springBoot {
     mainClass = 'com.example.demo.Application'
 }
 
 dependencies {
-    compile 'com.google.guava:guava:23.0'
-    testCompile 'junit:junit:4.12'
-}
-
-repositories {
-    jcenter()
+    implementation 'com.google.guava:guava:xxx'
 }
 
 task hello {
@@ -85,32 +82,43 @@ dependencies {
 ```
 
 - 配置类型：
-    - api：等同于compile；
-    - implementation：与compile对应，但是不会暴露给其他模块，其他模块只能在运行期间使用这个依赖，能做到编译隔离；
-    - compileOnly：等同于provided；
-    - compileOnlyApi：仅作用于编译期间的api类型；
-    - runtimeOnly：等同于runtime；
-    - testImplementation、testCompileOnly、testRuntimeOnly：测试阶段依赖。
-    - annotationProcessor：注解处理器配置；
+    - api/compileOnlyApi：效果等同于compile；
+    - implementation：对应compile，**依赖不会暴露给其他模块**，其他模块只能在运行期间使用这个依赖；
+    - compileOnly：效果等同于provided；
+    - runtimeOnly：效果等同于runtime；
+    - developmentOnly：效果等同与optional=true
+    - testImplementation/testCompileOnly/testRuntimeOnly：测试阶段依赖；
+    - annotationProcessor：注解处理器依赖。
 
 #### 依赖管理
 
 ```groovy
+repositories { // 指定使用maven仓库
+    mavenLocal() // 本地仓库，直接读取M2_HOME环境变量配置
+    maven { // 指定本地文件目录作为maven仓库
+        url 'file://d:\\repo'
+    }
+    maven {
+        url 'https://maven.aliyun.com/repository/public/'
+    }
+    mavenCentral()
+}
+// 声明当前项目使用的依赖
 plugins {
-    // 添加spring依赖管理插件
-    id 'io.spring.dependency-management' version '1.0.12.RELEASE'
+    // 添加spring依赖管理插件，自动从spring boot版本中导入spring-boot-dependencies bom。
+    id 'io.spring.dependency-management' version 'xxx'
 }
 
 dependencyManagement {
     imports {
-        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.3'
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:xxx'
     }
 }
 ```
 
 #### buildscript
 
-用于声明gardle脚本自身所需要使用的资源
+用于声明当前gardle脚本自身使用的配置和依赖
 
 ```groovy
 buildscript {
@@ -123,15 +131,18 @@ buildscript {
 }
 ```
 
-#### 插件
+#### allProjects
 
-两种方式
+用于声明当前项目及子项目共享的配置及依赖
 
 ```groovy
-apply plugin: 'org.springframework.boot'
-
-plugins {
-    id 'org.springframework.boot' version '2.3.4.RELEASE'
+allProjects {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter:xxx'
+    }
 }
 ```
 
@@ -152,3 +163,9 @@ check通常视作“生命周期”任务（形同maven），所以他实际上�
         !project.hasProperty('skipTest') 
     }
     ```
+
+### build
+
+- buildNeeded：用于构建当前项目及其所有的直接和间接依赖项
+- buildDependents：用于构建当前项目以及所有依赖于它的其他项目，包含buildNeeded
+- build：用于构建整个项目，包括所有子项目
