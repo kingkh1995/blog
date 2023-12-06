@@ -50,10 +50,28 @@
 |查看GC基本信息|-XX:+PrintGC|-Xlog:gc|
 |查看GC详细信息|-XX:+PrintGCDetails|-Xlog:gc*|
 |查看GC前后的堆、方法区可用高容量变化|-XX:+PrintHeapAtGC|-Xlog:gc+heap=debug|
+|查看熬过收集后剩余对象的年龄分布信息|-XX:+PrintTenuringDistribution|-Xlog:gc+age=trace|
 |查看GC过程中用户线程并发时间|-XX:+PrintGCApplicationConcurrentTime|-Xlog:safepoint|
 |查看GC过程中用户线程停顿时间|-XX:+PrintGCApplicationStoppedTime|-Xlog:safepoint|
+|查看安全点统计信息|-XX:+PrintSafepointStatistics|-Xlog:safepoint|
+|查看安全点统计信息|-XX:PrintSafepointStatisticsCount=1|-Xlog:safepoint|
 |查看收集器Ergonomics机制自动调节的相关信息|-XX:+PrintAdaptiveSizePolicy|-Xlog:gc+ergo*=trace|
-|查看熬过收集后剩余对象的年龄分布信息|-XX:+PrintTenuringDistribution|-Xlog:gc+age=trace|
+|查看Reference处理信息|-XX:+PrintReferenceGC|-Xlog:gc+age=trace|
+
+### gc日志输出
+```
+# GC日志输出的文件路径
+-Xloggc:/path/to/gc-%t.log
+# 开启日志文件分割
+-XX:+UseGCLogFileRotation 
+# 最多分割几个文件，超过之后从头文件开始写
+-XX:NumberOfGCLogFiles=5
+# 每个文件上限大小，超过就触发分割
+-XX:GCLogFileSize=20M
+# OOM时输出堆转储文件
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:+HeapDumpPath=/{path}/heapdump.hprof
+```
 
 ***
 
@@ -173,6 +191,14 @@ JDK7开始提供，是集成式的多功能工具箱。
 |jinfo -sysprops \<pid\>|jcmd \<pid\> VM.system_properties|
 |jinfo -flags \<pid\>|jcmd \<pid\> VM.flags|
 
+#### NMT(native memory tool)
+```
+# 开启，detail会有10%-15%的性能损失
+-XX:NativeMemoryTracking=[off | summary | detail]
+
+# 查询分析
+jcmd <pid> VM.native_memory [summary | detail | baseline | summary.diff | detail.diff | shutdown] [scale= KB | MB | GB]
+```
 ***
 
 ## **调优**
