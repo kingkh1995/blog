@@ -79,10 +79,9 @@
 
 ***
 
-## 撤销已经push的提交
+## git设置
 
-1. git log查看提交信息，获取需要回退到的版本号；
-2. git reset --soft <版本号>，回退并保留修改；
-3. git push origin <分支名> --force，强制提交当前版本号。
+1. 关闭ssl认证
+- git config --global http.sslverify "false"
 
 ***

@@ -2,6 +2,8 @@
 
 > RocketMQ
 
+## [主从同步](/rocketmq/ha)
+
 ***
 
 ## 概念及模型

@@ -34,6 +34,11 @@ buildCache {
 
 在gradle/wrapper下创建gradle-wrapper.properties文件，用于下载gradle wrapper，然后使用gradlew或gradlew.bat执行构建任务。
 
+```
+# gradle-wrapper.properties配置镜像地址
+distributionUrl=https://mirrors.cloud.tencent.com/gradle/gradle-8.10-bin.zip
+```
+
 ### settings.gradle (Settings.class)
 
 项目配置信息
