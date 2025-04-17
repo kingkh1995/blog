@@ -1,6 +1,7 @@
-# [RocketMQ](component/rocketmq)
+# [RocketMQ](/blog/component/rocketmq)
 
 > 主从同步
+>> 最基础的主从模式，仅支持主从同步，并不支持主从切换；Controller模式下支持主从切换。
 
 ## HAService
 
@@ -21,8 +22,6 @@
     }
     ```
 
-### AutoSwitchHAService extends DefaultHAService
-
 ## AcceptSocketService extends ServiceThread
 
 用于Master监听Slave请求，单线程，基于NIO，为每个请求创建一个HAConnection。
@@ -33,9 +32,192 @@
 
 ## HAConnection
 
-负责同步逻辑
+负责同步逻辑，接受到HAClient的连接请求后创建，包括一个单线程读服务和一个单线程写服务。
 
 ### DefaultHAConnection implements HAConnection
+
+### ReadSocketService
+
+处理客户端同步进度的请求，最多等待一秒执行一次，并包括心跳检测，超时未收到客户端请求会关闭Connection。
+
+- processReadEvent
+
+    核心逻辑，处理HAClient的请求，更新从服务的同步进度，并通知等待中的写请求。
+
+    ```java
+    private boolean processReadEvent() {
+            int readSizeZeroTimes = 0;
+
+            // 缓冲区使用完成，其实可以直接调用clear()清空缓冲区。
+            if (!this.byteBufferRead.hasRemaining()) {
+                this.byteBufferRead.flip();
+                this.processPosition = 0;
+            }
+
+            while (this.byteBufferRead.hasRemaining()) {
+                try {
+                    int readSize = this.socketChannel.read(this.byteBufferRead);
+                    if (readSize > 0) {
+                        readSizeZeroTimes = 0;
+                        this.lastReadTimestamp = DefaultHAConnection.this.haService.getDefaultMessageStore().getSystemClock().now();
+                        // 完整的读到一条从服务上报同步进度的数据才进行处理
+                        if ((this.byteBufferRead.position() - this.processPosition) >= DefaultHAClient.REPORT_HEADER_SIZE) {
+
+                            // 由于可能收到了多条数据（从服务每同步完一条消息都会上报同步进度，也会定时上报同步进度），只处理最新的同步进度。
+                            int pos = this.byteBufferRead.position() - (this.byteBufferRead.position() % DefaultHAClient.REPORT_HEADER_SIZE);
+                            long readOffset = this.byteBufferRead.getLong(pos - 8);
+                            this.processPosition = pos;
+
+                            DefaultHAConnection.this.slaveAckOffset = readOffset;
+                            if (DefaultHAConnection.this.slaveRequestOffset < 0) {
+                                DefaultHAConnection.this.slaveRequestOffset = readOffset;
+                                log.info("slave[" + DefaultHAConnection.this.clientAddress + "] request offset " + readOffset);
+                            }
+
+                            // 从服务器同步完成后通知GroupSevice
+                            DefaultHAConnection.this.haService.notifyTransferSome(DefaultHAConnection.this.slaveAckOffset);
+                        }
+                    } else if (readSize == 0) {
+                        if (++readSizeZeroTimes >= 3) {
+                            break;
+                        }
+                    } else {
+                        log.error("read socket[" + DefaultHAConnection.this.clientAddress + "] < 0");
+                        return false;
+                    }
+                } catch (IOException e) {
+                    log.error("processReadEvent exception", e);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+    ```
+
+### WriteSocketService
+
+用于向客户端同步数据，使用MMAP传输CommitLog文件。
+
+- run
+
+    ```java
+    @Override
+        public void run() {
+
+            while (!this.isStopped()) {
+                try {
+                    this.selector.select(1000);
+
+                    // -1表示还没收到客户端的同步进度请求
+                    if (-1 == DefaultHAConnection.this.slaveRequestOffset) {
+                        Thread.sleep(10);
+                        continue;
+                    }
+
+                    // -1表示初次传输数据给客户端，slaveRequestOffset为0时，从当前偏移量往前一个commitlog文件大小的位置开始传输。
+                    // 即一个从服务启动时，并不会同步所有的消息，只会最多同步一个commitlog文件大小的数据
+                    // Q: 目的是否是防止在数据多的情况下，从服务器启动后一直处理同步过程中，由于同步一直无法完成，导致生产消息无法成功？
+                    // Q: 如果消费者要从从服务器获取之前的消息该怎么办？
+                    if (-1 == this.nextTransferFromWhere) {
+                        if (0 == DefaultHAConnection.this.slaveRequestOffset) {
+                            long masterOffset = DefaultHAConnection.this.haService.getDefaultMessageStore().getCommitLog().getMaxOffset();
+                            masterOffset =
+                                masterOffset
+                                    - (masterOffset % DefaultHAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig()
+                                    .getMappedFileSizeCommitLog());
+
+                            if (masterOffset < 0) {
+                                masterOffset = 0;
+                            }
+
+                            this.nextTransferFromWhere = masterOffset;
+                        } else {
+                            this.nextTransferFromWhere = DefaultHAConnection.this.slaveRequestOffset;
+                        }
+                    }
+
+                    // 由于是非阻塞IO，需要判断缓存区的数据是否全部写完。
+                    if (this.lastWriteOver) {
+
+                        long interval =
+                            DefaultHAConnection.this.haService.getDefaultMessageStore().getSystemClock().now() - this.lastWriteTimestamp;
+
+                        // 心跳机制，如果缓存区数据写完了，也会定时去发起写事件，数据为空。
+                        if (interval > DefaultHAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig()
+                            .getHaSendHeartbeatInterval()) {
+
+                            this.byteBufferHeader.position(0);
+                            this.byteBufferHeader.limit(TRANSFER_HEADER_SIZE);
+                            this.byteBufferHeader.putLong(this.nextTransferFromWhere);
+                            this.byteBufferHeader.putInt(0);
+                            this.byteBufferHeader.flip();
+
+                            this.lastWriteOver = this.transferData();
+                            if (!this.lastWriteOver)
+                                continue;
+                        }
+                    } else {
+                        // 传输数据，写完selectMappedBufferResult的数据。
+                        this.lastWriteOver = this.transferData();
+                        if (!this.lastWriteOver)
+                            continue;
+                    }
+
+                    // 获取传输起始位置的MMAP文件切片
+                    SelectMappedBufferResult selectResult =
+                        DefaultHAConnection.this.haService.getDefaultMessageStore().getCommitLogData(this.nextTransferFromWhere);
+                    if (selectResult != null) {
+                        // 确认本次传输的数据量，不超过haTransferBatchSize，不超过流控值canTransferMaxBytes
+                        int size = selectResult.getSize();
+                        if (size > DefaultHAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaTransferBatchSize()) {
+                            size = DefaultHAConnection.this.haService.getDefaultMessageStore().getMessageStoreConfig().getHaTransferBatchSize();
+                        }
+
+                        int canTransferMaxBytes = flowMonitor.canTransferMaxByteNum();
+                        if (size > canTransferMaxBytes) {
+                            if (System.currentTimeMillis() - lastPrintTimestamp > 1000) {
+                                log.warn("Trigger HA flow control, max transfer speed {}KB/s, current speed: {}KB/s",
+                                    String.format("%.2f", flowMonitor.maxTransferByteInSecond() / 1024.0),
+                                    String.format("%.2f", flowMonitor.getTransferredByteInSecond() / 1024.0));
+                                lastPrintTimestamp = System.currentTimeMillis();
+                            }
+                            size = canTransferMaxBytes;
+                        }
+
+                        long thisOffset = this.nextTransferFromWhere;
+                        this.nextTransferFromWhere += size;
+
+                        selectResult.getByteBuffer().limit(size);
+                        this.selectMappedBufferResult = selectResult;
+
+                        this.byteBufferHeader.position(0);
+                        this.byteBufferHeader.limit(TRANSFER_HEADER_SIZE);
+                        this.byteBufferHeader.putLong(thisOffset);
+                        this.byteBufferHeader.putInt(size);
+                        this.byteBufferHeader.flip();
+
+                        // 传输数据
+                        this.lastWriteOver = this.transferData();
+                    } else {
+                        // SelectMappedBufferResult为null，则表示主节点数据都还没写入MMAP，使所有写请求等待。
+                        DefaultHAConnection.this.haService.getWaitNotifyObject().allWaitForRunning(100);
+                    }
+                } catch (Exception e) {
+
+                    DefaultHAConnection.log.error(this.getServiceName() + " service has exception.", e);
+                    break;
+                }
+            }
+
+            // 如果写服务终止了，则关闭Connection。
+            DefaultHAConnection.this.haService.getWaitNotifyObject().removeFromWaitingThreadTable();
+            ...
+        }
+    ```
+
+
 
 ## GroupTransferService extends ServiceThread
 
@@ -46,7 +228,7 @@
     消息写入磁盘后需要等数据传输到Slave完成，在CommitLog的handleDiskFlushAndHA方法中调用。
 
     ```java
-    # DefaultHAService
+    // DefaultHAService
     @Override
     public void putRequest(final CommitLog.GroupCommitRequest request) {
         this.groupTransferService.putRequest(request);
@@ -195,7 +377,7 @@ public void run() {
 
 - transferFromMaster
 
-    定时向Master同步offset，Slave侧发起写操作，对应Master侧则为读事件；等待Master同步数据，监听读事件，对应Master侧发起写操作。
+    Slave向Master同步offset（同步请求），Slave侧发起写操作，对应Master侧则为读事件；等待Master同步数据，监听读事件，对应Master侧发起写操作。
 
     ```java
     private boolean transferFromMaster() throws IOException {
@@ -265,13 +447,12 @@ public void run() {
             if (diff >= DefaultHAConnection.TRANSFER_HEADER_SIZE) {
                 // 获取Master发送的同步起始偏移量，由Slave上报给Master的偏移量决定。
                 long masterPhyOffset = this.byteBufferRead.getLong(this.dispatchPosition);
-                // 一条一条的处理数据
                 int bodySize = this.byteBufferRead.getInt(this.dispatchPosition + 8);
 
                 long slavePhyOffset = this.defaultMessageStore.getMaxPhyOffset();
 
                 // 校验偏移量是否一致
-                // 问题：如果slavePhyOffset至masterPhyOffset之间的数据已被删除会怎么样？
+                // Q: 如果slavePhyOffset至masterPhyOffset之间的数据已被删除会怎么样？
                 if (slavePhyOffset != 0) {
                     if (slavePhyOffset != masterPhyOffset) {
                         log.error("master pushed offset not equal the max phy offset in slave, SLAVE: "
@@ -280,7 +461,7 @@ public void run() {
                     }
                 }
 
-                // 如果已经获取到一条完整的数据了则处理
+                // 如果已经获取到一条完整的数据（非一条消息，haTransferBatchSize）了则处理
                 if (diff >= (DefaultHAConnection.TRANSFER_HEADER_SIZE + bodySize)) {
                     byte[] bodyData = byteBufferRead.array();
                     int dataStart = this.dispatchPosition + DefaultHAConnection.TRANSFER_HEADER_SIZE;
@@ -301,7 +482,7 @@ public void run() {
                 }
             }
 
-            // 如果未获取到一条完整的数据，则需要交换缓冲区。
+            // 如果未获取到一条完整的数据则表示缓冲区已使用完成，则需要交换缓冲区。
             if (!this.byteBufferRead.hasRemaining()) {
                 this.reallocateByteBuffer();
             }
@@ -312,3 +493,9 @@ public void run() {
         return true;
     }
     ```
+
+## AutoSwitch
+
+Controller模式使用，支持主从切换。
+
+### AutoSwitchHAService extends DefaultHAService

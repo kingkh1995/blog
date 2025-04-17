@@ -2,7 +2,7 @@
 
 > RocketMQ
 
-## [主从同步](/rocketmq/ha)
+## [主从同步](/blog/rocketmq/ha)
 
 ***
 
