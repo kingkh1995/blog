@@ -69,8 +69,8 @@
   - 使用变量时每次都会从主内存中读取。
   
 - 禁止指令重排序：通过内存屏障实现
-  - 在每个volatile写操作之前插入一个StoreStore屏障，之后插入一个StoreLoad屏障；
-  - 每个volatile读操作之后先插入一个LoadLoad屏障，再插入一个LoadStore屏障。
+  - 每个volatile读操作之后先插入一个LoadLoad屏障（确保在volatile读操作之后的所有普通读操作不会被重排序到volatile读操作之前），再插入一个LoadStore屏障（确保在volatile读操作之后的所有普通写操作不会被重排序到volatile读操作之前）；
+  - 在每个volatile写操作之前插入一个StoreStore屏障（确保在volatile写操作之前的所有普通写操作都对其他线程可见），之后插入一个StoreLoad屏障（确保在volatile写操作之后的所有普通读操作不会被重排序到volatile写操作之前）。
 
 ### 指令重排序
 

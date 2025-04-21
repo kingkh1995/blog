@@ -25,6 +25,7 @@
 * [util](java/util)
 * [concurrent](java/concurrent)
 * [aqs](java/aqs)
+* [var-handle](java/varhandle)
 * [blocking-queue](java/bq)
 * [time](java/time)
 * [function](java/function)
