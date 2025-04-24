@@ -1,7 +1,7 @@
 # [RocketMQ](/blog/component/rocketmq)
 
 > 主从同步
->> 最基础的主从模式，仅支持主从同步，并不支持主从切换；Controller模式下支持主从切换。
+>> 最基础的主从模式，仅支持主从同步，并不支持主从切换。
 
 ## HAService
 
@@ -118,8 +118,7 @@
 
                     // -1表示初次传输数据给客户端，slaveRequestOffset为0时，从当前偏移量往前一个commitlog文件大小的位置开始传输。
                     // 即一个从服务启动时，并不会同步所有的消息，只会最多同步一个commitlog文件大小的数据
-                    // Q: 目的是否是防止在数据多的情况下，从服务器启动后一直处理同步过程中，由于同步一直无法完成，导致生产消息无法成功？
-                    // Q: 如果消费者要从从服务器获取之前的消息该怎么办？
+                    // Q: 目的是否是防止在数据多的情况下，从服务器启动后一直处理同步过程中，由于同步一直无法完成，导致生产消息无法成功？这样会导致如果消费者要从从服务器获取之前的消息则无法获取到。
                     if (-1 == this.nextTransferFromWhere) {
                         if (0 == DefaultHAConnection.this.slaveRequestOffset) {
                             long masterOffset = DefaultHAConnection.this.haService.getDefaultMessageStore().getCommitLog().getMaxOffset();
@@ -217,7 +216,7 @@
         }
     ```
 
-
+    极端情况下，如果Slave的偏移量对应的commitlog已被删除，则同步将再也无法继续了，因为Master不会响应Slave的同步请求，只会一直发送心跳；如果从节点中断较长时间，在ASYNC模式（SYNC模式非ALL_ACK）下，仍然可以继续生产消息，当生成新的commitlog后，旧的commitlog就可能被删除（磁盘空间不足），从节点恢复连接后就会继续从之前的位置同步，但是对应的commitlog已经被删除了；即只要从节点下线后仍然可以生产消息就会导致这个问题。
 
 ## GroupTransferService extends ServiceThread
 
@@ -493,9 +492,3 @@ public void run() {
         return true;
     }
     ```
-
-## AutoSwitch
-
-Controller模式使用，支持主从切换。
-
-### AutoSwitchHAService extends DefaultHAService

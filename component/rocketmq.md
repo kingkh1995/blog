@@ -4,6 +4,12 @@
 
 ## [主从同步](/blog/rocketmq/ha)
 
+## [Dledger](/blog/rocketmq/dledger)
+
+## [Controller](/blog/rocketmq/controller)
+
+## [ACL](/blog/rocketmq/acl)
+
 ***
 
 ## 概念及模型
@@ -97,5 +103,26 @@
 ### 实现机制
 
 - 定时/延时消息：默认精度为1000ms秒级。
+
+***
+
+## 性能优化
+
+### 硬件
+
+- 选择高性能的多核心CPU，核心越多消息处理的并行能力就越高，同时很多机制都是单线程模型，也需要保证单核的性能；
+- 高度依赖内存，使用ECC内存能提高可靠性；
+- 高性能的磁盘能提升消息的写入和读取性能；
+
+### 操作系统
+
+- 内存：禁用SWAP；锁定进程内存。
+- 文件系统：使用xfs\ext4；增大fd限制；使用deadline/noop的磁盘调度算法；提升大文件顺序写的性能。
+- 网络：调整TCP参数，开启tcp_nodelay、tcp_keepalive等参数减少网络延迟和带宽使用。
+
+### 配置
+
+- 将CommitLog和ComsumeQueue分别存储在不同的磁盘上，减少磁盘IO竞争，提高读写性能。
+- 合理设置心跳间隔，减少网络带宽消耗。
 
 ***
