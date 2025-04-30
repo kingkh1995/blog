@@ -10,6 +10,8 @@
 
 ## [ACL](/blog/rocketmq/acl)
 
+## [Trace](/blog/rocketmq/trace)
+
 ***
 
 ## 概念及模型
