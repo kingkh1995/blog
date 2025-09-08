@@ -65,14 +65,18 @@
 - 字节码
 - 垃圾回收器
 - 参数调优
-- 诊断工具
-    - jps、jstat、jstack、jmap
-    - JMH
-    - MAT
-    - jvisualvm
-    - JProfile
+- 命令行工具
+    - jps、jstat、jstack、jmap、jhat、jinfo
     - Arthas
-- JMX
+- GUI工具
+  - jconsole
+  - MAT
+  - jvisualvm
+  - JProfile
+- 其他工具
+  - JMeter
+  - JMH
+  - JMX
 - Java Agent
 - GraalVM
 
@@ -101,6 +105,7 @@
 ## 搜索
 
 - ElasticSearch
+- OpenSearch
 
 ## Spring
 
@@ -197,12 +202,15 @@
 - RocketMQ
 - Kafka
 
-## DevOps
+## 监控 & 链路追踪 & 可观测
 
 - SkyWalking
 - Spring Cloud Sleuth
 - CAT
 - ELK
+- OpenTelemetry
+- Loki
+- Jaeger
 
 ## 配置中心
 
@@ -219,6 +227,7 @@
 ## 网关
 
 - Spring Cloud Gateway
+- ShenYu
 
 ## 分布式协调
 
@@ -364,6 +373,7 @@
 
 ## 负载均衡
 
+- CDN
 - nignx
 - lvs
 - Haproxy
