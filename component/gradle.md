@@ -95,6 +95,20 @@ dependencies {
     - testImplementation/testCompileOnly/testRuntimeOnly：测试阶段依赖；
     - annotationProcessor：注解处理器依赖。
 
+```Groovy
+# 排除依赖
+implementation('org.springframework.boot:spring-boot-starter-web') {
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
+# 全局排除依赖
+configurations {
+    configureEach {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+```
+
 #### 依赖管理
 
 ```groovy

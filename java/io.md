@@ -59,10 +59,12 @@
             writer.write("hello\n");
             writer.flush();
             for (; ; ) {
-                // readline需要读取到换行符才能结束
                 var readLine = reader.readLine();
                 System.out.println(readLine);
-                if (readLine.equals("bye")) {
+                if ("bye".equals(readLine)) {
+                    socket.shutdownInput();
+                    writer.write("bye\n");
+                    writer.flush();
                     break;
                 }
                 writer.write(sc.nextLine() + "\n");
@@ -87,11 +89,14 @@
             for (; ; ) {
                 var readLine = reader.readLine();
                 System.out.println(readLine);
+                if ("bye".equals(readLine)) {
+                    break;
+                }
                 var input = sc.nextLine();
                 writer.write(input + "\n");
                 writer.flush();
-                if (input.equals("bye")) {
-                    break;
+                if ("bye".equals(input)) {
+                    socket.shutdownOutput();
                 }
             }
         } catch (IOException e) {
