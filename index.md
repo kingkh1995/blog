@@ -4,6 +4,10 @@
 
 ***
 
+## AI
+
+* [一文读懂大模型专业术语](ai/terminology)
+
 ## Fundamentals
 
 * [算法基础](fundamentals/algs)

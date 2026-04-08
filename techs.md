@@ -5,10 +5,10 @@
 - 网络
     - IP/IPv6
     - TCP
-    - Http
-    - Https
+    - HTTP
+    - HTTPS
     - SSL/TLS
-    - Websocket
+    - WebSocket
     - DNS
     - ARP
     - NAT
@@ -19,12 +19,12 @@
     - 红黑树
     - B+树
     - LSM树
-    - bitmap
+    - Bitmap
     - 布隆过滤器
     - 字典树
     - 跳跃表
     - 图
-    
+
 ## Java
 
 - 集合
@@ -47,15 +47,16 @@
     - 机制
     - 容器
     - AQS
-    - CompeletableFuture
+    - CompletableFuture
     - 原子类
     - VarHandle
+    - Structured Concurrency
+    - Scoped Values
 - 正则
 - SQL
 - 国际化
 - 编码加密
 - 模块化
-- 新特性
 
 ## JVM
 
@@ -66,27 +67,31 @@
 - 垃圾回收器
 - 参数调优
 - 命令行工具
-    - jps、jstat、jstack、jmap、jhat、jinfo
+    - jps, jstat, jstack, jmap, jhat, jinfo
+    - top -H, vmstat, iostat, perf
     - Arthas
 - GUI工具
-  - jconsole
-  - MAT
-  - jvisualvm
-  - JProfile
+    - JConsole
+    - MAT
+    - JVisualVM
+    - JProfiler
 - 其他工具
-  - JMeter
-  - JMH
-  - JMX
+    - JMeter
+    - JMH
+    - JMX
 - Java Agent
 - GraalVM
+    - Native Image
 
 ## 数据库
 
-- Mysql
+- MySQL
+- PostgreSQL
 - Redis
 - TiDB
-- MongDB
+- MongoDB
 - RocksDB
+- ClickHouse OLAP
 
 ## 数据库客户端
 
@@ -94,24 +99,30 @@
 - HikariCP
 - Jedis
 - Lettuce
-- Redission
+- Redisson
+
+## 数据库工具
+
+- Flyway 数据库迁移
+- Liquibase 数据库迁移
 
 ## ORM
 
-- Mybatis
+- MyBatis
 - Hibernate
-- pagehelper
+- PageHelper
 
 ## 搜索
 
-- ElasticSearch
+- Elasticsearch
 - OpenSearch
+- Apache Lucene
 
 ## Spring
 
 - Bean
 - IoC
-- Aop
+- AOP
 - JDBC
 - 事务
 - 自动装配
@@ -125,9 +136,9 @@
 - Environment
 - SPI
 - JMX
-- logger
-- mail
-- el表达式
+- Logger
+- Mail
+- EL表达式
 - 国际化
 - 可观测性
 
@@ -136,8 +147,8 @@
 - Spring MVC
 - Spring WebFlux
 - Spring Boot
-- Spring Data Jpa
-- Spring DataMechine 状态机
+- Spring Data JPA
+- Spring Statemachine 状态机
 - Spring Batch 批处理
 - Spring Modulith 模块化
 - Spring AI
@@ -150,17 +161,17 @@
 - Spring Cloud Alibaba Sidecar
 - Dubbo
 
-## SpringCloud
+## Spring Cloud
 
 - Spring Cloud Bus 消息总线 & 动态配置
 - Spring Cloud Commons 服务注册发现
 - Spring Cloud Load Balancer 负载均衡
-- Spring Cloud Circuitbreaker 断路器
+- Spring Cloud Circuit Breaker 断路器
 - Spring Cloud Config 配置中心
 - Spring Cloud Consul 配置中心 & 注册中心
 - Spring Cloud Gateway 网关
-- Spring Cloud OpenFeign Rpc
-- Spring Cloud Sleuth 链路追踪
+- Spring Cloud OpenFeign RPC
+- Micrometer Tracing 链路追踪
 - Spring Cloud Stream 消息驱动框架
 
 ## 流处理 & 事件驱动
@@ -172,9 +183,11 @@
 
 ## 安全框架
 
-- Shiro
 - Spring Security
+- Spring Authorization Server
 - Spring Vault
+- Keycloak
+- Shiro
 
 ## 开发工具
 
@@ -182,35 +195,41 @@
 - Gradle
 - Git
 
-## 容器
+## 容器 & 编排
 
 - Docker
 - Podman
+- Docker Compose
+- Kubernetes (K8s)
 
-## CI/CD 
+## CI/CD
 
 - Jenkins
+- GitHub Actions
+- GitLab CI
 
-## Http服务器
+## HTTP服务器
 
 - Tomcat
 - Netty
-- Vertx
+- Vert.x
 
 ## MQ
 
 - RocketMQ
 - Kafka
+- RabbitMQ
 
 ## 监控 & 链路追踪 & 可观测
 
+- OpenTelemetry
+- Micrometer
+- Prometheus + Grafana
 - SkyWalking
-- Spring Cloud Sleuth
+- Jaeger
 - CAT
 - ELK
-- OpenTelemetry
 - Loki
-- Jaeger
 
 ## 配置中心
 
@@ -233,31 +252,33 @@
 
 - Zookeeper
 - Etcd
+- JRaft
+- Dledger
 
-## Rpc框架
+## RPC框架
 
 - Dubbo
-- Grpc
+- gRPC
 - OpenFeign
 
 ## 任务调度
 
 - ElasticJob
-- Xxljob
+- XXL-Job
 - Quartz
 
 ## 分库分表
 
-- Sharding-JDBC
+- ShardingSphere
 - Mycat
 
 ## 通信客户端
 
 - Netty
-- Vertx
-- okhttp
-- java httpclient
-- async-http
+- Vert.x
+- OkHttp
+- Java HttpClient
+- AsyncHttpClient
 
 ## 缓存框架
 
@@ -265,27 +286,30 @@
 - Guava Cache
 - Ehcache
 
-## Mysql数据同步
+## 数据同步与集成
 
 - Canal
 - Flink
+- Debezium
 
 ## 工作流引擎
 
 - Activiti
+- Flowable
 
 ## 并发框架
 
 - JCTools
 - Disruptor
 - Netty
-- Vertex
+- Vert.x
 
 ## 测试框架
 
-- Junit
+- JUnit 5
 - Mockito
-- jmeter
+- Testcontainers
+- JMeter
 
 ## 分布式
 
@@ -293,9 +317,9 @@
     - CAP
     - BASE
     - 最终一致性
-    - zab
-    - raft
-    - gossip
+    - ZAB
+    - Raft
+    - Gossip
     - 一致性哈希算法
 - 分布式锁
 - 分布式事务
@@ -310,7 +334,7 @@
     - 容灾补偿
 - 分布式限流
 
-## 数据库
+## 数据库方案与优化
 
 - 读写分离
 - 分库分表
@@ -332,14 +356,15 @@
 - MapStruct
 - Guava
 - JWT
-- jgraph
+- JGraphT
 - JavaMail
+- Resilience4j
 
 ## 日志框架
 
-- slf4j
-- log4j2
-- logback
+- SLF4J
+- Log4j2
+- Logback
 
 ## 图片处理
 
@@ -348,48 +373,62 @@
 
 ## 文本处理
 
-- poi
-- easyexcel
-- opensvc
-- Freemark
-- jackson-dataformat-yaml
-- snakeyaml
+- Apache POI
+- EasyExcel
+- OpenCSV
+- FreeMarker
+- Jackson Dataformat YAML
+- SnakeYAML
 
-## Json序列化
+## JSON序列化
 
 - Jackson
 - Gson
-- FastJson
+- Fastjson2
 
 ## 二进制序列化
 
 - Protobuf
 - Thrift
+- Hessian
+- Avro
 
 ## REST文档
 
-- swagger(springfox)
-- springdoc
+- SpringDoc OpenAPI
 
 ## 负载均衡
 
 - CDN
-- nignx
-- lvs
-- Haproxy
-
-## raft框架
-
-- JRaft
-- Dledger
+- Nginx
+- LVS
+- HAProxy
 
 ## 微服务框架
 
-- juice 依赖注入
-- quarkus 云原生
+- Guice 依赖注入
+- Quarkus 云原生
+- Micronaut 云原生
 - COLA DDD
 
 ## 微服务治理
 
 - ServiceMesh
+    - Istio
+    - Linkerd
 - EventMesh
+
+## 架构模式
+
+- DDD
+- CQRS
+- Event Sourcing
+
+## 存储
+
+- MinIO 对象存储
+
+## AI
+
+- Spring AI
+- LangChain4j
