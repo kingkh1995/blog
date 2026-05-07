@@ -115,6 +115,7 @@
 
 * [DDD架构概述](architecture/ddd)
 * [DDD之Domain Primitive](architecture/dp)
+* [微服务设计模式](architecture/microservices)
 
 ## Others
 

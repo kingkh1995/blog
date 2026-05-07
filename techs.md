@@ -25,6 +25,10 @@
     - 跳跃表
     - 图
 
+## 抓包工具
+- tcpdump
+- Wireshark
+
 ## Java
 
 - 集合
@@ -71,14 +75,16 @@
     - top -H, vmstat, iostat, perf
     - Arthas
 - GUI工具
-    - JConsole
-    - MAT
-    - JVisualVM
-    - JProfiler
+    - JConsole （JDK自带，仅查看）
+    - MAT （dump分析）
+    - JVisualVM （JDK已不再自带）
+    - JProfiler （付费）
 - 其他工具
-    - JMeter
-    - JMH
+    - JFR （JDK内置，记录事件）
+    - JMC （分析.jfr文件）
     - JMX
+    - JMH
+    - JMeter
 - Java Agent
 - GraalVM
     - Native Image
@@ -395,7 +401,8 @@
 
 ## REST文档
 
-- SpringDoc OpenAPI
+- SpringDoc
+- Spring REST Docs
 
 ## 负载均衡
 
